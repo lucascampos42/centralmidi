@@ -137,8 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 title = parts[1].trim();
             }
 
-            const midiFile = base + '.mid';
-
             newItems.push({
                 title: title,
                 artist: artist,
@@ -146,9 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 classificacao: getDefaultClass(),
                 price: getDefaultPrice(),
                 mp3_file: safeFilename,   // "The-Realm-Awakens.mp3" — exact disk name
-                midi_file: midiFile,      // "The-Realm-Awakens.mid"
                 mp3_exists: true,
-                midi_exists: false,
                 _file: file,
             });
         }
@@ -212,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentItems || currentItems.length === 0) {
             tbody.innerHTML = `
                 <tr class="cm-empty-row">
-                    <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">
                         <i class="ri-inbox-line" style="font-size: 2rem; display: block; margin-bottom: 8px; opacity: 0.5;"></i>
                         Nenhuma música carregada. Faça upload de MP3s, escaneie a pasta ou cole uma lista.
                     </td>
@@ -306,9 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 classificacao: getDefaultClass(),
                 price: getDefaultPrice(),
                 mp3_file: '',
-                midi_file: '',
                 mp3_exists: false,
-                midi_exists: false,
             });
             renderTable();
         });
@@ -414,9 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     classificacao: getDefaultClass(),
                     price: getDefaultPrice(),
                     mp3_file: slugBase + '.mp3',
-                    midi_file: slugBase + '.mid',
                     mp3_exists: false,
-                    midi_exists: false,
                 });
             });
 
@@ -484,7 +476,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         formData.append(`items[${i}][classificacao]`, item.classificacao || '');
                         formData.append(`items[${i}][price]`, item.price || '');
                         formData.append(`items[${i}][mp3_file]`, item.mp3_file || '');
-                        formData.append(`items[${i}][midi_file]`, item.midi_file || '');
 
                         if (item._file) {
                             formData.append(`file_${i}`, item._file, item.mp3_file || item._file.name);

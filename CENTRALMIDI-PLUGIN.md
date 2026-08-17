@@ -70,14 +70,15 @@ A migração de strings legadas (`artista`, `genero`) → IDs é feita em `Centr
 | `_centralmidi_ano_lancamento`  | Ano de lançamento          |
 | `_centralmidi_classificacao`   | `M`, `L` ou `RLM`          |
 | `_centralmidi_publicado`       | `1` disponível p/ venda (default) / `0` em breve |
-| `_centralmidi_demo_audio`      | URL do MP3 de demonstração |
-| `_centralmidi_file_url`        | Link do arquivo MIDI já enviado via FTP (padrão `dominio/midis/<mês>/<ano>/<arquivo>.mid`) |
+| `_centralmidi_demo_audio`      | URL ou **nome do arquivo** do MP3 de demo. Metabox aceita upload (grava em `midis/<ano><mes>/`) ou URL/nome manual; resolve p/ `/midis/<ano><mes>/arquivo.mp3` |
 
 Ao salvar o produto, os valores são persistidos como post meta e sincronizados (`upsert`) na tabela `wp_centralmidi_midis`.
 
 ### Importação em lote (`/importar-midis/`)
 
 MIDIs cadastrados via importador entram como **não publicados** (`publicado=0`, "Em breve") por padrão — ficam ocultos do site e não compráveis até serem publicados manualmente (grid admin/metabox). A opção **"Publicar imediatamente no site"** no formulário envia `publicar=1` e os publica na hora.
+
+O importador trabalha **somente com MP3** (demo). O scanner lê os arquivos de áudio da pasta `midis/<ano><mes>/`; não há pareamento com `.mid` nem referência de arquivo MIDI no servidor.
 
 ## Shortcode `[centralmidi_catalogo]`
 
@@ -99,10 +100,9 @@ Exemplo de uso:
 Página **Central MIDI › MIDIs** (`centralmidi-midis`) usa **Tabulator 6.5.2** (vendor local em `assets/vendor/tabulator/`):
 
 - Tabela com **dados server-side** (`wp_ajax_centralmidi_midis_table`): paginação remota (20/50/100), ordenação e filtros de cabeçalho (produto, artista, gênero, mês, ano, classificação) — só a página atual trafega.
-- **Edição inline** de células (`wp_ajax_centralmidi_midis_save`): selects para artista/gênero/classificação, número para mês/ano e input URL para o link do arquivo.
-- **Edição em lote** (`wp_ajax_centralmidi_midis_bulk`): definir artista, gênero, mês, ano ou classificação, **remover link do arquivo** (`clear_file`) ou remover os metadados MIDI.
+- **Edição inline** de células (`wp_ajax_centralmidi_midis_save`): selects para artista/gênero/classificação, número para mês/ano.
+- **Edição em lote** (`wp_ajax_centralmidi_midis_bulk`): definir artista, gênero, mês, ano ou classificação, publicar/despublicar ou remover os metadados MIDI.
 - Botões "Selecionar página", "Limpar seleção" e **"Exportar CSV"**.
-- Coluna **Arquivo** exibe o link do MIDI salvo no servidor (vazio = "Sem arquivo — clique para definir").
 - Todos os endpoints exigem `manage_options` + nonce `centralmidi_ajax`; operações atualizam post meta (`_centralmidi_*`) e sincronizam via `CentralMidi_DB::upsert()`; `clear_home_cache()` ao final.
 
 ## Arquivos do plugin

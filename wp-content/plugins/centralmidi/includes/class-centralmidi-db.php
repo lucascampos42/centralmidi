@@ -823,7 +823,6 @@ class CentralMidi_DB {
         $join_sql  = "LEFT JOIN {$wpdb->posts} p ON p.ID = m.product_id";
         $join_sql .= " LEFT JOIN {$artistas_table} a ON a.id = m.artista_id";
         $join_sql .= " LEFT JOIN {$generos_table} g ON g.id = m.genero_id";
-        $join_sql .= " LEFT JOIN {$wpdb->postmeta} fm ON fm.post_id = m.product_id AND fm.meta_key = '_centralmidi_file_url'";
 
         $total = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$midis_table} m {$join_sql} WHERE {$where_sql}",
@@ -839,7 +838,6 @@ class CentralMidi_DB {
             'ano'           => 'm.ano_lancamento',
             'classificacao' => 'm.classificacao',
             'publicado'     => 'm.publicado',
-            'arquivo'       => 'fm.meta_value',
             'id'            => 'm.product_id',
         );
         $sort_dir = strtoupper($sort_dir) === 'ASC' ? 'ASC' : 'DESC';
@@ -854,7 +852,7 @@ class CentralMidi_DB {
         $sql = $wpdb->prepare(
             "SELECT m.id, m.product_id, m.artista_id, m.genero_id, m.mes_lancamento,
                     m.ano_lancamento, m.classificacao, m.publicado, a.nome AS artista, g.nome AS genero,
-                    p.post_title AS titulo, fm.meta_value AS arquivo
+                    p.post_title AS titulo
              FROM {$midis_table} m {$join_sql}
              WHERE {$where_sql}
              {$order_sql}
@@ -902,17 +900,6 @@ class CentralMidi_DB {
      */
     public static function get_product_demo_url($product_id) {
         $raw = get_post_meta($product_id, '_centralmidi_demo_audio', true);
-        if (!$raw) return '';
-        $mes = (int) get_post_meta($product_id, '_centralmidi_mes_lancamento', true);
-        $ano = (int) get_post_meta($product_id, '_centralmidi_ano_lancamento', true);
-        return self::resolve_media_url($raw, $mes, $ano);
-    }
-
-    /**
-     * Get resolved MIDI file URL for a product ID.
-     */
-    public static function get_product_midi_url($product_id) {
-        $raw = get_post_meta($product_id, '_centralmidi_file_url', true);
         if (!$raw) return '';
         $mes = (int) get_post_meta($product_id, '_centralmidi_mes_lancamento', true);
         $ano = (int) get_post_meta($product_id, '_centralmidi_ano_lancamento', true);

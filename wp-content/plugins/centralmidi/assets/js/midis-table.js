@@ -16,15 +16,6 @@
         }, 4000);
     }
 
-    function formatArquivo(cell) {
-        var url = cell.getValue();
-        if (!url) {
-            return '<span class="cm-arquivo-vazio">' + (cfg.textos ? cfg.textos.semArquivo : '') + '</span>';
-        }
-        var nome = url.split('/').pop() || url;
-        return '<a href="' + $('<span></span>').text(url).html() + '" target="_blank" rel="noopener" title="' + $('<span></span>').text(url).html() + '">' + $('<span></span>').text(nome).html() + '</a>';
-    }
-
     function formatTitulo(cell) {
         var data = cell.getRow().getData();
         var titulo = cell.getValue();
@@ -237,13 +228,6 @@
                         { label: (cfg.publicado || {})['0'] || 'Não', value: 0 }
                     ]
                 }
-            },
-            {
-                title: 'Arquivo',
-                field: 'arquivo',
-                minWidth: 220,
-                formatter: formatArquivo,
-                editor: 'input'
             }
         ],
         cellEdited: function (cell) {

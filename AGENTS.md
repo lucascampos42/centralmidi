@@ -97,12 +97,11 @@ Versão `1.1.0` (`style.css`). Todas as páginas passam por `header.php`/`footer
 | `_centralmidi_ano_lancamento` | Ano do lançamento (ex.: 2026) |
 | `_centralmidi_classificacao` | `M` / `L` / `RLM` |
 | `_centralmidi_publicado` | `1` (disponível p/ venda, default) / `0` (em breve — oculto do público e não comprável) |
-| `_centralmidi_demo_audio` | URL do MP3 de demonstração |
-| `_centralmidi_file_url` | Link do arquivo MIDI já salvo no servidor (padrão `dominio/midis/<mes>/<ano>/<arquivo>.mid`) |
+| `_centralmidi_demo_audio` | URL ou **nome do arquivo** do MP3 de demonstração. Metabox aceita upload (grava em `midis/<ano><mes>/`) ou URL/nome manual. Resolve p/ `/midis/<ano><mes>/arquivo.mp3` |
 
 ### Tabelas
 
-- `wp_centralmidi_midis`: `product_id` (UNIQUE), `artista_id`, `genero_id`, `mes_lancamento`, `ano_lancamento`, `classificacao`, `publicado` (TINYINT 1, default `1`), `created_at`, `updated_at`. **Sem strings denormalizadas** (colunas `artista`/`genero` removidas na migração). `publicado=0` oculta o MIDI de todas as queries públicas (home, catálogo, artistas, busca, busca ao vivo, shop archive) e bloqueia a compra (`woocommerce_is_purchasable`). Importador em lote (`/importar-midis/`) cria MIDIs como **não publicados** por padrão (opt-in "Publicar imediatamente" envia `publicar=1`).
+- `wp_centralmidi_midis`: `product_id` (UNIQUE), `artista_id`, `genero_id`, `mes_lancamento`, `ano_lancamento`, `classificacao`, `publicado` (TINYINT 1, default `1`), `created_at`, `updated_at`. **Sem strings denormalizadas** (colunas `artista`/`genero` removidas na migração). `publicado=0` oculta o MIDI de todas as queries públicas (home, catálogo, artistas, busca, busca ao vivo, shop archive) e bloqueia a compra (`woocommerce_is_purchasable`). Importador em lote (`/importar-midis/`) cria MIDIs como **não publicados** por padrão (opt-in "Publicar imediatamente" envia `publicar=1`) e trabalha **somente com MP3** (sem pareamento `.mid`; o arquivo MIDI é entregue fora da plataforma).
 - `wp_centralmidi_artistas`: `id`, `nome` (UNIQUE), `foto_id`, `created_at`, `updated_at`.
 - `wp_centralmidi_generos`: `id`, `nome` (UNIQUE), `created_at`, `updated_at`.
 - Classificação: `M` (melodia), `L` (letra), `RLM` (melodia + letra).

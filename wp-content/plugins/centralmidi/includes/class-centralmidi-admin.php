@@ -91,7 +91,6 @@ class CentralMidi_Admin {
                     'em_breve' => __('Em breve', 'centralmidi'),
                 ),
                 'textos'          => array(
-                    'semArquivo' => __('Sem arquivo — clique para definir', 'centralmidi'),
                     'erro'       => __('Erro ao salvar.', 'centralmidi'),
                     'selecione'  => __('Selecione ao menos um MIDI.', 'centralmidi'),
                     'acao'       => __('Selecione uma ação em lote.', 'centralmidi'),
@@ -442,9 +441,6 @@ class CentralMidi_Admin {
                             <option value="publicar"><?php esc_html_e('Publicar (disponível para venda)', 'centralmidi'); ?></option>
                             <option value="despublicar"><?php esc_html_e('Despublicar (Em breve)', 'centralmidi'); ?></option>
                         </optgroup>
-                        <optgroup label="<?php esc_attr_e('Arquivo', 'centralmidi'); ?>">
-                            <option value="clear_file"><?php esc_html_e('Remover link do arquivo dos selecionados', 'centralmidi'); ?></option>
-                        </optgroup>
                         <optgroup label="<?php esc_attr_e('Remover', 'centralmidi'); ?>">
                             <option value="delete"><?php esc_html_e('Remover metadados MIDI dos selecionados', 'centralmidi'); ?></option>
                         </optgroup>
@@ -536,13 +532,6 @@ class CentralMidi_Admin {
                 foreach ($ids as $pid) {
                     update_post_meta($pid, '_centralmidi_publicado', $publicado);
                     $this->upsert_product_meta($pid, array('publicado' => $publicado));
-                    $count++;
-                }
-                break;
-
-            case 'clear_file':
-                foreach ($ids as $pid) {
-                    delete_post_meta($pid, '_centralmidi_file_url');
                     $count++;
                 }
                 break;
@@ -657,7 +646,6 @@ class CentralMidi_Admin {
                 'ano'           => (int) $r->ano_lancamento,
                 'classificacao' => $r->classificacao ? $r->classificacao : '',
                 'publicado'     => (int) $r->publicado,
-                'arquivo'       => $r->arquivo ? $r->arquivo : '',
                 'edit_url'      => get_edit_post_link($pid),
                 'view_url'      => get_permalink($pid),
             );
@@ -733,16 +721,6 @@ class CentralMidi_Admin {
                 $this->upsert_product_meta($product_id, array('publicado' => $publicado));
                 $result = (string) $publicado;
                 break;
-
-            case 'arquivo':
-                $url = esc_url_raw(trim((string) $value));
-                if ('' === $url) {
-                    delete_post_meta($product_id, '_centralmidi_file_url');
-                } else {
-                    update_post_meta($product_id, '_centralmidi_file_url', $url);
-                }
-                $result = $url;
-                break;
         }
 
         if (false === $result) {
@@ -816,7 +794,6 @@ class CentralMidi_Admin {
         $classificacao  = get_post_meta($post->ID, '_centralmidi_classificacao', true);
         $classificacao  = CentralMidi_DB::sanitize_classificacao($classificacao);
         $demo_audio     = get_post_meta($post->ID, '_centralmidi_demo_audio', true);
-        $arquivo_midi   = get_post_meta($post->ID, '_centralmidi_file_url', true);
         $publicado      = get_post_meta($post->ID, '_centralmidi_publicado', true);
         $publicado      = ('' === $publicado) ? 1 : (int) (bool) $publicado;
 
@@ -831,15 +808,10 @@ class CentralMidi_Admin {
         ?>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 10px 0;">
             <div>
-                <label for="centralmidi_arquivo_midi" style="display:block;font-weight:600;margin-bottom:4px;"><?php esc_html_e('Arquivo MIDI (link no servidor)', 'centralmidi'); ?></label>
-                <input type="url" id="centralmidi_arquivo_midi" name="_centralmidi_file_url" value="<?php echo esc_url($arquivo_midi); ?>" style="width:100%;" placeholder="https://dominio.com.br/midis/8/2026/evidencias.mid" />
-                <p class="description"><?php esc_html_e('Link direto do arquivo MIDI já enviado via FTP para o servidor. Padrão sugerido: dominio/midis/<mês>/<ano>/<arquivo>.mid', 'centralmidi'); ?></p>
-            </div>
-
-            <div>
-                <label for="centralmidi_demo_audio" style="display:block;font-weight:600;margin-bottom:4px;"><?php esc_html_e('Áudio Demo MP3 (URL de Demonstração)', 'centralmidi'); ?></label>
-                <input type="url" id="centralmidi_demo_audio" name="_centralmidi_demo_audio" value="<?php echo esc_url($demo_audio); ?>" style="width:100%;" placeholder="https://exemplo.com/audios/demo-musica.mp3" />
-                <p class="description"><?php esc_html_e('Insira o link direto do MP3 para permitir que os clientes ouçam a prévia no catálogo.', 'centralmidi'); ?></p>
+                <label for="centralmidi_demo_audio" style="display:block;font-weight:600;margin-bottom:4px;"><?php esc_html_e('Áudio Demo MP3 (prévia no catálogo)', 'centralmidi'); ?></label>
+                <input type="url" id="centralmidi_demo_audio" name="_centralmidi_demo_audio" value="<?php echo esc_url($demo_audio); ?>" style="width:100%;margin-bottom:6px;" placeholder="ex.: The-Realm-Awakens.mp3 ou https://.../demo.mp3" />
+                <input type="file" id="centralmidi_demo_audio_file" name="_centralmidi_demo_audio_file" accept=".mp3,audio/mpeg" style="width:100%;" />
+                <p class="description"><?php esc_html_e('Envie o MP3 pelo formulário (vai para midis/&lt;ano&gt;&lt;mês&gt;/) ou cole a URL/nome do arquivo enviado via FTP. É o áudio que os clientes ouvem no catálogo e no player.', 'centralmidi'); ?></p>
             </div>
 
             <div>
@@ -973,8 +945,36 @@ class CentralMidi_Admin {
         $ano        = isset($_POST['_centralmidi_ano_lancamento']) ? absint($_POST['_centralmidi_ano_lancamento']) : (int) date('Y');
         $class      = isset($_POST['_centralmidi_classificacao']) ? CentralMidi_DB::sanitize_classificacao(sanitize_text_field(wp_unslash($_POST['_centralmidi_classificacao']))) : 'M';
         $demo_audio   = isset($_POST['_centralmidi_demo_audio']) ? esc_url_raw(wp_unslash($_POST['_centralmidi_demo_audio'])) : '';
-        $arquivo_midi = isset($_POST['_centralmidi_file_url']) ? esc_url_raw(wp_unslash($_POST['_centralmidi_file_url'])) : '';
         $publicado    = isset($_POST['_centralmidi_publicado']) ? 1 : 0;
+
+        if (empty($mes)) {
+            $mes = (int) date('n');
+        }
+
+        if (isset($_FILES['_centralmidi_demo_audio_file']) && (int) $_FILES['_centralmidi_demo_audio_file']['error'] === UPLOAD_ERR_OK) {
+            $orig_name = $_FILES['_centralmidi_demo_audio_file']['name'];
+            $ext       = strtolower(pathinfo($orig_name, PATHINFO_EXTENSION));
+            if ('mp3' === $ext) {
+                $safe_name   = sanitize_file_name($orig_name);
+                $mes_pad     = str_pad($mes, 2, '0', STR_PAD_LEFT);
+                $folder_rel  = "midis/{$ano}{$mes_pad}/";
+                $folder_abs  = ABSPATH . $folder_rel;
+
+                if (!is_dir($folder_abs)) {
+                    wp_mkdir_p($folder_abs);
+                    @chmod($folder_abs, 0775);
+                }
+
+                if (is_uploaded_file($_FILES['_centralmidi_demo_audio_file']['tmp_name'])) {
+                    $target_dest = $folder_abs . $safe_name;
+                    if (copy($_FILES['_centralmidi_demo_audio_file']['tmp_name'], $target_dest)) {
+                        @unlink($_FILES['_centralmidi_demo_audio_file']['tmp_name']);
+                        @chmod($target_dest, 0664);
+                        $demo_audio = $safe_name;
+                    }
+                }
+            }
+        }
 
         update_post_meta($post_id, '_centralmidi_artista_id', $artista_id);
         update_post_meta($post_id, '_centralmidi_artista', $artista);
@@ -985,12 +985,6 @@ class CentralMidi_Admin {
         update_post_meta($post_id, '_centralmidi_classificacao', $class);
         update_post_meta($post_id, '_centralmidi_demo_audio', $demo_audio);
         update_post_meta($post_id, '_centralmidi_publicado', $publicado);
-
-        if ('' === $arquivo_midi) {
-            delete_post_meta($post_id, '_centralmidi_file_url');
-        } else {
-            update_post_meta($post_id, '_centralmidi_file_url', $arquivo_midi);
-        }
 
         CentralMidi_DB::upsert($post_id, array(
             'artista_id'     => $artista_id,
@@ -1022,12 +1016,6 @@ class CentralMidi_Admin {
         $folder_rel = "midis/{$folder_yyyymm}/";
         $folder_abs = ABSPATH . $folder_rel;
 
-        // Fallback check if old format was used
-        if (!is_dir($folder_abs) && is_dir(ABSPATH . "midis/{$mes}/{$ano}/")) {
-            $folder_rel = "midis/{$mes}/{$ano}/";
-            $folder_abs = ABSPATH . $folder_rel;
-        }
-
         if (!is_dir($folder_abs)) {
             wp_send_json_success(array(
                 'folder_path'   => $folder_rel,
@@ -1040,7 +1028,6 @@ class CentralMidi_Admin {
 
         $files = scandir($folder_abs);
         $found_audio = array();
-        $found_midi  = array();
 
         foreach ($files as $file) {
             if ($file === '.' || $file === '..') continue;
@@ -1049,12 +1036,10 @@ class CentralMidi_Admin {
 
             if (in_array($ext, array('mp3', 'wav', 'ogg', 'm4a'), true)) {
                 $found_audio[$basename] = $file;
-            } elseif (in_array($ext, array('mid', 'midi', 'kar'), true)) {
-                $found_midi[$basename] = $file;
             }
         }
 
-        $all_basenames = array_unique(array_merge(array_keys($found_audio), array_keys($found_midi)));
+        $all_basenames = array_keys($found_audio);
         sort($all_basenames);
 
         $all_artistas = CentralMidi_DB::get_artistas();
@@ -1095,8 +1080,7 @@ class CentralMidi_Admin {
                 $title = ucwords($raw_name);
             }
 
-            $mp3_file  = isset($found_audio[$base]) ? $found_audio[$base] : ($base . '.mp3');
-            $midi_file = isset($found_midi[$base]) ? $found_midi[$base] : ($base . '.mid');
+            $mp3_file = isset($found_audio[$base]) ? $found_audio[$base] : ($base . '.mp3');
 
             $items[] = array(
                 'title'        => $title,
@@ -1105,9 +1089,7 @@ class CentralMidi_Admin {
                 'classificacao'=> 'RLM',
                 'price'        => '19.90',
                 'mp3_file'     => $mp3_file,
-                'midi_file'    => $midi_file,
                 'mp3_exists'   => isset($found_audio[$base]),
-                'midi_exists'  => isset($found_midi[$base]),
             );
         }
 
@@ -1202,8 +1184,6 @@ class CentralMidi_Admin {
                 $mp3_input = sanitize_file_name($item_mp3);
             }
 
-            $midi_input = isset($item['midi_file']) ? sanitize_file_name(wp_unslash($item['midi_file'])) : '';
-
             $artista_id = 0;
             if (!empty($artist_name)) {
                 $artista_id = CentralMidi_DB::add_artista($artist_name);
@@ -1249,7 +1229,6 @@ class CentralMidi_Admin {
             update_post_meta($post_id, '_centralmidi_publicado', $publicar);
 
             if ($mp3_input) update_post_meta($post_id, '_centralmidi_demo_audio', $mp3_input);
-            if ($midi_input) update_post_meta($post_id, '_centralmidi_file_url', $midi_input);
 
             CentralMidi_DB::upsert($post_id, array(
                 'artista_id'     => $artista_id,
