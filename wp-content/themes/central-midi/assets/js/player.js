@@ -34,6 +34,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function setCardPlayingState(card, isPlaying) {
+        if (!card) return;
+        card.classList.toggle('playing', isPlaying);
+        const triggers = (card.querySelectorAll && typeof card.querySelectorAll === 'function') 
+            ? card.querySelectorAll('.cm-play-trigger') 
+            : [card];
+        triggers.forEach(trig => {
+            trig.classList.toggle('playing', isPlaying);
+            const label = isPlaying ? 'Pausar Demo' : 'Play Demo';
+            trig.setAttribute('title', label);
+            trig.setAttribute('aria-label', label);
+        });
+    }
+
     function playTrack(source) {
         if (!source) return;
 
@@ -60,18 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!audioUrl) return;
 
         if (currentCard && currentCard !== card) {
-            currentCard.classList.remove('playing');
+            setCardPlayingState(currentCard, false);
         }
 
         // If clicking the same song
         if (currentAudioUrl === audioUrl) {
             if (audioElement.paused) {
-                audioElement.play().then(() => updatePlayIcon(true)).catch(() => updatePlayIcon(false));
-                if (card) card.classList.add('playing');
+                audioElement.play().catch(() => updatePlayIcon(false));
             } else {
                 audioElement.pause();
-                if (card) card.classList.remove('playing');
-                updatePlayIcon(false);
             }
             return;
         }
@@ -90,13 +101,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (playerBar) playerBar.classList.remove('hidden');
         document.body.classList.add('cm-player-active');
-        if (card) card.classList.add('playing');
 
-        audioElement.play().then(() => {
-            updatePlayIcon(true);
-        }).catch(err => {
+        audioElement.play().catch(err => {
             console.error('Playback error:', err);
             updatePlayIcon(false);
+            setCardPlayingState(currentCard, false);
         });
     }
 
@@ -123,12 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!audioElement.src) return;
             if (audioElement.paused) {
                 audioElement.play();
-                if (currentCard) currentCard.classList.add('playing');
-                updatePlayIcon(true);
             } else {
                 audioElement.pause();
-                if (currentCard) currentCard.classList.remove('playing');
-                updatePlayIcon(false);
             }
         });
     }
@@ -138,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnStop.addEventListener('click', () => {
             audioElement.pause();
             audioElement.currentTime = 0;
-            if (currentCard) currentCard.classList.remove('playing');
+            setCardPlayingState(currentCard, false);
             updatePlayIcon(false);
         });
     }
@@ -160,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnClose.addEventListener('click', () => {
             audioElement.pause();
             audioElement.currentTime = 0;
-            if (currentCard) currentCard.classList.remove('playing');
+            setCardPlayingState(currentCard, false);
             updatePlayIcon(false);
             if (playerBuyLink) playerBuyLink.hidden = true;
             playerBar.classList.add('hidden');
@@ -169,6 +174,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Audio Events
+    audioElement.addEventListener('play', () => {
+        updatePlayIcon(true);
+        if (currentCard) setCardPlayingState(currentCard, true);
+    });
+
+    audioElement.addEventListener('pause', () => {
+        updatePlayIcon(false);
+        if (currentCard) setCardPlayingState(currentCard, false);
+    });
+
     audioElement.addEventListener('timeupdate', () => {
         if (!isNaN(audioElement.duration)) {
             const percent = (audioElement.currentTime / audioElement.duration) * 100;
@@ -183,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     audioElement.addEventListener('ended', () => {
-        if (currentCard) currentCard.classList.remove('playing');
+        if (currentCard) setCardPlayingState(currentCard, false);
         updatePlayIcon(false);
         progressFill.style.width = '0%';
         currentTimeEl.textContent = '00:00';

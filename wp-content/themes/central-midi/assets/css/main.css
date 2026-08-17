@@ -808,28 +808,62 @@ a {
     background: #25e59b;
 }
 
-/* Inline Card Footer Play Button */
-.cm-btn-play-inline {
-    position: static !important;
-    display: inline-flex !important;
-    width: auto !important;
-    height: auto !important;
-    font-size: 0.85rem !important;
-    padding: 8px 14px !important;
-    border-radius: var(--radius-md) !important;
-    box-shadow: none !important;
+/* Card Footer Compact Icon Play/Pause Button */
+.cm-btn-icon-play {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-full);
+    background: rgba(var(--primary-rgb), 0.15);
+    color: var(--primary);
+    border: 1px solid rgba(var(--primary-rgb), 0.35);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    padding: 0;
+    flex-shrink: 0;
 }
 
+.cm-btn-icon-play:hover {
+    background: var(--primary);
+    color: #0c0f17;
+    border-color: var(--primary);
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.35);
+}
+
+.cm-track-card.playing .cm-btn-icon-play,
+.cm-btn-icon-play.playing {
+    background: var(--primary);
+    color: #0c0f17;
+    border-color: var(--primary);
+    box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.5);
+}
+
+/* Universal Play / Pause Icon Alternation */
 .cm-icon-pause {
     display: none;
 }
 
-.cm-track-card.playing .cm-icon-play {
-    display: none;
+.cm-icon-play {
+    display: inline-block;
 }
 
-.cm-track-card.playing .cm-icon-pause {
-    display: inline-block;
+.cm-track-card.playing .cm-icon-play,
+.cm-suggest-track.playing .cm-icon-play,
+.cm-play-trigger.playing .cm-icon-play,
+.playing .cm-icon-play {
+    display: none !important;
+}
+
+.cm-track-card.playing .cm-icon-pause,
+.cm-suggest-track.playing .cm-icon-pause,
+.cm-play-trigger.playing .cm-icon-pause,
+.playing .cm-icon-pause {
+    display: inline-block !important;
 }
 
 .cm-card-info {

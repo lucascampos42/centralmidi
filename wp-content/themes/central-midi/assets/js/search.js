@@ -106,9 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                                         data-title="${escapeHTML(track.title)}"
                                                         data-artist="${escapeHTML(track.artista)}"
                                                         data-url="${escapeHTML(track.url)}"
-                                                        title="Ouvir Demonstração MP3"
-                                                        aria-label="Ouvir demonstração de ${escapeHTML(track.title)}">
-                                                    <i class="ri-play-fill"></i>
+                                                        title="Play Demo"
+                                                        aria-label="Play Demo">
+                                                    <i class="ri-play-fill cm-icon-play"></i>
+                                                    <i class="ri-pause-fill cm-icon-pause"></i>
                                                 </button>
                                             ` : `
                                                 <span class="cm-suggest-disc-icon"><i class="ri-music-2-fill"></i></span>

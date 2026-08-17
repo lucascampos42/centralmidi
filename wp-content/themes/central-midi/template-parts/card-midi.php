@@ -84,13 +84,13 @@ $cm_product_url    = get_permalink($cm_product_id);
             </div>
             <div class="cm-actions">
                 <?php if ($cm_demo_audio) : ?>
-                    <button type="button" class="cm-btn cm-btn-primary cm-btn-play-inline cm-play-trigger" aria-label="<?php echo esc_attr(sprintf(__('Ouvir demonstração de %s', 'central-midi'), $cm_title)); ?>">
-                        <i class="ri-volume-up-line"></i> Ouvir Demonstração
+                    <button type="button" 
+                            class="cm-btn-icon-play cm-play-trigger" 
+                            title="Play Demo" 
+                            aria-label="<?php esc_attr_e('Play Demo', 'central-midi'); ?>">
+                        <i class="ri-play-fill cm-icon-play"></i>
+                        <i class="ri-pause-fill cm-icon-pause"></i>
                     </button>
-                <?php else : ?>
-                    <span class="cm-btn cm-btn-outline" style="opacity: 0.6; cursor: default;">
-                        Sem áudio demo
-                    </span>
                 <?php endif; ?>
                 <a href="<?php echo esc_url($cm_product_url); ?>" class="cm-btn cm-btn-outline cm-btn-buy">
                     <i class="ri-shopping-cart-line"></i> Comprar
