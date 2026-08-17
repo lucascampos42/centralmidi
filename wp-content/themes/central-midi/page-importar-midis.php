@@ -100,7 +100,8 @@ $batch_nonce = wp_create_nonce('centralmidi_batch_nonce');
         <div class="cm-tab-content active" id="tab-scanner">
             <div class="cm-scanner-box">
                 <div class="cm-scanner-info">
-                    <h4><i class="ri-folder-info-line"></i> Pasta no Servidor: <code id="cm-folder-display">midis/<?php echo $current_month; ?>/<?php echo $current_year; ?>/</code></h4>
+                    <?php $default_folder = $current_year . str_pad($current_month, 2, '0', STR_PAD_LEFT); ?>
+                    <h4><i class="ri-folder-info-line"></i> Pasta no Servidor: <code id="cm-folder-display">midis/<?php echo esc_html($default_folder); ?>/</code></h4>
                     <p>Suba seus arquivos <code>.mp3</code> e <code>.mid</code> via FTP para esta pasta. O sistema identificará e pareará automaticamente todos os arquivos.</p>
                 </div>
                 <button type="button" id="cm-btn-scan-folder" class="cm-btn cm-btn-primary">

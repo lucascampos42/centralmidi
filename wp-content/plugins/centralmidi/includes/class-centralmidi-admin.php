@@ -960,7 +960,7 @@ class CentralMidi_Admin {
     }
 
     /**
-     * AJAX handler: Scan /midis/<mes>/<ano>/ on server.
+     * AJAX handler: Scan /midis/<YYYYMM>/ on server.
      */
     public function handle_scan_folder_ajax() {
         check_ajax_referer('centralmidi_batch_nonce', 'nonce');
@@ -971,9 +971,17 @@ class CentralMidi_Admin {
 
         $mes = isset($_POST['mes']) ? (int) $_POST['mes'] : (int) date('n');
         $ano = isset($_POST['ano']) ? (int) $_POST['ano'] : (int) date('Y');
+        $mes_pad = str_pad($mes, 2, '0', STR_PAD_LEFT);
+        $folder_yyyymm = "{$ano}{$mes_pad}";
 
-        $folder_rel = "midis/{$mes}/{$ano}/";
+        $folder_rel = "midis/{$folder_yyyymm}/";
         $folder_abs = ABSPATH . $folder_rel;
+
+        // Fallback check if old format was used
+        if (!is_dir($folder_abs) && is_dir(ABSPATH . "midis/{$mes}/{$ano}/")) {
+            $folder_rel = "midis/{$mes}/{$ano}/";
+            $folder_abs = ABSPATH . $folder_rel;
+        }
 
         if (!is_dir($folder_abs)) {
             wp_send_json_success(array(

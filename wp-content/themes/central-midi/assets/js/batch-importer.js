@@ -39,9 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update folder label
     function updateFolderLabel() {
-        const m = selectMes.value;
+        const m = String(selectMes.value).padStart(2, '0');
         const a = inputAno.value;
-        if (folderDisplay) folderDisplay.textContent = `midis/${m}/${a}/`;
+        if (folderDisplay) folderDisplay.textContent = `midis/${a}${m}/`;
     }
     selectMes.addEventListener('change', updateFolderLabel);
     inputAno.addEventListener('input', updateFolderLabel);

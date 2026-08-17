@@ -870,10 +870,13 @@ class CentralMidi_DB {
             return esc_url(home_url('/' . ltrim($value, '/')));
         }
 
-        // Bare filename
+        // Bare filename -> mapped to /midis/<YYYYMM>/<file>
         $mes = $mes ? (int) $mes : (int) date('n');
         $ano = $ano ? (int) $ano : (int) date('Y');
-        return esc_url(home_url("/midis/{$mes}/{$ano}/" . $value));
+        $mes_pad = str_pad($mes, 2, '0', STR_PAD_LEFT);
+        $folder_yyyymm = "{$ano}{$mes_pad}";
+
+        return esc_url(home_url("/midis/{$folder_yyyymm}/" . $value));
     }
 
     /**
