@@ -2753,6 +2753,62 @@ html.cm-theme-light .cm-logo-img {
 }
 
 /* Empty Cart Modern Card & Suggestions */
+.cm-empty-cart-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 56px 32px 48px;
+    box-shadow: var(--shadow-card);
+    text-align: center;
+    max-width: 680px;
+    margin: 10px auto 60px;
+}
+
+.cm-empty-cart-icon-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-full);
+    background: rgba(var(--primary-rgb), 0.12);
+    border: 1px solid rgba(var(--primary-rgb), 0.25);
+    color: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.4rem;
+    margin-bottom: 20px;
+}
+
+.cm-empty-cart-heading {
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 10px;
+}
+
+.cm-empty-cart-subtext {
+    color: var(--text-muted);
+    font-size: 0.96rem;
+    line-height: 1.65;
+    max-width: 520px;
+    margin: 0 auto 28px;
+}
+
+.cm-empty-cart-btn {
+    padding: 12px 28px;
+    font-size: 0.96rem;
+    font-weight: 700;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cm-cart-suggestions-section {
+    border-top: 1px solid var(--border-color);
+    padding-top: 50px;
+    margin-top: 20px;
+}
+
 .wp-block-woocommerce-empty-cart-block {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);

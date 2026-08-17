@@ -88,6 +88,9 @@ function centralmidi_return_to_shop_redirect() {
 }
 add_filter('woocommerce_return_to_shop_redirect', 'centralmidi_return_to_shop_redirect');
 
+// Remove duplicate raw empty cart message to let custom empty-cart template render cleanly
+remove_action('woocommerce_cart_is_empty', 'wc_empty_cart_message', 10);
+
 /**
  * Custom Portuguese (pt_BR) translations for WooCommerce strings
  */
