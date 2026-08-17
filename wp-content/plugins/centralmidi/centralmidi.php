@@ -39,6 +39,19 @@ function centralmidi_init() {
     CentralMidi_DB::maybe_upgrade();
     new CentralMidi_Admin();
     new CentralMidi_Catalog();
+
+    foreach (array('save_post_page', 'wp_trash_post', 'untrash_post', 'delete_post') as $hook) {
+        add_action($hook, 'centralmidi_refresh_catalog_url_cache_on_page_change');
+    }
+}
+
+/**
+ * Invalidate the cached catalog page ID whenever a page changes.
+ */
+function centralmidi_refresh_catalog_url_cache_on_page_change($post_id) {
+    if ('page' === get_post_type($post_id)) {
+        CentralMidi_DB::refresh_catalog_url_cache();
+    }
 }
 add_action('plugins_loaded', 'centralmidi_init');
 

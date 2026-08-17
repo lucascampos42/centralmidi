@@ -674,6 +674,55 @@ class CentralMidi_DB {
     }
 
     /**
+     * ID of the canonical catalog page (the page that renders [centralmidi_catalogo]),
+     * cached in a single wp_options row so we never scan all pages on every request.
+     *
+     * @return int
+     */
+    public static function catalog_page_id() {
+        $id = (int) get_option('centralmidi_catalog_page_id');
+
+        if ($id > 0 && 'publish' === get_post_status($id)) {
+            return $id;
+        }
+
+        $id = 0;
+        $pages = get_pages(array(
+            'post_type'   => 'page',
+            'post_status' => 'publish',
+            'sort_column' => 'menu_order,ID',
+        ));
+
+        foreach ($pages as $page) {
+            if (has_shortcode($page->post_content, 'centralmidi_catalogo')) {
+                $id = (int) $page->ID;
+                break;
+            }
+        }
+
+        update_option('centralmidi_catalog_page_id', $id);
+
+        return $id;
+    }
+
+    /**
+     * Canonical catalog URL, cached in a single wp_options row.
+     *
+     * @return string
+     */
+    public static function catalog_url() {
+        $id = self::catalog_page_id();
+        return $id ? get_permalink($id) : home_url('/midis/');
+    }
+
+    /**
+     * Invalidate the cached catalog page ID (next call re-resolves it).
+     */
+    public static function refresh_catalog_url_cache() {
+        delete_option('centralmidi_catalog_page_id');
+    }
+
+    /**
      * Search MIDIs by artist or genre name (LIKE).
      *
      * @param string $term Search term.

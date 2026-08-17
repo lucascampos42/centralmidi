@@ -1079,24 +1079,45 @@ html.cm-theme-light .cm-logo-img {
     transition: all 0.2s ease;
 }
 
-.cm-btn-primary {
-    background: var(--primary);
-    color: #0c0f17;
+.cm-btn-primary,
+a.cm-btn-primary,
+.cm-page-content a.cm-btn-primary,
+.cm-wc-wrap a.cm-btn-primary,
+.woocommerce a.cm-btn-primary,
+.cm-empty-cart-card a.cm-btn-primary {
+    background: var(--primary) !important;
+    color: #0c0f17 !important;
+    font-weight: 700;
 }
 
-.cm-btn-primary:hover {
-    background: var(--primary-hover);
+.cm-btn-primary:hover,
+a.cm-btn-primary:hover,
+.cm-page-content a.cm-btn-primary:hover,
+.cm-wc-wrap a.cm-btn-primary:hover,
+.woocommerce a.cm-btn-primary:hover,
+.cm-empty-cart-card a.cm-btn-primary:hover {
+    background: var(--primary-hover) !important;
+    color: #0c0f17 !important;
 }
 
-.cm-btn-outline {
-    background: transparent;
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
+.cm-btn-outline,
+a.cm-btn-outline,
+.cm-page-content a.cm-btn-outline,
+.cm-wc-wrap a.cm-btn-outline,
+.woocommerce a.cm-btn-outline {
+    background: transparent !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
 }
 
-.cm-btn-outline:hover {
-    background: var(--bg-surface-elevated);
-    border-color: rgba(255, 255, 255, 0.2);
+.cm-btn-outline:hover,
+a.cm-btn-outline:hover,
+.cm-page-content a.cm-btn-outline:hover,
+.cm-wc-wrap a.cm-btn-outline:hover,
+.woocommerce a.cm-btn-outline:hover {
+    background: var(--bg-surface-elevated) !important;
+    color: var(--text-main) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 .cm-btn-icon {
