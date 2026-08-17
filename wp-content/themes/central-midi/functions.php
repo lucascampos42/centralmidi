@@ -58,7 +58,28 @@ function centralmidi_remove_unneeded_account_menu_items($items) {
     if (isset($items['edit-address'])) {
         unset($items['edit-address']);
     }
-    return $items;
+
+    $custom_items = array();
+    foreach ($items as $endpoint => $label) {
+        switch ($endpoint) {
+            case 'dashboard':
+                $custom_items[$endpoint] = 'Painel';
+                break;
+            case 'orders':
+                $custom_items[$endpoint] = 'Meus Pedidos';
+                break;
+            case 'edit-account':
+                $custom_items[$endpoint] = 'Detalhes da Conta';
+                break;
+            case 'customer-logout':
+                $custom_items[$endpoint] = 'Sair da Conta';
+                break;
+            default:
+                $custom_items[$endpoint] = $label;
+                break;
+        }
+    }
+    return $custom_items;
 }
 add_filter('woocommerce_account_menu_items', 'centralmidi_remove_unneeded_account_menu_items', 99);
 

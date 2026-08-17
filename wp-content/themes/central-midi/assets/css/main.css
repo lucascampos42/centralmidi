@@ -2983,36 +2983,233 @@ ul.wc-block-grid__products {
 }
 
 /* My Account */
+.woocommerce-account .cm-page-wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+}
+
 .woocommerce-account .woocommerce-MyAccount-navigation {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    padding: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow-card);
 }
 
 .woocommerce-account .woocommerce-MyAccount-navigation ul {
     list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0;
+    margin: 0;
 }
 
 .woocommerce-account .woocommerce-MyAccount-navigation li a {
-    display: block;
-    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
     color: var(--text-muted);
     border-radius: var(--radius-md);
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
 }
 
-.woocommerce-account .woocommerce-MyAccount-navigation li.is-active a,
+.woocommerce-account .woocommerce-MyAccount-navigation li.woocommerce-MyAccount-navigation-link--dashboard a::before {
+    content: "\eed0";
+    font-family: 'remixicon' !important;
+    font-size: 1.2rem;
+    font-style: normal;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation li.woocommerce-MyAccount-navigation-link--orders a::before {
+    content: "\f111";
+    font-family: 'remixicon' !important;
+    font-size: 1.2rem;
+    font-style: normal;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation li.woocommerce-MyAccount-navigation-link--edit-account a::before {
+    content: "\f265";
+    font-family: 'remixicon' !important;
+    font-size: 1.2rem;
+    font-style: normal;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation li.woocommerce-MyAccount-navigation-link--customer-logout a::before {
+    content: "\eed9";
+    font-family: 'remixicon' !important;
+    font-size: 1.2rem;
+    font-style: normal;
+}
+
+.woocommerce-account .woocommerce-MyAccount-navigation li.is-active a {
+    color: var(--primary) !important;
+    background: var(--bg-surface-elevated);
+    border-left-color: var(--primary);
+}
+
 .woocommerce-account .woocommerce-MyAccount-navigation li a:hover {
     color: var(--primary);
     background: var(--bg-surface-elevated);
+    transform: translateX(4px);
 }
 
 .woocommerce-account .woocommerce-MyAccount-content {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    padding: 24px;
+    padding: 36px 32px;
+    box-shadow: var(--shadow-card);
+}
+
+/* Modern Edit Account Form */
+.cm-modern-account-form {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.cm-account-card {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 32px 28px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cm-account-card:hover {
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+.cm-account-card--security {
+    border-left: 3px solid var(--accent);
+}
+
+.cm-account-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.cm-account-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: rgba(var(--primary-rgb), 0.12);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.cm-account-card-icon--security {
+    background: rgba(56, 189, 248, 0.12);
+    color: var(--accent);
+}
+
+.cm-account-card-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+.cm-account-card-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.cm-form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 640px) {
+    .cm-form-grid-2 {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+
+.cm-form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cm-form-group label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cm-form-group .required {
+    color: #ef4444;
+    font-weight: 700;
+}
+
+.cm-input,
+input.cm-input {
+    height: 48px !important;
+    padding: 0 16px !important;
+    border-radius: var(--radius-md) !important;
+    border: 1px solid var(--border-color) !important;
+    background: var(--bg-surface) !important;
+    color: var(--text-main) !important;
+    font-size: 0.95rem !important;
+    width: 100% !important;
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+}
+
+.cm-input:focus,
+input.cm-input:focus {
+    border-color: var(--primary) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2) !important;
+}
+
+.cm-field-hint {
+    font-size: 0.82rem;
+    color: var(--text-subtle);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.cm-account-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 6px;
+}
+
+.cm-save-account-btn {
+    height: 48px !important;
+    padding: 0 32px !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    border-radius: var(--radius-md) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
 }
 
 /* Notices */

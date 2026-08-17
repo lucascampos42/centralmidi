@@ -755,9 +755,11 @@ class CentralMidi_DB {
      * @param int $per_page
      * @param int $page
      * @param int|null $total Filled with the total row count (pass by reference).
+     * @param string $sort_by Whitelisted column: titulo|artista|genero|mes|ano|classificacao|id
+     * @param string $sort_dir ASC|DESC
      * @return object[]
      */
-    public static function get_midis_admin($filters = array(), $per_page = 20, $page = 1, &$total = null) {
+    public static function get_midis_admin($filters = array(), $per_page = 20, $page = 1, &$total = null, $sort_by = '', $sort_dir = 'DESC') {
         global $wpdb;
 
         $midis_table    = self::table_name();
@@ -796,11 +798,27 @@ class CentralMidi_DB {
         $join_sql  = "LEFT JOIN {$wpdb->posts} p ON p.ID = m.product_id";
         $join_sql .= " LEFT JOIN {$artistas_table} a ON a.id = m.artista_id";
         $join_sql .= " LEFT JOIN {$generos_table} g ON g.id = m.genero_id";
+        $join_sql .= " LEFT JOIN {$wpdb->postmeta} fm ON fm.post_id = m.product_id AND fm.meta_key = '_centralmidi_file_url'";
 
         $total = (int) $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM {$midis_table} m {$join_sql} WHERE {$where_sql}",
             $params
         ));
+
+        // Whitelisted ORDER BY to avoid SQL injection.
+        $sort_columns = array(
+            'titulo'        => 'p.post_title',
+            'artista'       => 'a.nome',
+            'genero'        => 'g.nome',
+            'mes'           => 'm.mes_lancamento',
+            'ano'           => 'm.ano_lancamento',
+            'classificacao' => 'm.classificacao',
+            'id'            => 'm.product_id',
+        );
+        $sort_dir = strtoupper($sort_dir) === 'ASC' ? 'ASC' : 'DESC';
+        $order_sql = isset($sort_columns[$sort_by])
+            ? "ORDER BY {$sort_columns[$sort_by]} {$sort_dir}"
+            : "ORDER BY m.updated_at DESC, m.product_id DESC";
 
         $page     = max(1, absint($page));
         $per_page = max(1, absint($per_page));
@@ -809,10 +827,10 @@ class CentralMidi_DB {
         $sql = $wpdb->prepare(
             "SELECT m.id, m.product_id, m.artista_id, m.genero_id, m.mes_lancamento,
                     m.ano_lancamento, m.classificacao, a.nome AS artista, g.nome AS genero,
-                    p.post_title AS titulo
+                    p.post_title AS titulo, fm.meta_value AS arquivo
              FROM {$midis_table} m {$join_sql}
              WHERE {$where_sql}
-             ORDER BY m.updated_at DESC, m.product_id DESC
+             {$order_sql}
              LIMIT %d OFFSET %d",
             array_merge($params, array($per_page, $offset))
         );
