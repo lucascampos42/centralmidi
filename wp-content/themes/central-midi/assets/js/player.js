@@ -157,7 +157,10 @@ document.addEventListener('DOMContentLoaded', () => {
         currentCard = track.card;
         currentAudioUrl = track.audioUrl;
 
+        audioElement.pause();
         audioElement.src = track.audioUrl;
+        audioElement.load();
+
         if (playerTitle) playerTitle.textContent = track.title;
         if (playerArtist) playerArtist.textContent = track.artist;
         if (playerBuyLink) {
