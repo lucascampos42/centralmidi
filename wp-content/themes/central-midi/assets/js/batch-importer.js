@@ -452,6 +452,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     formData.append('default_artist', getDefaultArtist());
                     formData.append('default_classificacao', getDefaultClass());
                     formData.append('default_price', getDefaultPrice());
+                    if (document.getElementById('batch_publicar') && document.getElementById('batch_publicar').checked) {
+                        formData.append('publicar', '1');
+                    }
 
                     chunk.forEach((item, i) => {
                         formData.append(`items[${i}][title]`, item.title || '');

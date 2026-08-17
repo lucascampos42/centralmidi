@@ -3717,6 +3717,21 @@ html.cm-theme-dark .cm-cta-box h2 {
     margin-top: 16px;
 }
 
+.cm-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.cm-checkbox input {
+    margin-top: 3px;
+    flex-shrink: 0;
+}
+
 .cm-batch-tabs {
     display: flex;
     gap: 12px;

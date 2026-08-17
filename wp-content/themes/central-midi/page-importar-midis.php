@@ -83,6 +83,14 @@ $batch_nonce = wp_create_nonce('centralmidi_batch_nonce');
                 <label for="batch_genero"><i class="ri-music-2-line"></i> Gênero Padrão</label>
                 <input type="text" id="batch_genero" class="cm-input" value="Padrão" />
             </div>
+
+            <div class="cm-form-group cm-batch-config-publish">
+                <label for="batch_publicar"><i class="ri-eye-line"></i> Publicação</label>
+                <label class="cm-checkbox">
+                    <input type="checkbox" id="batch_publicar" value="1" />
+                    <span><?php esc_html_e('Publicar imediatamente no site (se desmarcado, os MIDIs entram como "Em breve")', 'central-midi'); ?></span>
+                </label>
+            </div>
         </div>
     </div>
 

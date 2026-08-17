@@ -102,7 +102,7 @@ Versão `1.1.0` (`style.css`). Todas as páginas passam por `header.php`/`footer
 
 ### Tabelas
 
-- `wp_centralmidi_midis`: `product_id` (UNIQUE), `artista_id`, `genero_id`, `mes_lancamento`, `ano_lancamento`, `classificacao`, `publicado` (TINYINT 1, default `1`), `created_at`, `updated_at`. **Sem strings denormalizadas** (colunas `artista`/`genero` removidas na migração). `publicado=0` oculta o MIDI de todas as queries públicas (home, catálogo, artistas, busca, busca ao vivo, shop archive) e bloqueia a compra (`woocommerce_is_purchasable`).
+- `wp_centralmidi_midis`: `product_id` (UNIQUE), `artista_id`, `genero_id`, `mes_lancamento`, `ano_lancamento`, `classificacao`, `publicado` (TINYINT 1, default `1`), `created_at`, `updated_at`. **Sem strings denormalizadas** (colunas `artista`/`genero` removidas na migração). `publicado=0` oculta o MIDI de todas as queries públicas (home, catálogo, artistas, busca, busca ao vivo, shop archive) e bloqueia a compra (`woocommerce_is_purchasable`). Importador em lote (`/importar-midis/`) cria MIDIs como **não publicados** por padrão (opt-in "Publicar imediatamente" envia `publicar=1`).
 - `wp_centralmidi_artistas`: `id`, `nome` (UNIQUE), `foto_id`, `created_at`, `updated_at`.
 - `wp_centralmidi_generos`: `id`, `nome` (UNIQUE), `created_at`, `updated_at`.
 - Classificação: `M` (melodia), `L` (letra), `RLM` (melodia + letra).

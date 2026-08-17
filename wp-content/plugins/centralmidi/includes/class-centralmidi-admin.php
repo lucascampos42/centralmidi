@@ -1136,6 +1136,7 @@ class CentralMidi_Admin {
         $default_artist = isset($_POST['default_artist']) && trim($_POST['default_artist']) !== '' ? sanitize_text_field(wp_unslash($_POST['default_artist'])) : 'Padrão';
         $default_class  = isset($_POST['default_classificacao']) ? CentralMidi_DB::sanitize_classificacao($_POST['default_classificacao']) : '';
         $default_price  = isset($_POST['default_price']) ? sanitize_text_field(wp_unslash($_POST['default_price'])) : '';
+        $publicar       = isset($_POST['publicar']) ? 1 : 0;
 
         // Prepare destination folder for uploads if files were attached
         $mes_pad       = str_pad($mes_lancamento, 2, '0', STR_PAD_LEFT);
@@ -1170,19 +1171,38 @@ class CentralMidi_Admin {
                 $price = str_replace(',', '.', preg_replace('/[^0-9.,]/', '', $raw_price));
             }
 
-            $mp3_input   = isset($item['mp3_file']) ? sanitize_file_name(wp_unslash($item['mp3_file'])) : '';
-            $midi_input  = isset($item['midi_file']) ? sanitize_file_name(wp_unslash($item['midi_file'])) : '';
+            // Handle file upload: use the original browser filename exactly as-is on disk
+            // so that DB meta and physical file always match.
+            $mp3_input  = '';
+            $file_key   = "file_{$i}";
+            $item_mp3   = isset($item['mp3_file']) ? wp_unslash($item['mp3_file']) : '';
 
-            // Handle file upload specifically for this item
-            $file_key = "file_{$i}";
-            if (isset($_FILES[$file_key]) && $_FILES[$file_key]['error'] === UPLOAD_ERR_OK) {
-                $uploaded_orig_name = sanitize_file_name($_FILES[$file_key]['name']);
-                $target_dest = $folder_abs . $uploaded_orig_name;
-                if (move_uploaded_file($_FILES[$file_key]['tmp_name'], $target_dest)) {
-                    @chmod($target_dest, 0664);
-                    $mp3_input = $uploaded_orig_name;
+            if (isset($_FILES[$file_key]) && (int) $_FILES[$file_key]['error'] === UPLOAD_ERR_OK) {
+                // Use the original filename from the browser (with spaces preserved)
+                $orig_name   = $_FILES[$file_key]['name'];                   // "The Realm Awakens.mp3"
+                $safe_name   = sanitize_file_name($orig_name);               // "The-Realm-Awakens.mp3"
+                $target_dest = $folder_abs . $safe_name;
+
+                if (is_uploaded_file($_FILES[$file_key]['tmp_name'])) {
+                    // Ensure folder writable
+                    if (!is_dir($folder_abs)) {
+                        wp_mkdir_p($folder_abs);
+                        @chmod($folder_abs, 0775);
+                    }
+                    if (copy($_FILES[$file_key]['tmp_name'], $target_dest)) {
+                        @unlink($_FILES[$file_key]['tmp_name']);
+                        @chmod($target_dest, 0664);
+                        $mp3_input = $safe_name;
+                    } else {
+                        $errors[] = "Falha ao salvar arquivo: {$safe_name} (verifique permissões de {$folder_abs})";
+                    }
                 }
+            } elseif (!empty($item_mp3)) {
+                // No file attached: use filename sent by JS (e.g. for FTP/scanner mode)
+                $mp3_input = sanitize_file_name($item_mp3);
             }
+
+            $midi_input = isset($item['midi_file']) ? sanitize_file_name(wp_unslash($item['midi_file'])) : '';
 
             $artista_id = 0;
             if (!empty($artist_name)) {
@@ -1226,7 +1246,7 @@ class CentralMidi_Admin {
             update_post_meta($post_id, '_centralmidi_mes_lancamento', $mes_lancamento);
             update_post_meta($post_id, '_centralmidi_ano_lancamento', $ano_lancamento);
             update_post_meta($post_id, '_centralmidi_classificacao', $classif);
-            update_post_meta($post_id, '_centralmidi_publicado', 1);
+            update_post_meta($post_id, '_centralmidi_publicado', $publicar);
 
             if ($mp3_input) update_post_meta($post_id, '_centralmidi_demo_audio', $mp3_input);
             if ($midi_input) update_post_meta($post_id, '_centralmidi_file_url', $midi_input);
@@ -1237,7 +1257,7 @@ class CentralMidi_Admin {
                 'mes_lancamento' => $mes_lancamento,
                 'ano_lancamento' => $ano_lancamento,
                 'classificacao'  => $classif,
-                'publicado'      => 1,
+                'publicado'      => $publicar,
             ));
 
             $processed++;

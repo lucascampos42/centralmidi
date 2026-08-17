@@ -75,6 +75,10 @@ A migração de strings legadas (`artista`, `genero`) → IDs é feita em `Centr
 
 Ao salvar o produto, os valores são persistidos como post meta e sincronizados (`upsert`) na tabela `wp_centralmidi_midis`.
 
+### Importação em lote (`/importar-midis/`)
+
+MIDIs cadastrados via importador entram como **não publicados** (`publicado=0`, "Em breve") por padrão — ficam ocultos do site e não compráveis até serem publicados manualmente (grid admin/metabox). A opção **"Publicar imediatamente no site"** no formulário envia `publicar=1` e os publica na hora.
+
 ## Shortcode `[centralmidi_catalogo]`
 
 - Filtros por **artista**, **gênero**, **mês de lançamento** e **classificação** (via GET)
