@@ -84,6 +84,33 @@ document.addEventListener('DOMContentLoaded', () => {
         return selectClass ? selectClass.value : '';
     }
 
+    /**
+     * Mirror of PHP's sanitize_file_name():
+     * 1. Transliterate accented/special chars (ã→a, ç→c, etc.)
+     * 2. Replace spaces with hyphens
+     * 3. Remove any remaining non-alphanumeric chars except dot, hyphen, underscore
+     * 4. Collapse consecutive hyphens, trim edge hyphens
+     * This ensures the filename shown in the table matches exactly what PHP saves on disk.
+     */
+    function sanitizeFilename(name) {
+        const ext  = name.match(/\.[^/.]+$/)?.[0] || '';
+        let base   = name.slice(0, name.length - ext.length);
+
+        // 1. Transliterate accented chars via Unicode normalization (NFD decomposes ã → a + combining ~)
+        base = base.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        // 2. Replace '&' with 'and', spaces with hyphens
+        base = base.replace(/&/g, 'and').replace(/\s+/g, '-');
+
+        // 3. Remove remaining invalid chars
+        base = base.replace(/[^a-zA-Z0-9.\-_]/g, '');
+
+        // 4. Collapse consecutive hyphens and trim edges
+        base = base.replace(/-{2,}/g, '-').replace(/^-+|-+$/g, '');
+
+        return base + ext;
+    }
+
     function cleanFilenameToTitle(filename) {
         const base = filename.replace(/\.[^/.]+$/, '');
         let clean = base.replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
@@ -97,12 +124,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const newItems = [];
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            const filename = file.name;
-            const base = filename.replace(/\.[^/.]+$/, '');
+            const filename     = file.name;                        // original: "The Realm Awakens.mp3"
+            const safeFilename = sanitizeFilename(filename);       // disk name: "The-Realm-Awakens.mp3"
+            const base         = safeFilename.replace(/\.[^/.]+$/, '');
             let title = cleanFilenameToTitle(filename);
             let artist = getDefaultArtist();
 
-            // Detect if filename has "Artist - Title" or "Title - Artist"
+            // Detect if filename has "Artist - Title"
             if (title.includes(' - ')) {
                 const parts = title.split(' - ');
                 artist = parts[0].trim();
@@ -117,8 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 genero: getDefaultGenero(),
                 classificacao: getDefaultClass(),
                 price: getDefaultPrice(),
-                mp3_file: filename,
-                midi_file: midiFile,
+                mp3_file: safeFilename,   // "The-Realm-Awakens.mp3" — exact disk name
+                midi_file: midiFile,      // "The-Realm-Awakens.mid"
                 mp3_exists: true,
                 midi_exists: false,
                 _file: file,
