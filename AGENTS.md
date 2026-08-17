@@ -80,8 +80,8 @@ Versão `1.1.0` (`style.css`). Todas as páginas passam por `header.php`/`footer
 ## Estrutura do plugin (`wp-content/plugins/centralmidi/`)
 
 - `centralmidi.php` — bootstrap, constantes, `register_activation_hook` cria tabelas, `centralmidi_init` instancia classes.
-- `includes/class-centralmidi-db.php` — tabelas `wp_centralmidi_midis`, `wp_centralmidi_artistas`, `wp_centralmidi_generos` e `wp_centralmidi_categorias`, upsert, `distinct`, `search_product_ids`, `search_by_term`, `get_midis_by_month` (determinístico), `get_artistas_alfabetico`, `clear_home_cache`, `maybe_upgrade` (migração de strings legadas → IDs).
-- `includes/class-centralmidi-admin.php` — menu admin "Central MIDI" > Artistas / Gêneros / Categorias (CRUD genérico via `referencia_config`), metabox no produto, `save_post_product` sincroniza post meta + tabela.
+- `includes/class-centralmidi-db.php` — tabelas `wp_centralmidi_midis`, `wp_centralmidi_artistas` e `wp_centralmidi_generos`, upsert, `distinct`, `search_product_ids`, `search_by_term`, `get_midis_by_month` (determinístico), `get_artistas_alfabetico`, `clear_home_cache`, `maybe_upgrade` (migração de strings legadas → IDs).
+- `includes/class-centralmidi-admin.php` — menu admin "Central MIDI" > Artistas / Gêneros (CRUD genérico via `referencia_config`), metabox no produto, `save_post_product` sincroniza post meta + tabela.
 - `includes/class-centralmidi-catalog.php` — shortcode `[centralmidi_catalogo]` (filtros GET, paginação), `render_card()` delega ao template do tema.
 - `assets/css/catalog.css` — estilos do catálogo público.
 
@@ -93,8 +93,6 @@ Versão `1.1.0` (`style.css`). Todas as páginas passam por `header.php`/`footer
 | `_centralmidi_artista_id` | FK para `wp_centralmidi_artistas.id` |
 | `_centralmidi_genero` | Nome do gênero (denormalizado p/ exibição) |
 | `_centralmidi_genero_id` | FK para `wp_centralmidi_generos.id` |
-| `_centralmidi_categoria` | Nome da categoria (denormalizado p/ exibição) |
-| `_centralmidi_categoria_id` | FK para `wp_centralmidi_categorias.id` |
 | `_centralmidi_mes_lancamento` | Mês (1–12) |
 | `_centralmidi_ano_lancamento` | Ano do lançamento (ex.: 2026) |
 | `_centralmidi_classificacao` | `M` / `L` / `RLM` |
@@ -102,10 +100,9 @@ Versão `1.1.0` (`style.css`). Todas as páginas passam por `header.php`/`footer
 
 ### Tabelas
 
-- `wp_centralmidi_midis`: `product_id` (UNIQUE), `artista_id`, `genero_id`, `categoria_id`, `mes_lancamento`, `ano_lancamento`, `classificacao`, `created_at`, `updated_at`. **Sem strings denormalizadas** (colunas `artista`/`genero` removidas na migração).
-- `wp_centralmidi_artistas`: `id`, `nome` (UNIQUE), `created_at`, `updated_at`.
+- `wp_centralmidi_midis`: `product_id` (UNIQUE), `artista_id`, `genero_id`, `mes_lancamento`, `ano_lancamento`, `classificacao`, `created_at`, `updated_at`. **Sem strings denormalizadas** (colunas `artista`/`genero` removidas na migração).
+- `wp_centralmidi_artistas`: `id`, `nome` (UNIQUE), `foto_id`, `created_at`, `updated_at`.
 - `wp_centralmidi_generos`: `id`, `nome` (UNIQUE), `created_at`, `updated_at`.
-- `wp_centralmidi_categorias`: `id`, `nome` (UNIQUE), `created_at`, `updated_at`.
 - Classificação: `M` (melodia), `L` (letra), `RLM` (melodia + letra).
 - `maybe_upgrade()` (roda a cada load) cria tabelas/colunas ausentes e faz a migração idempotente de strings legadas → IDs; após migrar, dropa as colunas `artista`/`genero`.
 

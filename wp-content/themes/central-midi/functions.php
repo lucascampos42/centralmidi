@@ -107,6 +107,10 @@ function centralmidi_translate_woocommerce_strings($translated_text, $text, $dom
         'Addresses' => 'Endereços',
         'Account details' => 'Detalhes da conta',
         'Log out' => 'Sair',
+        'New in store' => 'Outros Produtos',
+        'Novidade na loja' => 'Outros Produtos',
+        'Your cart is currently empty!' => 'Seu carrinho está vazio no momento!',
+        'Explore our catalog' => 'Explorar nosso catálogo',
     );
 
     if (isset($translations[$text])) {
@@ -369,6 +373,8 @@ function centralmidi_render_slide_metabox($post) {
     $btn_url     = get_post_meta($post->ID, '_cm_slide_btn_url', true);
     $align       = get_post_meta($post->ID, '_cm_slide_align', true);
     $align       = in_array($align, array('left', 'center', 'right'), true) ? $align : 'left';
+    $tonalidade  = get_post_meta($post->ID, '_cm_slide_tonalidade', true);
+    $tonalidade  = in_array($tonalidade, array('dark', 'light'), true) ? $tonalidade : 'dark';
     ?>
     <table class="form-table">
         <tbody>
@@ -415,6 +421,16 @@ function centralmidi_render_slide_metabox($post) {
                     <label><input type="radio" name="_cm_slide_align" value="right" <?php checked($align, 'right'); ?>> <?php esc_html_e('Direita', 'central-midi'); ?></label>
                 </td>
             </tr>
+            <tr>
+                <th scope="row">
+                    <label><?php esc_html_e('Tonalidade da Foto', 'central-midi'); ?></label>
+                </th>
+                <td>
+                    <label style="margin-right:16px;"><input type="radio" name="_cm_slide_tonalidade" value="dark" <?php checked($tonalidade, 'dark'); ?>> <?php esc_html_e('Foto Escura (texto claro)', 'central-midi'); ?></label>
+                    <label><input type="radio" name="_cm_slide_tonalidade" value="light" <?php checked($tonalidade, 'light'); ?>> <?php esc_html_e('Foto Clara (texto escuro)', 'central-midi'); ?></label>
+                    <p class="description"><?php esc_html_e('Define a cor do texto do slide com base na tonalidade da imagem de fundo — independente do tema claro/escuro do site.', 'central-midi'); ?></p>
+                </td>
+            </tr>
         </tbody>
     </table>
     <p class="description"><?php esc_html_e('Use a Imagem Destacada do slide como imagem de fundo do carousel.', 'central-midi'); ?></p>
@@ -450,6 +466,12 @@ function centralmidi_save_slide($post_id) {
         $align = 'left';
     }
     update_post_meta($post_id, '_cm_slide_align', $align);
+
+    $tonalidade = isset($_POST['_cm_slide_tonalidade']) ? sanitize_text_field(wp_unslash($_POST['_cm_slide_tonalidade'])) : 'dark';
+    if (!in_array($tonalidade, array('dark', 'light'), true)) {
+        $tonalidade = 'dark';
+    }
+    update_post_meta($post_id, '_cm_slide_tonalidade', $tonalidade);
 }
 add_action('save_post_cm_slide', 'centralmidi_save_slide');
 
@@ -519,11 +541,10 @@ function centralmidi_ajax_live_search() {
         }
     }
 
-    // Search matching products/MIDIs by title, artist, genre, category
-    $midis_table      = class_exists('CentralMidi_DB') ? CentralMidi_DB::table_name() : $wpdb->prefix . 'centralmidi_midis';
-    $artistas_table   = class_exists('CentralMidi_DB') ? CentralMidi_DB::artistas_table_name() : $wpdb->prefix . 'centralmidi_artistas';
-    $generos_table    = class_exists('CentralMidi_DB') ? CentralMidi_DB::generos_table_name() : $wpdb->prefix . 'centralmidi_generos';
-    $categorias_table = class_exists('CentralMidi_DB') ? CentralMidi_DB::categorias_table_name() : $wpdb->prefix . 'centralmidi_categorias';
+    // Search matching products/MIDIs by title, artist, genre
+    $midis_table    = class_exists('CentralMidi_DB') ? CentralMidi_DB::table_name() : $wpdb->prefix . 'centralmidi_midis';
+    $artistas_table = class_exists('CentralMidi_DB') ? CentralMidi_DB::artistas_table_name() : $wpdb->prefix . 'centralmidi_artistas';
+    $generos_table  = class_exists('CentralMidi_DB') ? CentralMidi_DB::generos_table_name() : $wpdb->prefix . 'centralmidi_generos';
 
     $like = '%' . $wpdb->esc_like($q) . '%';
 
@@ -533,18 +554,15 @@ function centralmidi_ajax_live_search() {
          LEFT JOIN {$midis_table} m ON m.product_id = p.ID
          LEFT JOIN {$artistas_table} a ON a.id = m.artista_id
          LEFT JOIN {$generos_table} g ON g.id = m.genero_id
-         LEFT JOIN {$categorias_table} c ON c.id = m.categoria_id
          WHERE p.post_type = 'product'
            AND p.post_status = 'publish'
            AND (
                p.post_title LIKE %s
                OR a.nome LIKE %s
                OR g.nome LIKE %s
-               OR c.nome LIKE %s
            )
          ORDER BY (CASE WHEN p.post_title LIKE %s THEN 1 WHEN a.nome LIKE %s THEN 2 ELSE 3 END), p.post_title ASC
          LIMIT 6",
-        $like,
         $like,
         $like,
         $like,

@@ -33,10 +33,12 @@ endif;
             $btn_url   = get_post_meta($slide_id, '_cm_slide_btn_url', true);
             $align     = get_post_meta($slide_id, '_cm_slide_align', true);
             $align     = in_array($align, array('left', 'center', 'right'), true) ? $align : 'left';
+            $tonalidade = get_post_meta($slide_id, '_cm_slide_tonalidade', true);
+            $tonalidade = in_array($tonalidade, array('dark', 'light'), true) ? $tonalidade : 'dark';
             $image     = get_the_post_thumbnail_url($slide_id, 'large');
             $title     = get_the_title($slide_id);
 
-            $slide_class = 'cm-carousel-slide';
+            $slide_class = 'cm-carousel-slide cm-carousel-tonal--' . $tonalidade;
             if (0 === $index) {
                 $slide_class .= ' is-active';
             }

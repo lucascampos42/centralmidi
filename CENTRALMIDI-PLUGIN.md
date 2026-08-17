@@ -34,20 +34,19 @@ Colunas:
 | `product_id`     | BIGINT UNSIGNED   | ID do produto WooCommerce (único)     |
 | `artista_id`     | BIGINT UNSIGNED   | FK para `wp_centralmidi_artistas.id`  |
 | `genero_id`      | BIGINT UNSIGNED   | FK para `wp_centralmidi_generos.id`   |
-| `categoria_id`   | BIGINT UNSIGNED   | FK para `wp_centralmidi_categorias.id` |
 | `mes_lancamento` | TINYINT UNSIGNED  | Mês de lançamento no site (1–12)      |
 | `ano_lancamento` | SMALLINT UNSIGNED | Ano de lançamento (ex.: 2026)         |
 | `classificacao`  | VARCHAR(3)        | `M`, `L` ou `RLM` (default `M`)       |
 | `created_at`     | DATETIME          | Data de criação                       |
 | `updated_at`     | DATETIME          | Data de atualização                   |
 
-Índices: `UNIQUE (product_id)`, `KEY (artista_id)`, `KEY (genero_id)`, `KEY (categoria_id)`, `KEY (mes_lancamento)`, `KEY (classificacao)`.
+Índices: `UNIQUE (product_id)`, `KEY (mes_lancamento)`, `KEY (classificacao)`.
 
 A tabela é criada na ativação do plugin (`register_activation_hook`) e removida no uninstall.
 
 ### Tabelas de referência
 
-`wp_centralmidi_artistas`, `wp_centralmidi_generos` e `wp_centralmidi_categorias` têm a mesma estrutura:
+`wp_centralmidi_artistas` (com coluna extra `foto_id`) e `wp_centralmidi_generos`:
 
 | Coluna       | Tipo            | Descrição              |
 |--------------|-----------------|------------------------|
@@ -66,8 +65,6 @@ A migração de strings legadas (`artista`, `genero`) → IDs é feita em `Centr
 | `_centralmidi_artista_id`      | FK `wp_centralmidi_artistas.id` |
 | `_centralmidi_genero`          | Nome do gênero (denormalizado) |
 | `_centralmidi_genero_id`       | FK `wp_centralmidi_generos.id` |
-| `_centralmidi_categoria`       | Nome da categoria (denormalizado) |
-| `_centralmidi_categoria_id`    | FK `wp_centralmidi_categorias.id` |
 | `_centralmidi_mes_lancamento`  | Mês de lançamento (1–12)   |
 | `_centralmidi_ano_lancamento`  | Ano de lançamento          |
 | `_centralmidi_classificacao`   | `M`, `L` ou `RLM`          |
@@ -77,10 +74,10 @@ Ao salvar o produto, os valores são persistidos como post meta e sincronizados 
 
 ## Shortcode `[centralmidi_catalogo]`
 
-- Filtros por **artista**, **gênero**, **categoria**, **mês de lançamento** e **classificação** (via GET)
+- Filtros por **artista**, **gênero**, **mês de lançamento** e **classificação** (via GET)
 - Lista produtos WooCommerce publicados
 - Paginação
-- Cards com capa, artista, título, gênero, categoria, mês, classificação (`#M`/`#L`/`#RLM`) e preço
+- Cards com capa, artista, título, gênero, mês, classificação (`#M`/`#L`/`#RLM`) e preço
 - Atributos: `por_pagina` (padrão `12`)
 
 Exemplo de uso:
