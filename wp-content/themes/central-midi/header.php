@@ -78,17 +78,7 @@
                         </li>
                         <li>
                             <a href="<?php echo esc_url(centralmidi_catalog_url() . '?filter=genero'); ?>">
-                                <i class="ri-music-2-line"></i> Gênero
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo esc_url(centralmidi_catalog_url() . '?filter=mes'); ?>">
-                                <i class="ri-calendar-event-line"></i> Mês de Lançamento
-                            </a>
-                        </li>
-                        <li>
-                            <a href="<?php echo esc_url(centralmidi_catalog_url() . '?filter=classificacao'); ?>">
-                                <i class="ri-sound-module-line"></i> Classificação (#M, #L, #RLM)
+                                <i class="ri-music-2-line"></i> Gêneros
                             </a>
                         </li>
                     </ul>
