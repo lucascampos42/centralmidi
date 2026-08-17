@@ -1,0 +1,63 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: centralmidi_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: centralmidi_db
+      MYSQL_USER: centralmidi_user
+      MYSQL_PASSWORD: centralmidi_pass
+      MYSQL_ROOT_PASSWORD: centralmidi_root_pass
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - centralmidi_net
+
+  wordpress:
+    build:
+      context: ./docker
+      args:
+        UID: 1000
+        GID: 1000
+    container_name: centralmidi_wp
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: centralmidi_db
+      WORDPRESS_DB_USER: centralmidi_user
+      WORDPRESS_DB_PASSWORD: centralmidi_pass
+      WORDPRESS_TABLE_PREFIX: wp_
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_MEMORY_LIMIT', '256M');
+        define('WP_MAX_MEMORY_LIMIT', '512M');
+        define('FS_METHOD', 'direct');
+    volumes:
+      - ./wp-content:/var/www/html/wp-content
+      - ./docker/wordpress-apache.conf:/etc/apache2/conf-enabled/zz-centralmidi.conf:ro
+    networks:
+      - centralmidi_net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: centralmidi_pma
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: centralmidi_root_pass
+    networks:
+      - centralmidi_net
+
+volumes:
+  db_data:
+
+networks:
+  centralmidi_net:
+    driver: bridge
