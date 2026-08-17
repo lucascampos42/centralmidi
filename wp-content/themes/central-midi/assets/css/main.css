@@ -1474,73 +1474,75 @@ a.cm-btn-outline:hover,
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    padding: 28px;
+    padding: 38px 32px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 18px;
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .cm-service-card:hover {
     transform: translateY(-4px);
     border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
 }
 
 .cm-service-icon {
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
+    font-size: 2rem;
+    margin-bottom: 4px;
 }
 
 .cm-service-card h3 {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    line-height: 1.35;
+    line-height: 1.45;
+    margin-bottom: 4px;
 }
 
 .cm-service-card p {
     color: var(--text-muted);
-    font-size: 0.92rem;
-    line-height: 1.6;
+    font-size: 0.95rem;
+    line-height: 1.75;
 }
 
 .cm-step-item {
     background: var(--bg-main);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 24px;
+    padding: 36px 30px;
     position: relative;
 }
 
 .cm-step-number {
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
     background: var(--primary);
     color: #0c0f17;
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 14px;
+    margin-bottom: 18px;
 }
 
 .cm-step-item h4 {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .cm-step-item p {
     color: var(--text-muted);
-    font-size: 0.88rem;
-    line-height: 1.5;
+    font-size: 0.92rem;
+    line-height: 1.7;
 }
 
 /* Hero Banner & Badge */
@@ -1563,46 +1565,48 @@ a.cm-btn-outline:hover,
     background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-main) 100%);
     border-bottom: 1px solid var(--border-color);
     text-align: center;
-    padding: 48px 0 36px;
+    padding: 72px 20px 60px;
 }
 
 .cm-hero-title {
-    font-size: 2.4rem;
+    font-size: clamp(2rem, 4vw, 2.7rem);
     font-weight: 800;
-    margin: 16px 0 12px;
+    margin: 20px 0 16px;
     letter-spacing: -0.02em;
 }
 
 .cm-hero-subtitle {
-    max-width: 720px;
+    max-width: 760px;
     margin: 0 auto;
     color: var(--text-muted);
-    font-size: 1.05rem;
+    font-size: 1.1rem;
+    line-height: 1.8;
 }
 
 /* Services Page */
 .cm-services-section {
-    margin-bottom: 60px;
+    margin-bottom: 90px;
 }
 
 .cm-section-heading {
     text-align: center;
-    margin-bottom: 36px;
+    margin-bottom: 50px;
 }
 
 .cm-section-heading .cm-badge {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .cm-section-heading h2 {
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     font-weight: 800;
+    margin-top: 10px;
 }
 
 .cm-services-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 30px;
 }
 
 @media (max-width: 1024px) {
@@ -1654,21 +1658,21 @@ a.cm-btn-outline:hover,
 }
 
 .cm-box--pad {
-    padding: 30px;
+    padding: 44px 38px;
 }
 
 .cm-box--pad-lg {
-    padding: 40px 30px;
-    margin-bottom: 50px;
+    padding: 64px 48px;
+    margin-bottom: 90px;
 }
 
 .cm-box-title {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     font-weight: 700;
-    margin-bottom: 16px;
+    margin-bottom: 22px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .cm-box-title-icon {
@@ -1681,82 +1685,88 @@ a.cm-btn-outline:hover,
 
 .cm-box-text {
     color: var(--text-muted);
-    font-size: 0.92rem;
-    margin-bottom: 16px;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    margin-bottom: 22px;
 }
 
 .cm-steps-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 32px;
+    margin-top: 24px;
 }
 
 .cm-info-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 24px;
-    margin-bottom: 50px;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 32px;
+    margin-bottom: 90px;
 }
 
 .cm-info-list {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 18px;
     color: var(--text-muted);
-    font-size: 0.92rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
 }
 
 .cm-info-list li {
     display: flex;
-    gap: 10px;
+    gap: 12px;
 }
 
 .cm-info-list li > i {
     color: var(--primary);
-    margin-top: 2px;
+    margin-top: 3px;
+    font-size: 1.1rem;
 }
 
 .cm-pix-box {
     background: var(--bg-main);
     border: 1px solid var(--border-color);
-    padding: 14px 18px;
+    padding: 18px 22px;
     border-radius: var(--radius-md);
     font-family: var(--font-mono);
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     color: var(--primary);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
+    margin-top: 24px;
 }
 
 .cm-cta-box {
     background: linear-gradient(135deg, #0d281e, #142838);
     border: 1px solid rgba(0, 210, 132, 0.3);
     border-radius: var(--radius-lg);
-    padding: 40px;
+    padding: 64px 40px;
     text-align: center;
 }
 
 .cm-cta-box h2 {
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     font-weight: 800;
-    margin-bottom: 12px;
+    margin-bottom: 18px;
 }
 
 .cm-cta-text {
     color: var(--text-muted);
-    max-width: 600px;
-    margin: 0 auto 24px;
-    font-size: 1rem;
+    max-width: 640px;
+    margin: 0 auto 36px;
+    font-size: 1.1rem;
+    line-height: 1.8;
 }
 
 .cm-cta-actions {
     display: flex;
     justify-content: center;
-    gap: 14px;
+    gap: 18px;
     flex-wrap: wrap;
 }
 
@@ -2336,6 +2346,10 @@ a.cm-btn-outline:hover,
 /* Pages */
 .cm-page-wrap {
     padding: 40px 20px;
+}
+
+.page-template-page-servicos .cm-page-wrap {
+    padding: 60px 20px 100px;
 }
 
 .cm-page-title {

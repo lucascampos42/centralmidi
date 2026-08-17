@@ -48,26 +48,29 @@ function centralmidi_cart_count_fragments($fragments) {
 add_filter('woocommerce_add_to_cart_fragments', 'centralmidi_cart_count_fragments');
 
 /**
- * Remove 'Downloads' tab from WooCommerce My Account and redirect endpoint
- * (MIDI files are delivered directly via Email and WhatsApp)
+ * Remove 'Downloads' and 'Addresses' tabs from WooCommerce My Account and redirect endpoints
+ * (MIDI files are 100% digital and delivered directly via Email and WhatsApp)
  */
-function centralmidi_remove_downloads_account_menu_item($items) {
+function centralmidi_remove_unneeded_account_menu_items($items) {
     if (isset($items['downloads'])) {
         unset($items['downloads']);
     }
+    if (isset($items['edit-address'])) {
+        unset($items['edit-address']);
+    }
     return $items;
 }
-add_filter('woocommerce_account_menu_items', 'centralmidi_remove_downloads_account_menu_item', 99);
+add_filter('woocommerce_account_menu_items', 'centralmidi_remove_unneeded_account_menu_items', 99);
 
-function centralmidi_disable_downloads_endpoint() {
+function centralmidi_disable_unneeded_account_endpoints() {
     if (function_exists('is_account_page') && function_exists('is_wc_endpoint_url')) {
-        if (is_account_page() && is_wc_endpoint_url('downloads')) {
+        if (is_account_page() && (is_wc_endpoint_url('downloads') || is_wc_endpoint_url('edit-address'))) {
             wp_safe_redirect(wc_get_page_permalink('myaccount'));
             exit;
         }
     }
 }
-add_action('template_redirect', 'centralmidi_disable_downloads_endpoint');
+add_action('template_redirect', 'centralmidi_disable_unneeded_account_endpoints');
 
 /**
  * Redirect WooCommerce Shop archive (/loja/) to canonical MIDIs catalog (/midis/)
