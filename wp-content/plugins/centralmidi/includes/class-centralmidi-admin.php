@@ -43,6 +43,15 @@ class CentralMidi_Admin {
 
         add_submenu_page(
             'centralmidi',
+            __('MIDIs', 'centralmidi'),
+            __('MIDIs', 'centralmidi'),
+            'manage_options',
+            'centralmidi-midis',
+            array($this, 'render_midis_page')
+        );
+
+        add_submenu_page(
+            'centralmidi',
             __('Artistas', 'centralmidi'),
             __('Artistas', 'centralmidi'),
             'manage_options',
@@ -296,6 +305,356 @@ class CentralMidi_Admin {
 
     public function render_generos_page() {
         $this->render_referencia_page('genero');
+    }
+
+    /**
+     * Admin page: list MIDIs with filters and bulk editing.
+     */
+    public function render_midis_page() {
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        $this->handle_midis_bulk_action();
+
+        $per_page = 20;
+        $paged    = max(1, isset($_GET['paged']) ? absint($_GET['paged']) : 1);
+
+        $filters = array(
+            'busca'        => isset($_GET['busca']) ? sanitize_text_field(wp_unslash($_GET['busca'])) : '',
+            'artista_id'   => isset($_GET['artista_id']) ? absint($_GET['artista_id']) : 0,
+            'genero_id'    => isset($_GET['genero_id']) ? absint($_GET['genero_id']) : 0,
+            'mes'          => isset($_GET['mes']) ? absint($_GET['mes']) : 0,
+            'ano'          => isset($_GET['ano']) ? absint($_GET['ano']) : 0,
+            'classificacao' => isset($_GET['classificacao']) ? sanitize_text_field(wp_unslash($_GET['classificacao'])) : '',
+        );
+
+        $total = 0;
+        $midis = CentralMidi_DB::get_midis_admin($filters, $per_page, $paged, $total);
+
+        $artistas    = CentralMidi_DB::get_artistas();
+        $generos     = CentralMidi_DB::get_generos();
+        $class_labels = array(
+            'M'   => __('MIDI somente com Melodia', 'centralmidi'),
+            'L'   => __('MIDI somente com Letra sincronizada', 'centralmidi'),
+            'RLM' => __('MIDI com Melodia e Letra sincronizada', 'centralmidi'),
+        );
+        $meses = array(
+            1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março', 4 => 'Abril',
+            5 => 'Maio', 6 => 'Junho', 7 => 'Julho', 8 => 'Agosto',
+            9 => 'Setembro', 10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro',
+        );
+
+        $current_year = (int) date('Y');
+        ?>
+        <div class="wrap">
+            <h1><?php esc_html_e('Central MIDI — MIDIs', 'centralmidi'); ?></h1>
+            <p><?php esc_html_e('Lista os arquivos MIDI sincronizados na tabela do plugin, com filtros e edição em lote dos metadados.', 'centralmidi'); ?></p>
+
+            <?php $this->render_notices(); ?>
+
+            <form method="get" style="margin: 12px 0 20px;">
+                <input type="hidden" name="page" value="centralmidi-midis" />
+                <input type="search" name="busca" value="<?php echo esc_attr($filters['busca']); ?>" placeholder="<?php esc_attr_e('Buscar pelo nome do produto...', 'centralmidi'); ?>" style="min-width: 240px;" />
+                <select name="artista_id">
+                    <option value="0"><?php esc_html_e('Todos os artistas', 'centralmidi'); ?></option>
+                    <?php foreach ($artistas as $a) : ?>
+                        <option value="<?php echo esc_attr($a->id); ?>" <?php selected($filters['artista_id'], $a->id); ?>><?php echo esc_html($a->nome); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <select name="genero_id">
+                    <option value="0"><?php esc_html_e('Todos os gêneros', 'centralmidi'); ?></option>
+                    <?php foreach ($generos as $g) : ?>
+                        <option value="<?php echo esc_attr($g->id); ?>" <?php selected($filters['genero_id'], $g->id); ?>><?php echo esc_html($g->nome); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <select name="mes">
+                    <option value="0"><?php esc_html_e('Todos os meses', 'centralmidi'); ?></option>
+                    <?php foreach ($meses as $num => $nome) : ?>
+                        <option value="<?php echo esc_attr($num); ?>" <?php selected($filters['mes'], $num); ?>><?php echo esc_html($nome); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <select name="ano">
+                    <option value="0"><?php esc_html_e('Todos os anos', 'centralmidi'); ?></option>
+                    <?php for ($y = $current_year; $y >= $current_year - 4; $y--) : ?>
+                        <option value="<?php echo esc_attr($y); ?>" <?php selected($filters['ano'], $y); ?>><?php echo esc_html($y); ?></option>
+                    <?php endfor; ?>
+                </select>
+                <select name="classificacao">
+                    <option value=""><?php esc_html_e('Todas as classificações', 'centralmidi'); ?></option>
+                    <?php foreach ($class_labels as $code => $label) : ?>
+                        <option value="<?php echo esc_attr($code); ?>" <?php selected($filters['classificacao'], $code); ?>><?php echo esc_html('#' . $code); ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <button type="submit" class="button"><?php esc_html_e('Filtrar', 'centralmidi'); ?></button>
+                <a class="button" href="<?php echo esc_url(admin_url('admin.php?page=centralmidi-midis')); ?>"><?php esc_html_e('Limpar', 'centralmidi'); ?></a>
+            </form>
+
+            <form method="post" action="<?php echo esc_url(admin_url('admin.php?page=centralmidi-midis')); ?>">
+                <?php wp_nonce_field('centralmidi_bulk_midis', 'centralmidi_midis_nonce'); ?>
+
+                <div style="margin: 12px 0;">
+                    <select name="cm_bulk_op">
+                        <option value=""><?php esc_html_e('— Edição em lote —', 'centralmidi'); ?></option>
+                        <optgroup label="<?php esc_attr_e('Definir artista', 'centralmidi'); ?>">
+                            <?php foreach ($artistas as $a) : ?>
+                                <option value="set_artista:<?php echo esc_attr($a->id); ?>"><?php echo esc_html($a->nome); ?></option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                        <optgroup label="<?php esc_attr_e('Definir gênero', 'centralmidi'); ?>">
+                            <?php foreach ($generos as $g) : ?>
+                                <option value="set_genero:<?php echo esc_attr($g->id); ?>"><?php echo esc_html($g->nome); ?></option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                        <optgroup label="<?php esc_attr_e('Definir mês de lançamento', 'centralmidi'); ?>">
+                            <?php foreach ($meses as $num => $nome) : ?>
+                                <option value="set_mes:<?php echo esc_attr($num); ?>"><?php echo esc_html($nome); ?></option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                        <optgroup label="<?php esc_attr_e('Definir ano de lançamento', 'centralmidi'); ?>">
+                            <?php for ($y = $current_year; $y >= $current_year - 4; $y--) : ?>
+                                <option value="set_ano:<?php echo esc_attr($y); ?>"><?php echo esc_html($y); ?></option>
+                            <?php endfor; ?>
+                        </optgroup>
+                        <optgroup label="<?php esc_attr_e('Definir classificação', 'centralmidi'); ?>">
+                            <?php foreach ($class_labels as $code => $label) : ?>
+                                <option value="set_classificacao:<?php echo esc_attr($code); ?>"><?php echo esc_html('#' . $code); ?></option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                        <optgroup label="<?php esc_attr_e('Remover', 'centralmidi'); ?>">
+                            <option value="delete"><?php esc_html_e('Remover metadados MIDI dos selecionados', 'centralmidi'); ?></option>
+                        </optgroup>
+                    </select>
+                    <button type="submit" name="cm_bulk" value="apply" class="button"><?php esc_html_e('Aplicar aos selecionados', 'centralmidi'); ?></button>
+                </div>
+
+                <table class="widefat striped" style="max-width: 1100px;">
+                    <thead>
+                        <tr>
+                            <td style="width: 28px;"><input type="checkbox" id="cm-select-all" /></td>
+                            <th><?php esc_html_e('Produto', 'centralmidi'); ?></th>
+                            <th><?php esc_html_e('Artista', 'centralmidi'); ?></th>
+                            <th><?php esc_html_e('Gênero', 'centralmidi'); ?></th>
+                            <th><?php esc_html_e('Lançamento', 'centralmidi'); ?></th>
+                            <th><?php esc_html_e('Classificação', 'centralmidi'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!$midis) : ?>
+                            <tr><td colspan="6"><?php esc_html_e('Nenhum MIDI encontrado com os filtros selecionados.', 'centralmidi'); ?></td></tr>
+                        <?php else : ?>
+                            <?php foreach ($midis as $m) : ?>
+                                <tr>
+                                    <td><input type="checkbox" name="cm_midis[]" value="<?php echo esc_attr($m->product_id); ?>" /></td>
+                                    <td>
+                                        <strong><?php echo esc_html($m->titulo ? $m->titulo : '#' . $m->product_id); ?></strong>
+                                        <div class="row-actions">
+                                            <a href="<?php echo esc_url(get_edit_post_link($m->product_id)); ?>"><?php esc_html_e('Editar produto', 'centralmidi'); ?></a> |
+                                            <a href="<?php echo esc_url(get_permalink($m->product_id)); ?>" target="_blank"><?php esc_html_e('Ver', 'centralmidi'); ?></a>
+                                        </div>
+                                    </td>
+                                    <td><?php echo esc_html($m->artista ? $m->artista : '—'); ?></td>
+                                    <td><?php echo esc_html($m->genero ? $m->genero : '—'); ?></td>
+                                    <td><?php echo $m->mes_lancamento ? esc_html(($meses[$m->mes_lancamento] ?? '') . ' ' . $m->ano_lancamento) : '—'; ?></td>
+                                    <td><?php echo $m->classificacao ? esc_html('#' . $m->classificacao) : '—'; ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+
+                <div style="margin: 12px 0;">
+                    <select name="cm_bulk_op">
+                        <option value=""><?php esc_html_e('— Edição em lote —', 'centralmidi'); ?></option>
+                        <?php foreach (array(
+                            'artistas' => $artistas, 'generos' => $generos,
+                        ) as $group => $items) : ?>
+                            <optgroup label="<?php echo esc_attr($group === 'artistas' ? __('Definir artista', 'centralmidi') : __('Definir gênero', 'centralmidi')); ?>">
+                                <?php foreach ($items as $item) : ?>
+                                    <option value="<?php echo esc_attr($group === 'artistas' ? 'set_artista:' . $item->id : 'set_genero:' . $item->id); ?>"><?php echo esc_html($item->nome); ?></option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                        <?php endforeach; ?>
+                        <optgroup label="<?php esc_attr_e('Definir mês de lançamento', 'centralmidi'); ?>">
+                            <?php foreach ($meses as $num => $nome) : ?>
+                                <option value="set_mes:<?php echo esc_attr($num); ?>"><?php echo esc_html($nome); ?></option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                        <optgroup label="<?php esc_attr_e('Definir ano de lançamento', 'centralmidi'); ?>">
+                            <?php for ($y = $current_year; $y >= $current_year - 4; $y--) : ?>
+                                <option value="set_ano:<?php echo esc_attr($y); ?>"><?php echo esc_html($y); ?></option>
+                            <?php endfor; ?>
+                        </optgroup>
+                        <optgroup label="<?php esc_attr_e('Definir classificação', 'centralmidi'); ?>">
+                            <?php foreach ($class_labels as $code => $label) : ?>
+                                <option value="set_classificacao:<?php echo esc_attr($code); ?>"><?php echo esc_html('#' . $code); ?></option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                        <optgroup label="<?php esc_attr_e('Remover', 'centralmidi'); ?>">
+                            <option value="delete"><?php esc_html_e('Remover metadados MIDI dos selecionados', 'centralmidi'); ?></option>
+                        </optgroup>
+                    </select>
+                    <button type="submit" name="cm_bulk" value="apply" class="button"><?php esc_html_e('Aplicar aos selecionados', 'centralmidi'); ?></button>
+                </div>
+
+                <?php $this->render_midis_pagination($total, $per_page, $paged); ?>
+            </form>
+
+            <script>
+            (function () {
+                var selectAll = document.getElementById('cm-select-all');
+                if (selectAll) {
+                    selectAll.addEventListener('change', function () {
+                        document.querySelectorAll('input[name="cm_midis[]"]').forEach(function (cb) {
+                            cb.checked = selectAll.checked;
+                        });
+                    });
+                }
+            })();
+            </script>
+        </div>
+        <?php
+    }
+
+    private function render_midis_pagination($total, $per_page, $paged) {
+        $pages = (int) ceil($total / $per_page);
+        if ($pages < 2) {
+            return;
+        }
+        $args = array(
+            'base'      => add_query_arg('paged', '%#%'),
+            'format'    => '',
+            'current'   => $paged,
+            'total'     => $pages,
+            'prev_text' => '&laquo;',
+            'next_text' => '&raquo;',
+        );
+        echo '<div class="tablenav" style="clear:both;margin-top:12px;">';
+        echo '<div class="tablenav-pages">' . paginate_links($args) . '</div>';
+        echo '<div class="displaying-num">' . sprintf(esc_html__('%d MIDIs', 'centralmidi'), (int) $total) . '</div>';
+        echo '</div>';
+    }
+
+    /**
+     * Apply the bulk edit operation to the selected product IDs (PRG: redirect after).
+     */
+    private function handle_midis_bulk_action() {
+        if (empty($_POST['cm_bulk']) || 'apply' !== $_POST['cm_bulk']) {
+            return;
+        }
+        if (!isset($_POST['centralmidi_midis_nonce']) || !wp_verify_nonce(wp_unslash($_POST['centralmidi_midis_nonce']), 'centralmidi_bulk_midis')) {
+            return;
+        }
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        $ids = isset($_POST['cm_midis']) ? array_map('absint', (array) wp_unslash($_POST['cm_midis'])) : array();
+        $op  = isset($_POST['cm_bulk_op']) ? sanitize_text_field(wp_unslash($_POST['cm_bulk_op'])) : '';
+
+        if (!$ids || !$op) {
+            $this->set_notice('error', __('Selecione ao menos um MIDI e uma ação em lote.', 'centralmidi'));
+            $this->redirect_midis_back();
+            return;
+        }
+
+        list($action, $value) = array_pad(explode(':', $op, 2), 2, '');
+
+        $count = 0;
+        switch ($action) {
+            case 'set_artista':
+                $value = absint($value);
+                $artista = CentralMidi_DB::get_artista($value);
+                foreach ($ids as $pid) {
+                    update_post_meta($pid, '_centralmidi_artista_id', $value);
+                    update_post_meta($pid, '_centralmidi_artista', $artista ? $artista->nome : '');
+                    $this->upsert_product_meta($pid, array('artista_id' => $value));
+                    $count++;
+                }
+                break;
+
+            case 'set_genero':
+                $value = absint($value);
+                $genero = CentralMidi_DB::get_genero($value);
+                foreach ($ids as $pid) {
+                    update_post_meta($pid, '_centralmidi_genero_id', $value);
+                    update_post_meta($pid, '_centralmidi_genero', $genero ? $genero->nome : '');
+                    $this->upsert_product_meta($pid, array('genero_id' => $value));
+                    $count++;
+                }
+                break;
+
+            case 'set_mes':
+                $value = absint($value);
+                foreach ($ids as $pid) {
+                    update_post_meta($pid, '_centralmidi_mes_lancamento', $value);
+                    $this->upsert_product_meta($pid, array('mes_lancamento' => $value));
+                    $count++;
+                }
+                break;
+
+            case 'set_ano':
+                $value = absint($value);
+                foreach ($ids as $pid) {
+                    update_post_meta($pid, '_centralmidi_ano_lancamento', $value);
+                    $this->upsert_product_meta($pid, array('ano_lancamento' => $value));
+                    $count++;
+                }
+                break;
+
+            case 'set_classificacao':
+                $value = CentralMidi_DB::sanitize_classificacao($value);
+                foreach ($ids as $pid) {
+                    update_post_meta($pid, '_centralmidi_classificacao', $value);
+                    $this->upsert_product_meta($pid, array('classificacao' => $value));
+                    $count++;
+                }
+                break;
+
+            case 'delete':
+                foreach ($ids as $pid) {
+                    foreach (array(
+                        '_centralmidi_artista', '_centralmidi_artista_id',
+                        '_centralmidi_genero', '_centralmidi_genero_id',
+                        '_centralmidi_mes_lancamento', '_centralmidi_ano_lancamento',
+                        '_centralmidi_classificacao', '_centralmidi_demo_audio',
+                    ) as $meta_key) {
+                        delete_post_meta($pid, $meta_key);
+                    }
+                    CentralMidi_DB::delete($pid);
+                    $count++;
+                }
+                break;
+
+            default:
+                $this->set_notice('error', __('Ação em lote inválida.', 'centralmidi'));
+                $this->redirect_midis_back();
+                return;
+        }
+
+        CentralMidi_DB::clear_home_cache();
+        $this->set_notice('success', sprintf(__('%d MIDI(s) atualizados em lote.', 'centralmidi'), $count));
+        $this->redirect_midis_back();
+    }
+
+    /**
+     * Upsert a product row keeping the current values for fields not being changed.
+     */
+    private function upsert_product_meta($product_id, $override = array()) {
+        $data = array(
+            'artista_id'     => (int) get_post_meta($product_id, '_centralmidi_artista_id', true),
+            'genero_id'      => (int) get_post_meta($product_id, '_centralmidi_genero_id', true),
+            'mes_lancamento' => (int) get_post_meta($product_id, '_centralmidi_mes_lancamento', true),
+            'ano_lancamento' => (int) get_post_meta($product_id, '_centralmidi_ano_lancamento', true),
+            'classificacao'  => CentralMidi_DB::sanitize_classificacao(get_post_meta($product_id, '_centralmidi_classificacao', true)),
+        );
+        CentralMidi_DB::upsert($product_id, array_merge($data, $override));
+    }
+
+    private function redirect_midis_back() {
+        $url = admin_url('admin.php?page=centralmidi-midis');
+        wp_safe_redirect($url);
+        exit;
     }
 
     public function add_meta_box() {

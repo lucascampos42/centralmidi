@@ -747,4 +747,76 @@ class CentralMidi_DB {
         );
         return array_map('intval', $wpdb->get_col($sql));
     }
+
+    /**
+     * Admin listing of MIDIs (with product/artist/genre info), paginated.
+     *
+     * @param array $filters Keys: busca, artista_id, genero_id, mes, ano, classificacao
+     * @param int $per_page
+     * @param int $page
+     * @param int|null $total Filled with the total row count (pass by reference).
+     * @return object[]
+     */
+    public static function get_midis_admin($filters = array(), $per_page = 20, $page = 1, &$total = null) {
+        global $wpdb;
+
+        $midis_table    = self::table_name();
+        $artistas_table = self::artistas_table_name();
+        $generos_table  = self::generos_table_name();
+
+        $where  = array('1=1');
+        $params = array();
+
+        if (!empty($filters['busca'])) {
+            $where[]  = "p.post_title LIKE %s";
+            $params[] = '%' . $wpdb->esc_like($filters['busca']) . '%';
+        }
+        if (!empty($filters['artista_id'])) {
+            $where[]  = "m.artista_id = %d";
+            $params[] = absint($filters['artista_id']);
+        }
+        if (!empty($filters['genero_id'])) {
+            $where[]  = "m.genero_id = %d";
+            $params[] = absint($filters['genero_id']);
+        }
+        if (!empty($filters['mes'])) {
+            $where[]  = "m.mes_lancamento = %d";
+            $params[] = absint($filters['mes']);
+        }
+        if (!empty($filters['ano'])) {
+            $where[]  = "m.ano_lancamento = %d";
+            $params[] = absint($filters['ano']);
+        }
+        if (!empty($filters['classificacao'])) {
+            $where[]  = "m.classificacao = %s";
+            $params[] = $filters['classificacao'];
+        }
+
+        $where_sql = implode(' AND ', $where);
+        $join_sql  = "LEFT JOIN {$wpdb->posts} p ON p.ID = m.product_id";
+        $join_sql .= " LEFT JOIN {$artistas_table} a ON a.id = m.artista_id";
+        $join_sql .= " LEFT JOIN {$generos_table} g ON g.id = m.genero_id";
+
+        $total = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$midis_table} m {$join_sql} WHERE {$where_sql}",
+            $params
+        ));
+
+        $page     = max(1, absint($page));
+        $per_page = max(1, absint($per_page));
+        $offset   = ($page - 1) * $per_page;
+
+        $sql = $wpdb->prepare(
+            "SELECT m.id, m.product_id, m.artista_id, m.genero_id, m.mes_lancamento,
+                    m.ano_lancamento, m.classificacao, a.nome AS artista, g.nome AS genero,
+                    p.post_title AS titulo
+             FROM {$midis_table} m {$join_sql}
+             WHERE {$where_sql}
+             ORDER BY m.updated_at DESC, m.product_id DESC
+             LIMIT %d OFFSET %d",
+            array_merge($params, array($per_page, $offset))
+        );
+
+        return $wpdb->get_results($sql);
+    }
 }

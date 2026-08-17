@@ -155,6 +155,12 @@ function centralmidi_catalog_url() {
         return $cached;
     }
 
+    // Resolved (and cached in a single option row) by the plugin when available.
+    if (class_exists('CentralMidi_DB') && method_exists('CentralMidi_DB', 'catalog_url')) {
+        $cached = CentralMidi_DB::catalog_url();
+        return $cached;
+    }
+
     $pages = get_pages(array(
         'post_type'   => 'page',
         'post_status' => 'publish',
