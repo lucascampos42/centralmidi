@@ -781,6 +781,14 @@ class CentralMidi_DB {
             $where[]  = "m.genero_id = %d";
             $params[] = absint($filters['genero_id']);
         }
+        if (!empty($filters['artista'])) {
+            $where[]  = "a.nome = %s";
+            $params[] = $filters['artista'];
+        }
+        if (!empty($filters['genero'])) {
+            $where[]  = "g.nome = %s";
+            $params[] = $filters['genero'];
+        }
         if (!empty($filters['mes'])) {
             $where[]  = "m.mes_lancamento = %d";
             $params[] = absint($filters['mes']);
@@ -813,6 +821,7 @@ class CentralMidi_DB {
             'mes'           => 'm.mes_lancamento',
             'ano'           => 'm.ano_lancamento',
             'classificacao' => 'm.classificacao',
+            'arquivo'       => 'fm.meta_value',
             'id'            => 'm.product_id',
         );
         $sort_dir = strtoupper($sort_dir) === 'ASC' ? 'ASC' : 'DESC';

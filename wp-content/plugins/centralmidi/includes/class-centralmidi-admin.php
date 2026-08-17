@@ -14,20 +14,80 @@ class CentralMidi_Admin {
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         add_action('add_meta_boxes', array($this, 'add_meta_box'));
         add_action('save_post_product', array($this, 'save_meta_box'));
+
+        add_action('wp_ajax_centralmidi_midis_table', array($this, 'handle_midis_table_ajax'));
+        add_action('wp_ajax_centralmidi_midis_save', array($this, 'handle_midis_save_ajax'));
+        add_action('wp_ajax_centralmidi_midis_bulk', array($this, 'handle_midis_bulk_ajax'));
     }
 
     public function enqueue_admin_assets($hook) {
-        if (!in_array($hook, array('toplevel_page_centralmidi', 'centralmidi_page_centralmidi-artistas'), true)) {
-            return;
+        if (in_array($hook, array('toplevel_page_centralmidi', 'centralmidi_page_centralmidi-artistas', 'centralmidi_page_centralmidi-generos'), true)) {
+            wp_enqueue_media();
+            wp_enqueue_script(
+                'centralmidi-admin',
+                CENTRALMIDI_PLUGIN_URL . 'assets/js/admin.js',
+                array('jquery'),
+                CENTRALMIDI_VERSION,
+                true
+            );
         }
-        wp_enqueue_media();
-        wp_enqueue_script(
-            'centralmidi-admin',
-            CENTRALMIDI_PLUGIN_URL . 'assets/js/admin.js',
-            array('jquery'),
-            CENTRALMIDI_VERSION,
-            true
-        );
+
+        if ('centralmidi_page_centralmidi-midis' === $hook) {
+            wp_enqueue_style(
+                'centralmidi-tabulator',
+                CENTRALMIDI_PLUGIN_URL . 'assets/vendor/tabulator/tabulator.min.css',
+                array(),
+                '6.5.2'
+            );
+            wp_enqueue_script(
+                'centralmidi-tabulator',
+                CENTRALMIDI_PLUGIN_URL . 'assets/vendor/tabulator/tabulator.min.js',
+                array(),
+                '6.5.2',
+                true
+            );
+            wp_enqueue_style(
+                'centralmidi-admin-midis',
+                CENTRALMIDI_PLUGIN_URL . 'assets/css/admin-midis.css',
+                array('centralmidi-tabulator'),
+                CENTRALMIDI_VERSION
+            );
+            wp_enqueue_script(
+                'centralmidi-midis-table',
+                CENTRALMIDI_PLUGIN_URL . 'assets/js/midis-table.js',
+                array('centralmidi-tabulator', 'jquery'),
+                CENTRALMIDI_VERSION,
+                true
+            );
+            wp_localize_script('centralmidi-midis-table', 'CentralMidiMidis', array(
+                'ajaxUrl'         => admin_url('admin-ajax.php'),
+                'nonce'           => wp_create_nonce('centralmidi_ajax'),
+                'artistas'        => array_map(function ($a) {
+                    return array('id' => (int) $a->id, 'nome' => $a->nome);
+                }, CentralMidi_DB::get_artistas()),
+                'generos'         => array_map(function ($g) {
+                    return array('id' => (int) $g->id, 'nome' => $g->nome);
+                }, CentralMidi_DB::get_generos()),
+                'meses'           => array(
+                    1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março', 4 => 'Abril',
+                    5 => 'Maio', 6 => 'Junho', 7 => 'Julho', 8 => 'Agosto',
+                    9 => 'Setembro', 10 => 'Outubro', 11 => 'Novembro', 12 => 'Dezembro',
+                ),
+                'classificacoes'  => array(
+                    'M'   => __('Melodia', 'centralmidi'),
+                    'L'   => __('Letra', 'centralmidi'),
+                    'RLM' => __('Melodia + Letra', 'centralmidi'),
+                ),
+                'textos'          => array(
+                    'semArquivo' => __('Sem arquivo — clique para definir', 'centralmidi'),
+                    'erro'       => __('Erro ao salvar.', 'centralmidi'),
+                    'selecione'  => __('Selecione ao menos um MIDI.', 'centralmidi'),
+                    'acao'       => __('Selecione uma ação em lote.', 'centralmidi'),
+                    'confirmar'  => __('Remover metadados MIDI dos selecionados?', 'centralmidi'),
+                    'atualizado' => __('MIDI(s) atualizados.', 'centralmidi'),
+                ),
+            ));
+        }
     }
 
     public function register_menu() {

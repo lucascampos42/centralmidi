@@ -2609,10 +2609,9 @@ a.cm-btn-outline:hover,
 .woocommerce-noreviews {
     background: var(--bg-surface) !important;
     border: 1px solid var(--border-color) !important;
-    border-left: 4px solid var(--primary) !important;
     color: var(--text-main) !important;
     border-radius: var(--radius-md) !important;
-    padding: 14px 20px 14px 44px !important;
+    padding: 16px 22px !important;
     margin-bottom: 24px !important;
     box-shadow: var(--shadow-card) !important;
 }
@@ -3016,7 +3015,6 @@ ul.wc-block-grid__products {
     font-weight: 700;
     font-size: 0.95rem;
     transition: all 0.2s ease;
-    border-left: 3px solid transparent;
 }
 
 .woocommerce-account .woocommerce-MyAccount-navigation li.woocommerce-MyAccount-navigation-link--dashboard a::before {
@@ -3050,7 +3048,6 @@ ul.wc-block-grid__products {
 .woocommerce-account .woocommerce-MyAccount-navigation li.is-active a {
     color: var(--primary) !important;
     background: var(--bg-surface-elevated);
-    border-left-color: var(--primary);
 }
 
 .woocommerce-account .woocommerce-MyAccount-navigation li a:hover {
@@ -3084,10 +3081,6 @@ ul.wc-block-grid__products {
 
 .cm-account-card:hover {
     border-color: rgba(255, 255, 255, 0.16);
-}
-
-.cm-account-card--security {
-    border-left: 3px solid var(--accent);
 }
 
 .cm-account-card-header {
@@ -3227,17 +3220,6 @@ input.cm-input:focus {
     color: var(--primary);
 }
 
-.woocommerce-error {
-    border-left: 3px solid #ef4444;
-}
-
-.woocommerce-message {
-    border-left: 3px solid var(--primary);
-}
-
-.woocommerce-info {
-    border-left: 3px solid var(--accent);
-}
 
 /* Quantity */
 .woocommerce .quantity .qty {
