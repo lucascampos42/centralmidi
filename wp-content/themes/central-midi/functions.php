@@ -248,7 +248,7 @@ function centralmidi_single_demo_audio() {
         return;
     }
 
-    $demo_audio = get_post_meta($product->get_id(), '_centralmidi_demo_audio', true);
+    $demo_audio = class_exists('CentralMidi_DB') ? CentralMidi_DB::get_product_demo_url($product->get_id()) : get_post_meta($product->get_id(), '_centralmidi_demo_audio', true);
     if (!$demo_audio) {
         return;
     }
@@ -333,6 +333,11 @@ function centralmidi_scripts() {
     // Catalog AJAX Filtering
     if (is_page('midis') || is_page(22)) {
         wp_enqueue_script('centralmidi-catalog-ajax', get_template_directory_uri() . '/assets/js/catalog.js', array('centralmidi-player'), $theme_version, true);
+    }
+
+    // Batch Importer JS (only on /importar-midis/)
+    if (is_page_template('page-importar-midis.php') || is_page('importar-midis')) {
+        wp_enqueue_script('centralmidi-batch-importer', get_template_directory_uri() . '/assets/js/batch-importer.js', array(), $theme_version, true);
     }
 
     // Theme (light/dark/system) toggle

@@ -127,10 +127,9 @@
             action: 'centralmidi_midis_table',
             nonce: cfg.nonce
         },
-        ajaxFiltering: true,
-        ajaxSorting: true,
         filterMode: 'remote',
         sortMode: 'remote',
+        pagination: true,
         paginationMode: 'remote',
         paginationSize: 20,
         paginationSizeSelector: [20, 50, 100],
@@ -166,17 +165,17 @@
             {
                 title: 'Artista',
                 field: 'artista',
-                editor: 'select',
+                editor: 'list',
                 editorParams: { values: artistasSelect },
-                headerFilter: 'select',
+                headerFilter: 'list',
                 headerFilterParams: { values: artistasFiltro }
             },
             {
                 title: 'Gênero',
                 field: 'genero',
-                editor: 'select',
+                editor: 'list',
                 editorParams: { values: generosSelect },
-                headerFilter: 'select',
+                headerFilter: 'list',
                 headerFilterParams: { values: generosFiltro }
             },
             {
@@ -203,9 +202,9 @@
                 hozAlign: 'center',
                 sorter: 'string',
                 formatter: formatClassificacao,
-                editor: 'select',
+                editor: 'list',
                 editorParams: { values: ['M', 'L', 'RLM'] },
-                headerFilter: 'select',
+                headerFilter: 'list',
                 headerFilterParams: { values: classificacoesFiltro }
             },
             {

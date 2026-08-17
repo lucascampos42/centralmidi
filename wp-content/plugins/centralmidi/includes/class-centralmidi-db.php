@@ -846,4 +846,55 @@ class CentralMidi_DB {
 
         return $wpdb->get_results($sql);
     }
+
+    /**
+     * Resolve media URL (MP3 demo or MIDI file).
+     * Handles:
+     * 1. Full external URLs (http:// or https://)
+     * 2. Relative paths (/midis/8/2026/file.mp3)
+     * 3. Bare filenames (file.mp3) -> mapped to /midis/<mes>/<ano>/file.mp3
+     */
+    public static function resolve_media_url($value, $mes = 0, $ano = 0) {
+        if (empty($value)) {
+            return '';
+        }
+        $value = trim($value);
+
+        // Absolute URL
+        if (preg_match('/^https?:\/\//i', $value)) {
+            return esc_url($value);
+        }
+
+        // Relative path containing slashes
+        if (strpos($value, '/') !== false) {
+            return esc_url(home_url('/' . ltrim($value, '/')));
+        }
+
+        // Bare filename
+        $mes = $mes ? (int) $mes : (int) date('n');
+        $ano = $ano ? (int) $ano : (int) date('Y');
+        return esc_url(home_url("/midis/{$mes}/{$ano}/" . $value));
+    }
+
+    /**
+     * Get resolved demo audio URL for a product ID.
+     */
+    public static function get_product_demo_url($product_id) {
+        $raw = get_post_meta($product_id, '_centralmidi_demo_audio', true);
+        if (!$raw) return '';
+        $mes = (int) get_post_meta($product_id, '_centralmidi_mes_lancamento', true);
+        $ano = (int) get_post_meta($product_id, '_centralmidi_ano_lancamento', true);
+        return self::resolve_media_url($raw, $mes, $ano);
+    }
+
+    /**
+     * Get resolved MIDI file URL for a product ID.
+     */
+    public static function get_product_midi_url($product_id) {
+        $raw = get_post_meta($product_id, '_centralmidi_file_url', true);
+        if (!$raw) return '';
+        $mes = (int) get_post_meta($product_id, '_centralmidi_mes_lancamento', true);
+        $ano = (int) get_post_meta($product_id, '_centralmidi_ano_lancamento', true);
+        return self::resolve_media_url($raw, $mes, $ano);
+    }
 }

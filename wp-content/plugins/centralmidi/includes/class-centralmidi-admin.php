@@ -18,6 +18,8 @@ class CentralMidi_Admin {
         add_action('wp_ajax_centralmidi_midis_table', array($this, 'handle_midis_table_ajax'));
         add_action('wp_ajax_centralmidi_midis_save', array($this, 'handle_midis_save_ajax'));
         add_action('wp_ajax_centralmidi_midis_bulk', array($this, 'handle_midis_bulk_ajax'));
+        add_action('wp_ajax_centralmidi_scan_folder', array($this, 'handle_scan_folder_ajax'));
+        add_action('wp_ajax_centralmidi_process_batch_chunk', array($this, 'handle_process_batch_chunk_ajax'));
     }
 
     public function enqueue_admin_assets($hook) {
@@ -562,7 +564,7 @@ class CentralMidi_Admin {
         $per_page = max(1, min(200, absint($_REQUEST['size'] ?? 20)));
         $page     = max(1, absint($_REQUEST['page'] ?? 1));
 
-        $sort = $_REQUEST['sort'] ?? array();
+        $sort = isset($_REQUEST['sort']) ? wp_unslash($_REQUEST['sort']) : array();
         if (is_string($sort)) {
             $sort = json_decode($sort, true);
         }
@@ -582,7 +584,7 @@ class CentralMidi_Admin {
             'classificacao' => '',
         );
 
-        $filter = $_REQUEST['filter'] ?? array();
+        $filter = isset($_REQUEST['filter']) ? wp_unslash($_REQUEST['filter']) : array();
         if (is_string($filter)) {
             $filter = json_decode($filter, true);
         }
@@ -955,5 +957,222 @@ class CentralMidi_Admin {
         ));
 
         CentralMidi_DB::clear_home_cache();
+    }
+
+    /**
+     * AJAX handler: Scan /midis/<mes>/<ano>/ on server.
+     */
+    public function handle_scan_folder_ajax() {
+        check_ajax_referer('centralmidi_batch_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => 'Permissão negada.'));
+        }
+
+        $mes = isset($_POST['mes']) ? (int) $_POST['mes'] : (int) date('n');
+        $ano = isset($_POST['ano']) ? (int) $_POST['ano'] : (int) date('Y');
+
+        $folder_rel = "midis/{$mes}/{$ano}/";
+        $folder_abs = ABSPATH . $folder_rel;
+
+        if (!is_dir($folder_abs)) {
+            wp_send_json_success(array(
+                'folder_path'   => $folder_rel,
+                'folder_exists' => false,
+                'total_found'   => 0,
+                'items'         => array(),
+                'message'       => "A pasta {$folder_rel} ainda não existe no servidor.",
+            ));
+        }
+
+        $files = scandir($folder_abs);
+        $found_audio = array();
+        $found_midi  = array();
+
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') continue;
+            $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+            $basename = pathinfo($file, PATHINFO_FILENAME);
+
+            if (in_array($ext, array('mp3', 'wav', 'ogg', 'm4a'), true)) {
+                $found_audio[$basename] = $file;
+            } elseif (in_array($ext, array('mid', 'midi', 'kar'), true)) {
+                $found_midi[$basename] = $file;
+            }
+        }
+
+        $all_basenames = array_unique(array_merge(array_keys($found_audio), array_keys($found_midi)));
+        sort($all_basenames);
+
+        $all_artistas = CentralMidi_DB::get_artistas();
+        $items = array();
+
+        foreach ($all_basenames as $base) {
+            $raw_name = str_replace(array('_', '-'), ' ', $base);
+            $raw_name = preg_replace('/\s+/', ' ', $raw_name);
+
+            $title  = $raw_name;
+            $artist = '';
+
+            if (strpos($base, '-') !== false) {
+                $parts = explode('-', $base, 2);
+                $part1 = trim(str_replace('_', ' ', $parts[0]));
+                $part2 = trim(str_replace('_', ' ', $parts[1]));
+
+                $matched = false;
+                foreach ($all_artistas as $art) {
+                    if (stripos($part1, $art->nome) !== false || stripos($art->nome, $part1) !== false) {
+                        $artist = $art->nome;
+                        $title  = $part2;
+                        $matched = true;
+                        break;
+                    } elseif (stripos($part2, $art->nome) !== false || stripos($art->nome, $part2) !== false) {
+                        $artist = $art->nome;
+                        $title  = $part1;
+                        $matched = true;
+                        break;
+                    }
+                }
+
+                if (!$matched) {
+                    $artist = ucwords($part1);
+                    $title  = ucwords($part2);
+                }
+            } else {
+                $title = ucwords($raw_name);
+            }
+
+            $mp3_file  = isset($found_audio[$base]) ? $found_audio[$base] : ($base . '.mp3');
+            $midi_file = isset($found_midi[$base]) ? $found_midi[$base] : ($base . '.mid');
+
+            $items[] = array(
+                'title'        => $title,
+                'artist'       => $artist,
+                'genero'       => '',
+                'classificacao'=> 'RLM',
+                'price'        => '19.90',
+                'mp3_file'     => $mp3_file,
+                'midi_file'    => $midi_file,
+                'mp3_exists'   => isset($found_audio[$base]),
+                'midi_exists'  => isset($found_midi[$base]),
+            );
+        }
+
+        wp_send_json_success(array(
+            'folder_path'   => $folder_rel,
+            'folder_exists' => true,
+            'total_found'   => count($items),
+            'items'         => $items,
+        ));
+    }
+
+    /**
+     * AJAX handler: Process a chunk of batch items (up to 15-20 at once).
+     */
+    public function handle_process_batch_chunk_ajax() {
+        check_ajax_referer('centralmidi_batch_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => 'Permissão negada.'));
+        }
+
+        $items          = isset($_POST['items']) ? (array) $_POST['items'] : array();
+        $mes_lancamento = isset($_POST['mes']) ? absint($_POST['mes']) : (int) date('n');
+        $ano_lancamento = isset($_POST['ano']) ? absint($_POST['ano']) : (int) date('Y');
+        $default_genero = isset($_POST['default_genero']) ? sanitize_text_field(wp_unslash($_POST['default_genero'])) : '';
+        $default_class  = isset($_POST['default_classificacao']) ? CentralMidi_DB::sanitize_classificacao($_POST['default_classificacao']) : 'RLM';
+        $default_price  = isset($_POST['default_price']) ? sanitize_text_field(wp_unslash($_POST['default_price'])) : '19.90';
+
+        if (empty($items)) {
+            wp_send_json_error(array('message' => 'Nenhum item para processar neste lote.'));
+        }
+
+        $processed = 0;
+        $errors    = array();
+        $results   = array();
+
+        foreach ($items as $item) {
+            $title = isset($item['title']) ? sanitize_text_field(wp_unslash($item['title'])) : '';
+            if (empty($title)) continue;
+
+            $artist_name = isset($item['artist']) ? sanitize_text_field(wp_unslash($item['artist'])) : '';
+            $genre_name  = !empty($item['genero']) ? sanitize_text_field(wp_unslash($item['genero'])) : $default_genero;
+            $classif     = !empty($item['classificacao']) ? CentralMidi_DB::sanitize_classificacao($item['classificacao']) : $default_class;
+            $price       = !empty($item['price']) ? sanitize_text_field(wp_unslash($item['price'])) : $default_price;
+            $price       = str_replace(',', '.', $price);
+
+            $mp3_input   = isset($item['mp3_file']) ? sanitize_text_field(wp_unslash($item['mp3_file'])) : '';
+            $midi_input  = isset($item['midi_file']) ? sanitize_text_field(wp_unslash($item['midi_file'])) : '';
+
+            $artista_id = 0;
+            if (!empty($artist_name)) {
+                $artista_id = CentralMidi_DB::add_artista($artist_name);
+            }
+
+            $genero_id = 0;
+            if (!empty($genre_name)) {
+                $genero_id = CentralMidi_DB::add_genero($genre_name);
+            }
+
+            $existing = get_page_by_title($title, OBJECT, 'product');
+            if ($existing) {
+                $post_id = $existing->ID;
+            } else {
+                $post_id = wp_insert_post(array(
+                    'post_title'   => $title,
+                    'post_content' => "Arquivo MIDI profissional multitrack para {$title}" . ($artist_name ? " de {$artist_name}" : "") . ". Compatível com teclados Yamaha, Roland, Korg e softwares DAW.",
+                    'post_status'  => 'publish',
+                    'post_type'    => 'product',
+                ));
+            }
+
+            if (is_wp_error($post_id) || !$post_id) {
+                $errors[] = "Falha ao salvar produto: {$title}";
+                continue;
+            }
+
+            wp_set_object_terms($post_id, 'simple', 'product_type');
+            update_post_meta($post_id, '_visibility', 'visible');
+            update_post_meta($post_id, '_stock_status', 'instock');
+            update_post_meta($post_id, '_regular_price', $price);
+            update_post_meta($post_id, '_price', $price);
+            update_post_meta($post_id, '_virtual', 'yes');
+            update_post_meta($post_id, '_downloadable', 'yes');
+
+            if ($artist_name) update_post_meta($post_id, '_centralmidi_artista', $artist_name);
+            if ($artista_id) update_post_meta($post_id, '_centralmidi_artista_id', $artista_id);
+            if ($genre_name) update_post_meta($post_id, '_centralmidi_genero', $genre_name);
+            if ($genero_id) update_post_meta($post_id, '_centralmidi_genero_id', $genero_id);
+            update_post_meta($post_id, '_centralmidi_mes_lancamento', $mes_lancamento);
+            update_post_meta($post_id, '_centralmidi_ano_lancamento', $ano_lancamento);
+            update_post_meta($post_id, '_centralmidi_classificacao', $classif);
+
+            if ($mp3_input) update_post_meta($post_id, '_centralmidi_demo_audio', $mp3_input);
+            if ($midi_input) update_post_meta($post_id, '_centralmidi_file_url', $midi_input);
+
+            CentralMidi_DB::upsert($post_id, array(
+                'artista_id'     => $artista_id,
+                'genero_id'      => $genero_id,
+                'mes_lancamento' => $mes_lancamento,
+                'ano_lancamento' => $ano_lancamento,
+                'classificacao'  => $classif,
+            ));
+
+            $processed++;
+            $results[] = array(
+                'id'     => $post_id,
+                'title'  => $title,
+                'artist' => $artist_name,
+                'url'    => get_permalink($post_id),
+            );
+        }
+
+        CentralMidi_DB::clear_home_cache();
+
+        wp_send_json_success(array(
+            'processed' => $processed,
+            'errors'    => $errors,
+            'results'   => $results,
+        ));
     }
 }

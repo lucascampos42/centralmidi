@@ -81,6 +81,13 @@
                                 <i class="ri-music-2-line"></i> Gêneros
                             </a>
                         </li>
+                        <?php if (current_user_can('manage_options')) : ?>
+                            <li class="cm-dropdown-admin-item">
+                                <a href="<?php echo esc_url(home_url('/importar-midis/')); ?>" style="color: var(--primary);">
+                                    <i class="ri-upload-cloud-2-line"></i> Cadastrar em Lote (Admin)
+                                </a>
+                            </li>
+                        <?php endif; ?>
                     </ul>
                 </li>
                 <li class="cm-nav-item">
