@@ -81,7 +81,7 @@ Versão `1.1.0` (`style.css`). Todas as páginas passam por `header.php`/`footer
 
 - `centralmidi.php` — bootstrap, constantes, `register_activation_hook` cria tabelas, `centralmidi_init` instancia classes.
 - `includes/class-centralmidi-db.php` — tabelas `wp_centralmidi_midis`, `wp_centralmidi_artistas` e `wp_centralmidi_generos`, upsert, `distinct`, `search_product_ids`, `search_by_term`, `get_midis_by_month` (determinístico), `get_artistas_alfabetico`, `clear_home_cache`, `maybe_upgrade` (migração de strings legadas → IDs).
-- `includes/class-centralmidi-admin.php` — menu admin "Central MIDI" > MIDIs (listagem com filtros + edição em lote) / Artistas / Gêneros (CRUD genérico via `referencia_config`), metabox no produto, `save_post_product` sincroniza post meta + tabela.
+- `includes/class-centralmidi-admin.php` — menu admin "Central MIDI" > MIDIs (**tabela interativa Tabulator 6.5.2**: paginação/sort/filtros server-side, edição inline, bulk via AJAX, export CSV) / Artistas / Gêneros (CRUD genérico via `referencia_config`), metabox no produto, `save_post_product` sincroniza post meta + tabela.
 - `includes/class-centralmidi-catalog.php` — shortcode `[centralmidi_catalogo]` (filtros GET, paginação), `render_card()` delega ao template do tema.
 - `assets/css/catalog.css` — estilos do catálogo público.
 
@@ -97,6 +97,7 @@ Versão `1.1.0` (`style.css`). Todas as páginas passam por `header.php`/`footer
 | `_centralmidi_ano_lancamento` | Ano do lançamento (ex.: 2026) |
 | `_centralmidi_classificacao` | `M` / `L` / `RLM` |
 | `_centralmidi_demo_audio` | URL do MP3 de demonstração |
+| `_centralmidi_file_url` | Link do arquivo MIDI já salvo no servidor (padrão `dominio/midis/<mes>/<ano>/<arquivo>.mid`) |
 
 ### Tabelas
 

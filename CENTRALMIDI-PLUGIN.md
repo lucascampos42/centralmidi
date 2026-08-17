@@ -69,6 +69,7 @@ A migração de strings legadas (`artista`, `genero`) → IDs é feita em `Centr
 | `_centralmidi_ano_lancamento`  | Ano de lançamento          |
 | `_centralmidi_classificacao`   | `M`, `L` ou `RLM`          |
 | `_centralmidi_demo_audio`      | URL do MP3 de demonstração |
+| `_centralmidi_file_url`        | Link do arquivo MIDI já enviado via FTP (padrão `dominio/midis/<mês>/<ano>/<arquivo>.mid`) |
 
 Ao salvar o produto, os valores são persistidos como post meta e sincronizados (`upsert`) na tabela `wp_centralmidi_midis`.
 
@@ -87,13 +88,16 @@ Exemplo de uso:
 [centralmidi_catalogo por_pagina="24"]
 ```
 
-## Admin — listagem e edição em lote
+## Admin — listagem interativa e edição em lote
 
-Página **Central MIDI › MIDIs** (`centralmidi-midis`):
+Página **Central MIDI › MIDIs** (`centralmidi-midis`) usa **Tabulator 6.5.2** (vendor local em `assets/vendor/tabulator/`):
 
-- Lista os MIDIs da tabela `wp_centralmidi_midis` com paginação e filtros (busca por título, artista, gênero, mês, ano, classificação).
-- **Edição em lote**: selecione os MIDIs (checkbox) e aplique uma operação — definir artista, gênero, mês, ano ou classificação, ou remover os metadados MIDI.
-- As operações atualizam post meta (`_centralmidi_*`) e sincronizam a tabela via `CentralMidi_DB::upsert()`; `clear_home_cache()` é chamado ao final.
+- Tabela com **dados server-side** (`wp_ajax_centralmidi_midis_table`): paginação remota (20/50/100), ordenação e filtros de cabeçalho (produto, artista, gênero, mês, ano, classificação) — só a página atual trafega.
+- **Edição inline** de células (`wp_ajax_centralmidi_midis_save`): selects para artista/gênero/classificação, número para mês/ano e input URL para o link do arquivo.
+- **Edição em lote** (`wp_ajax_centralmidi_midis_bulk`): definir artista, gênero, mês, ano ou classificação, **remover link do arquivo** (`clear_file`) ou remover os metadados MIDI.
+- Botões "Selecionar página", "Limpar seleção" e **"Exportar CSV"**.
+- Coluna **Arquivo** exibe o link do MIDI salvo no servidor (vazio = "Sem arquivo — clique para definir").
+- Todos os endpoints exigem `manage_options` + nonce `centralmidi_ajax`; operações atualizam post meta (`_centralmidi_*`) e sincronizam via `CentralMidi_DB::upsert()`; `clear_home_cache()` ao final.
 
 ## Arquivos do plugin
 
@@ -102,10 +106,13 @@ wp-content/plugins/centralmidi/
 ├── centralmidi.php                         # Bootstrap + hooks de ativação/uninstall
 ├── includes/
 │   ├── class-centralmidi-db.php            # Tabela, upsert, distinct, busca de IDs
-│   ├── class-centralmidi-admin.php         # Metabox no produto + save/sync
+│   ├── class-centralmidi-admin.php         # Metabox, página MIDIs (Tabulator) + endpoints AJAX
 │   └── class-centralmidi-catalog.php       # Shortcode, filtros e render dos cards
 └── assets/
-    └── css/catalog.css                     # Estilos do catálogo público
+    ├── css/catalog.css                     # Estilos do catálogo público
+    ├── css/admin-midis.css                 # Ajustes do Tabulator no admin
+    ├── js/midis-table.js                   # Tabela interativa (Tabulator) + bulk + inline edit
+    └── vendor/tabulator/                   # Tabulator 6.5.2 (tabulator.min.js / .css) — local, sem CDN
 ```
 
 ## Ajustes extras realizados

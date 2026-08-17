@@ -1,0 +1,77 @@
+/* Central MIDI — admin MIDIs table (Tabulator tweaks) */
+
+.centralmidi-tablenav {
+    margin: 8px 0 12px;
+}
+
+#centralmidi-midis-notice.notice {
+    margin: 12px 0;
+}
+
+#centralmidi-midis-notice.notice p {
+    margin: 0.5em 0;
+}
+
+#centralmidi-bulk-op {
+    max-width: 320px;
+}
+
+#centralmidi-midis-table {
+    max-width: 100%;
+    font-size: 13px;
+}
+
+#centralmidi-midis-table .tabulator-header .tabulator-col .tabulator-col-content {
+    padding: 6px 8px;
+}
+
+#centralmidi-midis-table .tabulator-cell {
+    padding: 6px 8px;
+}
+
+#centralmidi-midis-table .tabulator-cell.editing {
+    background: #fffbe6;
+}
+
+#centralmidi-midis-table .tabulator-row.tabulator-selected {
+    background: #eaf2fe;
+}
+
+#centralmidi-midis-table .tabulator-row.tabulator-selected:hover {
+    background: #dce8fa;
+}
+
+#centralmidi-midis-table .tabulator-header .tabulator-col.tabulator-sortable:hover,
+#centralmidi-midis-table .tabulator-header .tabulator-col.tabulator-col-sorter {
+    background: #f0f0f1;
+}
+
+#centralmidi-midis-table .tabulator-header .tabulator-col .tabulator-col-content {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+#centralmidi-midis-table .tabulator-header-filter input,
+#centralmidi-midis-table .tabulator-header-filter select {
+    width: 100%;
+    min-width: 70px;
+    margin: 2px 0;
+    font-size: 12px;
+}
+
+#centralmidi-midis-table .tabulator-footer {
+    border-top: 1px solid #c3c4c7;
+    background: #f6f7f7;
+    padding: 6px 8px;
+}
+
+#centralmidi-midis-table .cm-row-actions {
+    color: #787c82;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+#centralmidi-midis-table .cm-arquivo-vazio {
+    color: #a7aaad;
+    font-style: italic;
+}
