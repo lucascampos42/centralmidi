@@ -2505,14 +2505,25 @@ html.cm-theme-light .cm-logo-img {
 .woocommerce button.button.alt,
 .woocommerce input.button.alt,
 .woocommerce a.added_to_cart,
+.woocommerce .single_add_to_cart_button,
+.woocommerce .add_to_cart_button,
 .woocommerce .widget_shopping_cart .buttons a {
-    background: var(--primary);
-    color: #0c0f17;
-    font-weight: 700;
-    border-radius: var(--radius-md);
-    padding: 10px 20px;
-    border: none;
-    transition: background 0.2s ease, transform 0.2s ease;
+    background: var(--primary) !important;
+    color: #0c0f17 !important;
+    font-weight: 700 !important;
+    font-size: 0.92rem !important;
+    border-radius: var(--radius-md) !important;
+    padding: 11px 22px !important;
+    border: 1px solid var(--primary) !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 14px rgba(var(--primary-rgb), 0.25) !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    text-decoration: none !important;
+    line-height: 1.4 !important;
 }
 
 .woocommerce a.button:hover,
@@ -2522,18 +2533,58 @@ html.cm-theme-light .cm-logo-img {
 .woocommerce button.button.alt:hover,
 .woocommerce input.button.alt:hover,
 .woocommerce a.added_to_cart:hover,
+.woocommerce .single_add_to_cart_button:hover,
+.woocommerce .add_to_cart_button:hover,
 .woocommerce .widget_shopping_cart .buttons a:hover {
-    background: var(--primary-hover);
-    color: #0c0f17;
-    transform: translateY(-1px);
+    background: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+    color: #0c0f17 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.4) !important;
 }
 
 .woocommerce a.button.alt.disabled,
 .woocommerce a.button.alt:disabled,
 .woocommerce button.button.alt.disabled,
 .woocommerce button.button.alt:disabled {
-    background: var(--bg-surface-elevated);
-    color: var(--text-subtle);
+    background: var(--bg-surface-elevated) !important;
+    color: var(--text-subtle) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* Notices */
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error,
+.woocommerce-noreviews {
+    background: var(--bg-surface) !important;
+    border: 1px solid var(--border-color) !important;
+    border-left: 4px solid var(--primary) !important;
+    color: var(--text-main) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 14px 20px 14px 44px !important;
+    margin-bottom: 24px !important;
+    box-shadow: var(--shadow-card) !important;
+}
+
+.woocommerce-message .button,
+.woocommerce-info .button {
+    background: var(--bg-surface-elevated) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: none !important;
+    padding: 6px 14px !important;
+    font-size: 0.84rem !important;
+}
+
+.woocommerce-message .button:hover,
+.woocommerce-info .button:hover {
+    background: var(--primary) !important;
+    color: #0c0f17 !important;
+    border-color: var(--primary) !important;
 }
 
 /* Single product */
@@ -2543,7 +2594,8 @@ html.cm-theme-light .cm-logo-img {
 .woocommerce ul.products li.product .price {
     color: var(--primary);
     font-weight: 800;
-    font-size: 1.25rem;
+    font-size: 1.35rem;
+    font-family: var(--font-mono);
 }
 
 .woocommerce div.product .woocommerce-product-gallery {
@@ -2559,13 +2611,29 @@ html.cm-theme-light .cm-logo-img {
 
 .woocommerce div.product form.cart {
     margin: 24px 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
-.woocommerce div.product form.cart .quantity input.qty {
-    background: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    border-radius: var(--radius-md);
+.woocommerce div.product form.cart .quantity input.qty,
+.woocommerce .quantity input.qty {
+    background: var(--bg-surface-elevated) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-main) !important;
+    border-radius: var(--radius-md) !important;
+    height: 46px !important;
+    width: 68px !important;
+    text-align: center !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    font-family: var(--font-mono) !important;
+}
+
+.woocommerce div.product form.cart .single_add_to_cart_button {
+    height: 46px !important;
+    padding: 0 28px !important;
 }
 
 .woocommerce div.product .woocommerce-tabs ul.tabs {
@@ -3097,6 +3165,31 @@ html.cm-theme-light .cm-cta-box {
 
 html.cm-theme-light .cm-cta-box h2 {
     color: #0f172a;
+}
+
+html.cm-theme-light .woocommerce a.button,
+html.cm-theme-light .woocommerce button.button,
+html.cm-theme-light .woocommerce input.button,
+html.cm-theme-light .woocommerce .single_add_to_cart_button,
+html.cm-theme-light .woocommerce .add_to_cart_button,
+html.cm-theme-light .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-add-to-cart .wp-block-button__link {
+    background: #00d284 !important;
+    color: #0c0f17 !important;
+    border-color: #00d284 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 12px rgba(0, 210, 132, 0.3) !important;
+}
+
+html.cm-theme-light .woocommerce a.button:hover,
+html.cm-theme-light .woocommerce button.button:hover,
+html.cm-theme-light .woocommerce input.button:hover,
+html.cm-theme-light .woocommerce .single_add_to_cart_button:hover,
+html.cm-theme-light .woocommerce .add_to_cart_button:hover,
+html.cm-theme-light .wp-block-woocommerce-empty-cart-block .wc-block-grid__product-add-to-cart .wp-block-button__link:hover {
+    background: #00ba74 !important;
+    color: #0c0f17 !important;
+    border-color: #00ba74 !important;
+    box-shadow: 0 6px 18px rgba(0, 210, 132, 0.45) !important;
 }
 
 /* Automatic device preference for light mode when no class is explicitly set */
