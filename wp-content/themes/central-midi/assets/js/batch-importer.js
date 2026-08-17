@@ -227,12 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${item.mp3_exists ? '<span class="cm-status-tag cm-status-ok" title="Arquivo pronto"><i class="ri-checkbox-circle-fill"></i></span>' : ''}
                     </div>
                 </td>
-                <td>
-                    <div class="cm-file-cell">
-                        <input type="text" class="cm-table-input item-midi" value="${escapeHtml(item.midi_file || '')}" placeholder="arquivo.mid" />
-                        ${item.midi_exists ? '<span class="cm-status-tag cm-status-ok" title="Arquivo presente no servidor"><i class="ri-checkbox-circle-fill"></i></span>' : ''}
-                    </div>
-                </td>
                 <td style="text-align: center;">
                     <button type="button" class="cm-btn-remove-row" data-index="${idx}" title="Remover"><i class="ri-close-line"></i></button>
                 </td>
@@ -261,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target.classList.contains('item-class')) currentItems[idx].classificacao = e.target.value;
         if (e.target.classList.contains('item-price')) currentItems[idx].price = e.target.value;
         if (e.target.classList.contains('item-mp3')) currentItems[idx].mp3_file = e.target.value;
-        if (e.target.classList.contains('item-midi')) currentItems[idx].midi_file = e.target.value;
     });
 
     // Remove row

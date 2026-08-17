@@ -179,13 +179,12 @@ $batch_nonce = wp_create_nonce('centralmidi_batch_nonce');
                         <th style="width: 100px;">Classif.</th>
                         <th style="width: 100px;">Preço</th>
                         <th>Arquivo MP3</th>
-                        <th>Arquivo MIDI</th>
                         <th style="width: 50px;"></th>
                     </tr>
                 </thead>
                 <tbody id="cm-batch-tbody">
                     <tr class="cm-empty-row">
-                        <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <td style="text-align: center; padding: 40px; color: var(--text-muted);" colspan="8">
                             <i class="ri-inbox-line" style="font-size: 2rem; display: block; margin-bottom: 8px; opacity: 0.5;"></i>
                             Nenhuma música carregada. Escaneie a pasta do servidor ou cole sua lista acima.
                         </td>
