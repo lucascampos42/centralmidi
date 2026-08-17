@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         formData.append(`items[${i}][midi_file]`, item.midi_file || '');
 
                         if (item._file) {
-                            formData.append(`mp3_files[]`, item._file);
+                            formData.append(`file_${i}`, item._file, item.mp3_file || item._file.name);
                         }
                     });
 

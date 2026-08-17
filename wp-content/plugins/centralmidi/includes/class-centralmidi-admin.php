@@ -1097,24 +1097,9 @@ class CentralMidi_Admin {
         $folder_rel    = "midis/{$ano_lancamento}{$mes_pad}/";
         $folder_abs    = ABSPATH . $folder_rel;
 
-        if (!empty($_FILES)) {
-            if (!is_dir($folder_abs)) {
-                wp_mkdir_p($folder_abs);
-            }
-            // Handle multiple uploaded files
-            foreach ($_FILES as $key => $file_data) {
-                if (is_array($file_data['name'])) {
-                    foreach ($file_data['name'] as $f_idx => $f_name) {
-                        if (!empty($f_name) && $file_data['error'][$f_idx] === UPLOAD_ERR_OK) {
-                            $target_dest = $folder_abs . sanitize_file_name($f_name);
-                            move_uploaded_file($file_data['tmp_name'][$f_idx], $target_dest);
-                        }
-                    }
-                } elseif (!empty($file_data['name']) && $file_data['error'] === UPLOAD_ERR_OK) {
-                    $target_dest = $folder_abs . sanitize_file_name($file_data['name']);
-                    move_uploaded_file($file_data['tmp_name'], $target_dest);
-                }
-            }
+        if (!is_dir($folder_abs)) {
+            wp_mkdir_p($folder_abs);
+            @chmod($folder_abs, 0775);
         }
 
         if (empty($items)) {
@@ -1125,7 +1110,7 @@ class CentralMidi_Admin {
         $errors    = array();
         $results   = array();
 
-        foreach ($items as $item) {
+        foreach ($items as $i => $item) {
             $title = isset($item['title']) ? sanitize_text_field(wp_unslash($item['title'])) : '';
             if (empty($title)) continue;
 
@@ -1140,8 +1125,19 @@ class CentralMidi_Admin {
                 $price = str_replace(',', '.', preg_replace('/[^0-9.,]/', '', $raw_price));
             }
 
-            $mp3_input   = isset($item['mp3_file']) ? sanitize_text_field(wp_unslash($item['mp3_file'])) : '';
-            $midi_input  = isset($item['midi_file']) ? sanitize_text_field(wp_unslash($item['midi_file'])) : '';
+            $mp3_input   = isset($item['mp3_file']) ? sanitize_file_name(wp_unslash($item['mp3_file'])) : '';
+            $midi_input  = isset($item['midi_file']) ? sanitize_file_name(wp_unslash($item['midi_file'])) : '';
+
+            // Handle file upload specifically for this item
+            $file_key = "file_{$i}";
+            if (isset($_FILES[$file_key]) && $_FILES[$file_key]['error'] === UPLOAD_ERR_OK) {
+                $uploaded_orig_name = sanitize_file_name($_FILES[$file_key]['name']);
+                $target_dest = $folder_abs . $uploaded_orig_name;
+                if (move_uploaded_file($_FILES[$file_key]['tmp_name'], $target_dest)) {
+                    @chmod($target_dest, 0664);
+                    $mp3_input = $uploaded_orig_name;
+                }
+            }
 
             $artista_id = 0;
             if (!empty($artist_name)) {

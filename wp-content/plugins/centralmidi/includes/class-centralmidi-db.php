@@ -43,6 +43,7 @@ class CentralMidi_DB {
             mes_lancamento TINYINT UNSIGNED NOT NULL DEFAULT 0,
             ano_lancamento SMALLINT UNSIGNED NOT NULL DEFAULT 0,
             classificacao VARCHAR(3) NOT NULL DEFAULT 'M',
+            publicado TINYINT(1) NOT NULL DEFAULT 1,
             created_at DATETIME NOT NULL,
             updated_at DATETIME NOT NULL,
             PRIMARY KEY  (id),
@@ -51,7 +52,8 @@ class CentralMidi_DB {
             KEY genero_id (genero_id),
             KEY mes_lancamento (mes_lancamento),
             KEY ano_lancamento (ano_lancamento),
-            KEY classificacao (classificacao)
+            KEY classificacao (classificacao),
+            KEY publicado (publicado)
         ) {$charset};";
 
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -131,6 +133,11 @@ class CentralMidi_DB {
         // Ensure the midis table has the ano_lancamento column.
         if (!self::column_exists($midis_table, 'ano_lancamento')) {
             $wpdb->query("ALTER TABLE {$midis_table} ADD COLUMN ano_lancamento SMALLINT UNSIGNED NOT NULL DEFAULT 0 AFTER mes_lancamento");
+        }
+
+        // Ensure the midis table has the publicado column (1 = available for sale).
+        if (!self::column_exists($midis_table, 'publicado')) {
+            $wpdb->query("ALTER TABLE {$midis_table} ADD COLUMN publicado TINYINT(1) NOT NULL DEFAULT 1 AFTER classificacao");
         }
 
         // Backfill the year for legacy rows created before the column existed.
@@ -238,7 +245,7 @@ class CentralMidi_DB {
         }
 
         $row = $wpdb->get_row(
-            $wpdb->prepare("SELECT id FROM {$table_name} WHERE product_id = %d", $product_id)
+            $wpdb->prepare("SELECT id, publicado FROM {$table_name} WHERE product_id = %d", $product_id)
         );
 
         $payload = array(
@@ -252,8 +259,11 @@ class CentralMidi_DB {
         );
 
         if ($row) {
+            // Preserve the current publicado flag unless explicitly provided.
+            $payload['publicado'] = isset($data['publicado']) ? (int) (bool) $data['publicado'] : (int) $row->publicado;
             $wpdb->update($table_name, $payload, array('id' => $row->id));
         } else {
+            $payload['publicado']  = isset($data['publicado']) ? (int) (bool) $data['publicado'] : 1;
             $payload['created_at'] = $now;
             $wpdb->insert($table_name, $payload);
         }
@@ -560,7 +570,7 @@ class CentralMidi_DB {
         global $wpdb;
         $table_name = self::table_name();
         $sql = $wpdb->prepare(
-            "SELECT product_id FROM {$table_name} WHERE mes_lancamento = %d ORDER BY RAND() LIMIT %d",
+            "SELECT product_id FROM {$table_name} WHERE mes_lancamento = %d AND publicado = 1 ORDER BY RAND() LIMIT %d",
             absint($month),
             absint($limit)
         );
@@ -804,6 +814,10 @@ class CentralMidi_DB {
             $where[]  = "m.classificacao = %s";
             $params[] = $filters['classificacao'];
         }
+        if (isset($filters['publicado']) && in_array((int) $filters['publicado'], array(0, 1), true)) {
+            $where[]  = "m.publicado = %d";
+            $params[] = (int) $filters['publicado'];
+        }
 
         $where_sql = implode(' AND ', $where);
         $join_sql  = "LEFT JOIN {$wpdb->posts} p ON p.ID = m.product_id";
@@ -824,6 +838,7 @@ class CentralMidi_DB {
             'mes'           => 'm.mes_lancamento',
             'ano'           => 'm.ano_lancamento',
             'classificacao' => 'm.classificacao',
+            'publicado'     => 'm.publicado',
             'arquivo'       => 'fm.meta_value',
             'id'            => 'm.product_id',
         );
@@ -838,7 +853,7 @@ class CentralMidi_DB {
 
         $sql = $wpdb->prepare(
             "SELECT m.id, m.product_id, m.artista_id, m.genero_id, m.mes_lancamento,
-                    m.ano_lancamento, m.classificacao, a.nome AS artista, g.nome AS genero,
+                    m.ano_lancamento, m.classificacao, m.publicado, a.nome AS artista, g.nome AS genero,
                     p.post_title AS titulo, fm.meta_value AS arquivo
              FROM {$midis_table} m {$join_sql}
              WHERE {$where_sql}
