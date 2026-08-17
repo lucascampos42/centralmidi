@@ -1,0 +1,367 @@
+<?php
+/**
+ * Central Midi Theme Functions
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+function centralmidi_setup() {
+    add_theme_support('title-tag');
+    add_theme_support('post-thumbnails');
+    add_theme_support('woocommerce');
+    add_theme_support('wc-product-gallery-zoom');
+    add_theme_support('wc-product-gallery-lightbox');
+    add_theme_support('wc-product-gallery-slider');
+    add_theme_support('html5', array('search-form', 'comment-form', 'comment-list', 'gallery', 'caption', 'style', 'script'));
+
+    register_nav_menus(array(
+        'primary' => __('Menu Principal', 'central-midi'),
+        'footer'  => __('Menu Rodapé', 'central-midi'),
+    ));
+}
+add_action('after_setup_theme', 'centralmidi_setup');
+
+/**
+ * Central MIDI site options (WhatsApp, e-mail, PIX) via Customizer.
+ */
+function centralmidi_get_option($key, $default = '') {
+    return get_theme_mod('centralmidi_' . $key, $default);
+}
+
+function centralmidi_option_whatsapp() {
+    return centralmidi_get_option('whatsapp', '5531984511174');
+}
+
+function centralmidi_option_email() {
+    return centralmidi_get_option('email', 'contato@centralmidi.com.br');
+}
+
+function centralmidi_option_pix() {
+    return centralmidi_get_option('pix', 'contato@centralmidi.com.br');
+}
+
+/**
+ * Catalog page URL. Resolves the published page containing the [centralmidi_catalogo]
+ * shortcode, falling back to /midis/.
+ */
+function centralmidi_catalog_url() {
+    static $cached = null;
+
+    if (null !== $cached) {
+        return $cached;
+    }
+
+    $pages = get_pages(array(
+        'post_type'   => 'page',
+        'post_status' => 'publish',
+        'sort_column' => 'menu_order,ID',
+    ));
+
+    foreach ($pages as $page) {
+        if (has_shortcode($page->post_content, 'centralmidi_catalogo')) {
+            $cached = get_permalink($page->ID);
+            return $cached;
+        }
+    }
+
+    $cached = home_url('/midis/');
+    return $cached;
+}
+
+function centralmidi_customize_register($wp_customize) {
+    $wp_customize->add_section('centralmidi_options', array(
+        'title'    => __('Central MIDI - Configurações', 'central-midi'),
+        'priority' => 30,
+    ));
+
+    $settings = array(
+        'whatsapp' => array(
+            'label'       => __('WhatsApp (somente números, com DDI)', 'central-midi'),
+            'description' => __('Ex: 5531984511174', 'central-midi'),
+            'sanitize'    => 'sanitize_text_field',
+        ),
+        'email'    => array(
+            'label'       => __('E-mail de Contato', 'central-midi'),
+            'sanitize'    => 'sanitize_email',
+        ),
+        'pix'      => array(
+            'label'       => __('Chave PIX', 'central-midi'),
+            'sanitize'    => 'sanitize_text_field',
+        ),
+    );
+
+    foreach ($settings as $key => $config) {
+        $wp_customize->add_setting('centralmidi_' . $key, array(
+            'default'           => centralmidi_get_option($key, ''),
+            'sanitize_callback' => $config['sanitize'],
+        ));
+        $wp_customize->add_control('centralmidi_' . $key, array(
+            'label'       => $config['label'],
+            'description' => isset($config['description']) ? $config['description'] : '',
+            'section'     => 'centralmidi_options',
+            'type'        => 'text',
+        ));
+    }
+}
+add_action('customize_register', 'centralmidi_customize_register');
+
+/**
+ * Demo audio player button on the single product page (uses the global player).
+ */
+function centralmidi_single_demo_audio() {
+    global $product;
+    if (!$product) {
+        return;
+    }
+
+    $demo_audio = get_post_meta($product->get_id(), '_centralmidi_demo_audio', true);
+    if (!$demo_audio) {
+        return;
+    }
+
+    $artist = get_post_meta($product->get_id(), '_centralmidi_artista', true);
+    ?>
+    <div class="cm-single-demo">
+        <button type="button"
+                class="cm-btn cm-btn-primary cm-play-trigger"
+                data-audio="<?php echo esc_url($demo_audio); ?>"
+                data-title="<?php echo esc_attr(get_the_title($product->get_id())); ?>"
+                data-artist="<?php echo esc_attr($artist ? $artist : 'Geral'); ?>"
+                data-url="<?php echo esc_url(get_permalink($product->get_id())); ?>"
+                aria-label="<?php echo esc_attr(sprintf(__('Ouvir demonstração de %s', 'central-midi'), get_the_title($product->get_id()))); ?>">
+            <i class="ri-volume-up-line"></i> Ouvir Demonstração (MP3)
+        </button>
+    </div>
+    <?php
+}
+add_action('woocommerce_single_product_summary', 'centralmidi_single_demo_audio', 30);
+
+/**
+ * Enqueue scripts and styles
+ */
+function centralmidi_scripts() {
+    $theme_version = wp_get_theme()->get('Version');
+
+    // Google Fonts
+    wp_enqueue_style('centralmidi-fonts', 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap', array(), null);
+    
+    // Remixicon for clean modern icons
+    wp_enqueue_style('remixicon', 'https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css', array(), '4.3.0');
+
+    // Theme Styles
+    wp_enqueue_style('centralmidi-style', get_template_directory_uri() . '/assets/css/main.css', array(), $theme_version);
+
+    // Audio Player JS
+    wp_enqueue_script('centralmidi-player', get_template_directory_uri() . '/assets/js/player.js', array(), $theme_version, true);
+
+    wp_localize_script('centralmidi-player', 'centralMidiData', array(
+        'ajaxUrl' => admin_url('admin-ajax.php'),
+        'themeUrl' => get_template_directory_uri()
+    ));
+
+    // Hero Carousel JS (only where the carousel is used)
+    if (is_front_page()) {
+        wp_enqueue_script('centralmidi-carousel', get_template_directory_uri() . '/assets/js/carousel.js', array(), $theme_version, true);
+    }
+
+    // Mobile navigation toggle
+    wp_enqueue_script('centralmidi-nav', get_template_directory_uri() . '/assets/js/nav.js', array(), $theme_version, true);
+
+    // Theme (light/dark/system) toggle
+    wp_enqueue_script('centralmidi-theme-toggle', get_template_directory_uri() . '/assets/js/theme-toggle.js', array(), $theme_version, true);
+}
+add_action('wp_enqueue_scripts', 'centralmidi_scripts');
+
+/**
+ * Resource hints (preconnect) for external stylesheet origins.
+ */
+function centralmidi_resource_hints($urls, $relation_type) {
+    if ('preconnect' === $relation_type) {
+        $urls[] = array(
+            'href'        => 'https://fonts.gstatic.com',
+            'crossorigin' => 'anonymous',
+        );
+        $urls[] = array(
+            'href'        => 'https://cdn.jsdelivr.net',
+            'crossorigin' => 'anonymous',
+        );
+    }
+    return $urls;
+}
+add_filter('wp_resource_hints', 'centralmidi_resource_hints', 10, 2);
+
+/**
+ * Register Custom Post Type: slide (hero carousel)
+ */
+function centralmidi_register_slide_cpt() {
+    register_post_type('cm_slide', array(
+        'labels' => array(
+            'name'               => __('Slides', 'central-midi'),
+            'singular_name'      => __('Slide', 'central-midi'),
+            'add_new'            => __('Adicionar novo', 'central-midi'),
+            'add_new_item'       => __('Adicionar novo Slide', 'central-midi'),
+            'edit_item'          => __('Editar Slide', 'central-midi'),
+            'new_item'           => __('Novo Slide', 'central-midi'),
+            'view_item'          => __('Ver Slide', 'central-midi'),
+            'search_items'       => __('Buscar Slides', 'central-midi'),
+            'not_found'          => __('Nenhum slide encontrado', 'central-midi'),
+            'not_found_in_trash' => __('Nenhum slide na lixeira', 'central-midi'),
+            'menu_name'          => __('Slides', 'central-midi'),
+        ),
+        'public'       => false,
+        'show_ui'      => true,
+        'show_in_menu' => 'centralmidi',
+        'menu_icon'    => 'dashicons-images-alt2',
+        'menu_position'=> 26,
+        'supports'     => array('title', 'thumbnail'),
+        'hierarchical' => false,
+        'has_archive'  => false,
+        'rewrite'      => false,
+        'capability_type' => 'post',
+    ));
+}
+add_action('init', 'centralmidi_register_slide_cpt');
+
+/**
+ * Metabox: slide content fields
+ */
+function centralmidi_add_slide_metaboxes() {
+    add_meta_box(
+        'centralmidi_slide_content',
+        __('Conteúdo do Slide', 'central-midi'),
+        'centralmidi_render_slide_metabox',
+        'cm_slide',
+        'normal',
+        'high'
+    );
+}
+add_action('add_meta_boxes', 'centralmidi_add_slide_metaboxes');
+
+function centralmidi_render_slide_metabox($post) {
+    wp_nonce_field('centralmidi_save_slide', 'centralmidi_slide_nonce');
+
+    $badge       = get_post_meta($post->ID, '_cm_slide_badge', true);
+    $subtitle    = get_post_meta($post->ID, '_cm_slide_subtitle', true);
+    $btn_text    = get_post_meta($post->ID, '_cm_slide_btn_text', true);
+    $btn_url     = get_post_meta($post->ID, '_cm_slide_btn_url', true);
+    $align       = get_post_meta($post->ID, '_cm_slide_align', true);
+    $align       = in_array($align, array('left', 'center', 'right'), true) ? $align : 'left';
+    ?>
+    <table class="form-table">
+        <tbody>
+            <tr>
+                <th scope="row">
+                    <label for="cm_slide_badge"><?php esc_html_e('Badge', 'central-midi'); ?></label>
+                </th>
+                <td>
+                    <input type="text" id="cm_slide_badge" name="_cm_slide_badge" value="<?php echo esc_attr($badge); ?>" class="regular-text" placeholder="Ex: Catálogo Oficial Central MIDI" />
+                    <p class="description"><?php esc_html_e('Rótulo curto exibido acima do título.', 'central-midi'); ?></p>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">
+                    <label for="cm_slide_subtitle"><?php esc_html_e('Subtítulo', 'central-midi'); ?></label>
+                </th>
+                <td>
+                    <textarea id="cm_slide_subtitle" name="_cm_slide_subtitle" rows="3" class="large-text" placeholder="Texto de apoio exibido sob o título."><?php echo esc_textarea($subtitle); ?></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">
+                    <label for="cm_slide_btn_text"><?php esc_html_e('Texto do Botão', 'central-midi'); ?></label>
+                </th>
+                <td>
+                    <input type="text" id="cm_slide_btn_text" name="_cm_slide_btn_text" value="<?php echo esc_attr($btn_text); ?>" class="regular-text" placeholder="Ex: Ver Catálogo" />
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">
+                    <label for="cm_slide_btn_url"><?php esc_html_e('URL do Botão', 'central-midi'); ?></label>
+                </th>
+                <td>
+                    <input type="url" id="cm_slide_btn_url" name="_cm_slide_btn_url" value="<?php echo esc_url($btn_url); ?>" class="regular-text" placeholder="Ex: https://seusite.com/catalogo-midi/" />
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">
+                    <label><?php esc_html_e('Posição do Texto', 'central-midi'); ?></label>
+                </th>
+                <td>
+                    <label style="margin-right:16px;"><input type="radio" name="_cm_slide_align" value="left" <?php checked($align, 'left'); ?>> <?php esc_html_e('Esquerda', 'central-midi'); ?></label>
+                    <label style="margin-right:16px;"><input type="radio" name="_cm_slide_align" value="center" <?php checked($align, 'center'); ?>> <?php esc_html_e('Centro', 'central-midi'); ?></label>
+                    <label><input type="radio" name="_cm_slide_align" value="right" <?php checked($align, 'right'); ?>> <?php esc_html_e('Direita', 'central-midi'); ?></label>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="description"><?php esc_html_e('Use a Imagem Destacada do slide como imagem de fundo do carousel.', 'central-midi'); ?></p>
+    <?php
+}
+
+function centralmidi_save_slide($post_id) {
+    if (!isset($_POST['centralmidi_slide_nonce']) || !wp_verify_nonce($_POST['centralmidi_slide_nonce'], 'centralmidi_save_slide')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    $fields = array(
+        '_cm_slide_badge'    => 'sanitize_text_field',
+        '_cm_slide_subtitle' => 'sanitize_textarea_field',
+        '_cm_slide_btn_text' => 'sanitize_text_field',
+        '_cm_slide_btn_url'  => 'esc_url_raw',
+    );
+
+    foreach ($fields as $field => $sanitizer) {
+        if (isset($_POST[$field])) {
+            update_post_meta($post_id, $field, $sanitizer(wp_unslash($_POST[$field])));
+        }
+    }
+
+    $align = isset($_POST['_cm_slide_align']) ? sanitize_text_field(wp_unslash($_POST['_cm_slide_align'])) : 'left';
+    if (!in_array($align, array('left', 'center', 'right'), true)) {
+        $align = 'left';
+    }
+    update_post_meta($post_id, '_cm_slide_align', $align);
+}
+add_action('save_post_cm_slide', 'centralmidi_save_slide');
+
+/**
+ * Returns carousel slides (ordered by menu_order), cached in a transient.
+ */
+function centralmidi_get_slides() {
+    $cached = get_transient('centralmidi_slides');
+    if (false !== $cached) {
+        return $cached;
+    }
+
+    $query = new WP_Query(array(
+        'post_type'      => 'cm_slide',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+        'orderby'        => 'menu_order',
+        'order'          => 'ASC',
+    ));
+
+    $slides = $query->posts;
+    set_transient('centralmidi_slides', $slides, DAY_IN_SECONDS);
+
+    return $slides;
+}
+
+/**
+ * Invalidate the cached slides when a slide is saved or deleted.
+ */
+function centralmidi_clear_slides_cache($post_id) {
+    if ('cm_slide' === get_post_type($post_id)) {
+        delete_transient('centralmidi_slides');
+    }
+}
+add_action('save_post_cm_slide', 'centralmidi_clear_slides_cache');
+add_action('delete_post', 'centralmidi_clear_slides_cache');
