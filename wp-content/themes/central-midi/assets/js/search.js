@@ -93,7 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${tracks.map(track => {
                                 const classLower = String(track.classificacao || 'M').toLowerCase();
                                 return `
-                                    <div class="cm-suggest-track cm-suggest-item" data-url="${escapeHTML(track.url)}">
+                                    <div class="cm-suggest-track cm-suggest-item" 
+                                         data-url="${escapeHTML(track.url)}"
+                                         data-audio="${escapeHTML(track.demo_audio)}"
+                                         data-title="${escapeHTML(track.title)}"
+                                         data-artist="${escapeHTML(track.artista)}">
                                         <div class="cm-suggest-track-left">
                                             ${track.demo_audio ? `
                                                 <button type="button" 

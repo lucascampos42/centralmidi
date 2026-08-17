@@ -46,7 +46,7 @@ $cm_product_url    = get_permalink($cm_product_id);
         <?php endif; ?>
 
         <?php if ($cm_demo_audio) : ?>
-            <button type="button" class="cm-play-trigger" title="Ouvir Demonstração MP3" aria-label="<?php echo esc_attr(sprintf(__('Ouvir demonstração de %s', 'central-midi'), $cm_title)); ?>">
+            <button type="button" class="cm-cover-play-btn cm-play-trigger" title="Ouvir Demonstração MP3" aria-label="<?php echo esc_attr(sprintf(__('Ouvir demonstração de %s', 'central-midi'), $cm_title)); ?>">
                 <i class="ri-play-fill cm-icon-play"></i>
                 <i class="ri-pause-fill cm-icon-pause"></i>
             </button>

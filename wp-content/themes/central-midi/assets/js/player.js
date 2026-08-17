@@ -34,11 +34,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function playTrack(card) {
-        const audioUrl = card.dataset.audio;
-        const title = card.dataset.title || 'Música Sem Título';
-        const artist = card.dataset.artist || 'Artista';
-        const productUrl = card.dataset.url || '#';
+    function playTrack(source) {
+        if (!source) return;
+
+        let audioUrl = '';
+        let title = 'Música Sem Título';
+        let artist = 'Central MIDI';
+        let productUrl = '#';
+        let card = null;
+
+        if (source instanceof HTMLElement) {
+            card = source.closest('.cm-track-card') || source.closest('.cm-suggest-track') || source;
+            audioUrl = source.dataset.audio || (card && card.dataset.audio) || '';
+            title = source.dataset.title || (card && card.dataset.title) || 'Música Sem Título';
+            artist = source.dataset.artist || (card && card.dataset.artist) || 'Central MIDI';
+            productUrl = source.dataset.url || (card && card.dataset.url) || '#';
+        } else if (typeof source === 'object') {
+            audioUrl = source.audio || '';
+            title = source.title || 'Música Sem Título';
+            artist = source.artist || 'Central MIDI';
+            productUrl = source.url || '#';
+            card = source.element || null;
+        }
 
         if (!audioUrl) return;
 
@@ -49,12 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // If clicking the same song
         if (currentAudioUrl === audioUrl) {
             if (audioElement.paused) {
-                audioElement.play();
-                card.classList.add('playing');
-                updatePlayIcon(true);
+                audioElement.play().then(() => updatePlayIcon(true)).catch(() => updatePlayIcon(false));
+                if (card) card.classList.add('playing');
             } else {
                 audioElement.pause();
-                card.classList.remove('playing');
+                if (card) card.classList.remove('playing');
                 updatePlayIcon(false);
             }
             return;
@@ -65,16 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
         currentAudioUrl = audioUrl;
 
         audioElement.src = audioUrl;
-        playerTitle.textContent = title;
-        playerArtist.textContent = artist;
+        if (playerTitle) playerTitle.textContent = title;
+        if (playerArtist) playerArtist.textContent = artist;
         if (playerBuyLink) {
             playerBuyLink.href = productUrl;
             playerBuyLink.hidden = false;
         }
 
-        playerBar.classList.remove('hidden');
+        if (playerBar) playerBar.classList.remove('hidden');
         document.body.classList.add('cm-player-active');
-        card.classList.add('playing');
+        if (card) card.classList.add('playing');
 
         audioElement.play().then(() => {
             updatePlayIcon(true);
@@ -88,8 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.CentralMidiPlayer = {
         playTrack: playTrack,
         playFromElement: function(el) {
-            const card = el.closest('.cm-track-card') || el;
-            playTrack(card);
+            playTrack(el);
         }
     };
 
@@ -99,12 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!btn) return;
         e.stopPropagation();
         e.preventDefault();
-        const card = btn.closest('.cm-track-card');
-        if (card) {
-            playTrack(card);
-        } else if (btn.dataset.audio) {
-            playTrack(btn);
-        }
+        playTrack(btn);
     });
 
     // Main Play/Pause Button in Player Bar

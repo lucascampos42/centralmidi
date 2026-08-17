@@ -784,7 +784,8 @@ a {
     opacity: 0.6;
 }
 
-.cm-play-trigger {
+/* Cover Floating Circular Play Button */
+.cm-cover-play-btn {
     position: absolute;
     width: 52px;
     height: 52px;
@@ -799,11 +800,24 @@ a {
     font-size: 1.6rem;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+    z-index: 5;
 }
 
-.cm-play-trigger:hover {
+.cm-cover-play-btn:hover {
     transform: scale(1.1);
     background: #25e59b;
+}
+
+/* Inline Card Footer Play Button */
+.cm-btn-play-inline {
+    position: static !important;
+    display: inline-flex !important;
+    width: auto !important;
+    height: auto !important;
+    font-size: 0.85rem !important;
+    padding: 8px 14px !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: none !important;
 }
 
 .cm-icon-pause {

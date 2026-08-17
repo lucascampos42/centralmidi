@@ -24,6 +24,16 @@ function centralmidi_setup() {
 add_action('after_setup_theme', 'centralmidi_setup');
 
 /**
+ * Force BRL (R$) currency formatting for WooCommerce
+ */
+add_filter('woocommerce_currency', function($currency) {
+    return 'BRL';
+});
+add_filter('woocommerce_currency_symbol', function($currency_symbol, $currency) {
+    return 'R$';
+}, 10, 2);
+
+/**
  * Central MIDI site options (WhatsApp, e-mail, PIX) via Customizer.
  */
 function centralmidi_get_option($key, $default = '') {
