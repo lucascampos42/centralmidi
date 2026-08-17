@@ -1,0 +1,214 @@
+/* Central MIDI - Catalog & Filter Styles */
+
+.centralmidi-catalogo {
+    width: 100%;
+    margin: 20px 0;
+}
+
+.centralmidi-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+    background: #141923;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 30px;
+}
+
+.centralmidi-filter {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.centralmidi-filter label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.centralmidi-filter select {
+    background: #0c0f17;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f8fafc;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.centralmidi-filter select:focus {
+    border-color: #00d284;
+}
+
+.centralmidi-filter-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.centralmidi-btn-filter {
+    background: #00d284 !important;
+    color: #0c0f17 !important;
+    padding: 10px 18px !important;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.centralmidi-btn-clear {
+    background: transparent !important;
+    color: #94a3b8 !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    padding: 10px 14px !important;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.centralmidi-btn-clear:hover {
+    color: #f8fafc !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.centralmidi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 22px;
+}
+
+/* Badge Classification on Cover */
+.centralmidi-badge-class {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.05em;
+    z-index: 10;
+    cursor: help;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.centralmidi-badge-class:hover {
+    transform: scale(1.08);
+}
+
+/* Tooltip popup on hover */
+.centralmidi-badge-class[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 16px;
+    border: 6px solid transparent;
+    border-bottom-color: #141923;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+    transform: translateY(4px);
+    pointer-events: none;
+    z-index: 999;
+}
+
+.centralmidi-badge-class[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    background: rgba(20, 25, 35, 0.98);
+    backdrop-filter: blur(12px);
+    color: #f8fafc;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: normal;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.centralmidi-badge-class[data-tooltip]:hover::before,
+.centralmidi-badge-class[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.class-m {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+.class-l {
+    background: #eab308;
+    color: #000000;
+}
+
+.class-rlm {
+    background: #00d284;
+    color: #0c0f17;
+}
+
+.cm-tag-class {
+    color: #38bdf8 !important;
+    border-color: rgba(56, 189, 248, 0.2) !important;
+}
+
+.centralmidi-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    background: #141923;
+    border-radius: 12px;
+    color: #94a3b8;
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.centralmidi-pagination {
+    margin-top: 36px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.centralmidi-pagination .page-numbers {
+    background: #141923;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.centralmidi-pagination .page-numbers.current {
+    background: #00d284;
+    color: #0c0f17;
+    border-color: #00d284;
+}
