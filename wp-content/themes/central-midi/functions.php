@@ -70,6 +70,36 @@ function centralmidi_disable_downloads_endpoint() {
 add_action('template_redirect', 'centralmidi_disable_downloads_endpoint');
 
 /**
+ * Custom Portuguese (pt_BR) translations for WooCommerce strings
+ */
+function centralmidi_translate_woocommerce_strings($translated_text, $text, $domain) {
+    static $translations = array(
+        'Confirm email address' => 'Confirmar endereço de e-mail',
+        'Confirm your email address to check for past orders and link them to your account.' => 'Confirme seu endereço de e-mail para verificar pedidos anteriores e vinculá-los à sua conta.',
+        'Verify email' => 'Verificar e-mail',
+        'Send verification email' => 'Enviar e-mail de verificação',
+        'Resend verification email' => 'Reenviar e-mail de verificação',
+        'Email verification sent' => 'E-mail de verificação enviado',
+        'Check your email' => 'Verifique seu e-mail',
+        'No order has been made yet.' => 'Nenhum pedido foi realizado ainda.',
+        'Browse products' => 'Ver catálogo de MIDIs',
+        'Orders' => 'Pedidos',
+        'Order' => 'Pedido',
+        'Addresses' => 'Endereços',
+        'Account details' => 'Detalhes da conta',
+        'Log out' => 'Sair',
+    );
+
+    if (isset($translations[$text])) {
+        return $translations[$text];
+    }
+
+    return $translated_text;
+}
+add_filter('gettext', 'centralmidi_translate_woocommerce_strings', 20, 3);
+add_filter('ngettext', 'centralmidi_translate_woocommerce_strings', 20, 3);
+
+/**
  * Central MIDI site options (WhatsApp, e-mail, PIX) via Customizer.
  */
 function centralmidi_get_option($key, $default = '') {
