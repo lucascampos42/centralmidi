@@ -81,7 +81,7 @@ Versão `1.1.0` (`style.css`). Todas as páginas passam por `header.php`/`footer
 
 - `centralmidi.php` — bootstrap, constantes, `register_activation_hook` cria tabelas, `centralmidi_init` instancia classes.
 - `includes/class-centralmidi-db.php` — tabelas `wp_centralmidi_midis`, `wp_centralmidi_artistas` e `wp_centralmidi_generos`, upsert, `distinct`, `search_product_ids`, `search_by_term`, `get_midis_by_month` (determinístico), `get_artistas_alfabetico`, `clear_home_cache`, `maybe_upgrade` (migração de strings legadas → IDs).
-- `includes/class-centralmidi-admin.php` — menu admin "Central MIDI" > Artistas / Gêneros (CRUD genérico via `referencia_config`), metabox no produto, `save_post_product` sincroniza post meta + tabela.
+- `includes/class-centralmidi-admin.php` — menu admin "Central MIDI" > MIDIs (listagem com filtros + edição em lote) / Artistas / Gêneros (CRUD genérico via `referencia_config`), metabox no produto, `save_post_product` sincroniza post meta + tabela.
 - `includes/class-centralmidi-catalog.php` — shortcode `[centralmidi_catalogo]` (filtros GET, paginação), `render_card()` delega ao template do tema.
 - `assets/css/catalog.css` — estilos do catálogo público.
 
