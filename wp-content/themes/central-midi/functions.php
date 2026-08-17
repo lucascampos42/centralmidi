@@ -94,6 +94,19 @@ function centralmidi_disable_unneeded_account_endpoints() {
 add_action('template_redirect', 'centralmidi_disable_unneeded_account_endpoints');
 
 /**
+ * Protect /importar-midis/ - only administrators with manage_options can access
+ */
+function centralmidi_protect_admin_pages() {
+    if (is_page('importar-midis') || is_page_template('page-importar-midis.php')) {
+        if (!is_user_logged_in() || !current_user_can('manage_options')) {
+            wp_safe_redirect(wp_login_url(home_url('/importar-midis/')));
+            exit;
+        }
+    }
+}
+add_action('template_redirect', 'centralmidi_protect_admin_pages');
+
+/**
  * Redirect WooCommerce Shop archive (/loja/) to canonical MIDIs catalog (/midis/)
  */
 function centralmidi_redirect_shop_archive() {
