@@ -60,13 +60,14 @@ $batch_nonce = wp_create_nonce('centralmidi_batch_nonce');
             </div>
 
             <div class="cm-form-group">
-                <label for="batch_price"><i class="ri-money-dollar-circle-line"></i> Preço Padrão (R$)</label>
-                <input type="text" id="batch_price" class="cm-input" value="19.90" />
+                <label for="batch_price"><i class="ri-money-dollar-circle-line"></i> Preço Padrão</label>
+                <input type="text" id="batch_price" class="cm-input" value="" placeholder="Sem Preço" />
             </div>
 
             <div class="cm-form-group">
                 <label for="batch_classificacao"><i class="ri-award-line"></i> Classificação Padrão</label>
                 <select id="batch_classificacao" class="cm-input">
+                    <option value="" selected>— Nenhuma (Sem Marcação) —</option>
                     <option value="RLM">#RLM (Repertório Letra Melodia)</option>
                     <option value="M">#M (Melodia)</option>
                     <option value="L">#L (Letra)</option>
@@ -74,13 +75,13 @@ $batch_nonce = wp_create_nonce('centralmidi_batch_nonce');
             </div>
 
             <div class="cm-form-group">
+                <label for="batch_artist"><i class="ri-user-star-line"></i> Artista Padrão</label>
+                <input type="text" id="batch_artist" class="cm-input" value="Padrão" />
+            </div>
+
+            <div class="cm-form-group">
                 <label for="batch_genero"><i class="ri-music-2-line"></i> Gênero Padrão</label>
-                <select id="batch_genero" class="cm-input">
-                    <option value="">— Selecione ou detecte automático —</option>
-                    <?php foreach ($generos as $g) : ?>
-                        <option value="<?php echo esc_attr($g->nome); ?>"><?php echo esc_html($g->nome); ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <input type="text" id="batch_genero" class="cm-input" value="Padrão" />
             </div>
         </div>
     </div>
@@ -88,16 +89,33 @@ $batch_nonce = wp_create_nonce('centralmidi_batch_nonce');
     <!-- 2. Modos de Entrada (Abas) -->
     <div class="cm-box cm-box--pad cm-batch-entry-card">
         <div class="cm-batch-tabs">
-            <button type="button" class="cm-batch-tab active" data-tab="scanner">
-                <i class="ri-folder-music-line"></i> 1. Escanear Pasta FTP no Servidor
+            <button type="button" class="cm-batch-tab active" data-tab="upload">
+                <i class="ri-upload-cloud-line"></i> 1. Upload Direto de MP3s pelo Navegador
+            </button>
+            <button type="button" class="cm-batch-tab" data-tab="scanner">
+                <i class="ri-folder-music-line"></i> 2. Escanear Pasta FTP no Servidor
             </button>
             <button type="button" class="cm-batch-tab" data-tab="paste">
-                <i class="ri-file-list-3-line"></i> 2. Colar Lista / Planilha de Músicas
+                <i class="ri-file-list-3-line"></i> 3. Colar Lista de Músicas
             </button>
         </div>
 
-        <!-- Conteúdo Aba 1: Scanner de Pasta -->
-        <div class="cm-tab-content active" id="tab-scanner">
+        <!-- Conteúdo Aba 1: Upload Direto de MP3s -->
+        <div class="cm-tab-content active" id="tab-upload">
+            <div class="cm-dropzone" id="cm-mp3-dropzone">
+                <input type="file" id="cm-mp3-upload-input" multiple accept=".mp3,audio/mpeg,audio/mp3" style="display: none;" />
+                <i class="ri-file-music-line cm-dropzone-icon"></i>
+                <h3>Arraste seus arquivos MP3 aqui ou clique para selecionar</h3>
+                <p>Selecione dezenas ou centenas de arquivos MP3 de uma só vez do seu computador. O sistema extrairá o nome de cada música automaticamente para o lote.</p>
+                <button type="button" id="cm-btn-select-files" class="cm-btn cm-btn-primary">
+                    <i class="ri-folder-upload-line"></i> Selecionar Arquivos MP3 do Computador
+                </button>
+                <div id="cm-upload-count" class="cm-upload-count hidden"></div>
+            </div>
+        </div>
+
+        <!-- Conteúdo Aba 2: Scanner de Pasta FTP -->
+        <div class="cm-tab-content" id="tab-scanner">
             <div class="cm-scanner-box">
                 <div class="cm-scanner-info">
                     <?php $default_folder = $current_year . str_pad($current_month, 2, '0', STR_PAD_LEFT); ?>
@@ -111,16 +129,15 @@ $batch_nonce = wp_create_nonce('centralmidi_batch_nonce');
             <div id="cm-scan-status" class="cm-scan-status hidden"></div>
         </div>
 
-        <!-- Conteúdo Aba 2: Colar Lista -->
+        <!-- Conteúdo Aba 3: Colar Lista -->
         <div class="cm-tab-content" id="tab-paste">
             <div class="cm-paste-box">
                 <label for="cm-paste-input">Cole sua lista de faixas (1 por linha):</label>
-                <textarea id="cm-paste-input" class="cm-textarea" rows="8" placeholder="Exemplo com pipe:&#10;Evidências | Chitãozinho & Xororó | Sertanejo | RLM | 19.90&#10;Tempo Perdido | Legião Urbana | Rock | M | 19.90&#10;&#10;Ou formato simplificado (Título - Artista):&#10;Dormi na Praça - Bruno e Marrone&#10;Infiel - Marilia Mendonca"></textarea>
+                <textarea id="cm-paste-input" class="cm-textarea" rows="6" placeholder="Exemplo:&#10;Dormi na Praça - Bruno e Marrone&#10;Infiel - Marilia Mendonca&#10;Evidências - Chitãozinho & Xororó"></textarea>
                 <div class="cm-paste-actions">
                     <button type="button" id="cm-btn-parse-paste" class="cm-btn cm-btn-primary">
                         <i class="ri-play-list-add-line"></i> Carregar Músicas na Tabela
                     </button>
-                    <span class="cm-field-hint">Aceita delimitadores: barra vertical (<code>|</code>), traço (<code>-</code>) ou tabulação do Excel.</span>
                 </div>
             </div>
         </div>

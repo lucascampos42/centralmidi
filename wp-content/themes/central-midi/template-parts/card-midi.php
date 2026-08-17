@@ -58,11 +58,13 @@ $cm_product_url    = get_permalink($cm_product_id);
             </button>
         <?php endif; ?>
 
-        <span class="centralmidi-badge-class class-<?php echo esc_attr(strtolower($cm_classificacao)); ?>"
-              data-tooltip="<?php echo esc_attr('#' . $cm_classificacao . ': ' . $cm_class_label); ?>"
-              title="<?php echo esc_attr('#' . $cm_classificacao . ': ' . $cm_class_label); ?>">
-            #<?php echo esc_html($cm_classificacao); ?>
-        </span>
+        <?php if (!empty($cm_classificacao)) : ?>
+            <span class="centralmidi-badge-class class-<?php echo esc_attr(strtolower($cm_classificacao)); ?>"
+                  data-tooltip="<?php echo esc_attr('#' . $cm_classificacao . ': ' . $cm_class_label); ?>"
+                  title="<?php echo esc_attr('#' . $cm_classificacao . ': ' . $cm_class_label); ?>">
+                #<?php echo esc_html($cm_classificacao); ?>
+            </span>
+        <?php endif; ?>
     </div>
 
     <div class="cm-card-info">

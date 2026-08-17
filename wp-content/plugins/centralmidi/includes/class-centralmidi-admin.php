@@ -1087,9 +1087,35 @@ class CentralMidi_Admin {
         $items          = isset($_POST['items']) ? (array) $_POST['items'] : array();
         $mes_lancamento = isset($_POST['mes']) ? absint($_POST['mes']) : (int) date('n');
         $ano_lancamento = isset($_POST['ano']) ? absint($_POST['ano']) : (int) date('Y');
-        $default_genero = isset($_POST['default_genero']) ? sanitize_text_field(wp_unslash($_POST['default_genero'])) : '';
-        $default_class  = isset($_POST['default_classificacao']) ? CentralMidi_DB::sanitize_classificacao($_POST['default_classificacao']) : 'RLM';
-        $default_price  = isset($_POST['default_price']) ? sanitize_text_field(wp_unslash($_POST['default_price'])) : '19.90';
+        $default_genero = isset($_POST['default_genero']) && trim($_POST['default_genero']) !== '' ? sanitize_text_field(wp_unslash($_POST['default_genero'])) : 'Padrão';
+        $default_artist = isset($_POST['default_artist']) && trim($_POST['default_artist']) !== '' ? sanitize_text_field(wp_unslash($_POST['default_artist'])) : 'Padrão';
+        $default_class  = isset($_POST['default_classificacao']) ? CentralMidi_DB::sanitize_classificacao($_POST['default_classificacao']) : '';
+        $default_price  = isset($_POST['default_price']) ? sanitize_text_field(wp_unslash($_POST['default_price'])) : '';
+
+        // Prepare destination folder for uploads if files were attached
+        $mes_pad       = str_pad($mes_lancamento, 2, '0', STR_PAD_LEFT);
+        $folder_rel    = "midis/{$ano_lancamento}{$mes_pad}/";
+        $folder_abs    = ABSPATH . $folder_rel;
+
+        if (!empty($_FILES)) {
+            if (!is_dir($folder_abs)) {
+                wp_mkdir_p($folder_abs);
+            }
+            // Handle multiple uploaded files
+            foreach ($_FILES as $key => $file_data) {
+                if (is_array($file_data['name'])) {
+                    foreach ($file_data['name'] as $f_idx => $f_name) {
+                        if (!empty($f_name) && $file_data['error'][$f_idx] === UPLOAD_ERR_OK) {
+                            $target_dest = $folder_abs . sanitize_file_name($f_name);
+                            move_uploaded_file($file_data['tmp_name'][$f_idx], $target_dest);
+                        }
+                    }
+                } elseif (!empty($file_data['name']) && $file_data['error'] === UPLOAD_ERR_OK) {
+                    $target_dest = $folder_abs . sanitize_file_name($file_data['name']);
+                    move_uploaded_file($file_data['tmp_name'], $target_dest);
+                }
+            }
+        }
 
         if (empty($items)) {
             wp_send_json_error(array('message' => 'Nenhum item para processar neste lote.'));
@@ -1103,11 +1129,16 @@ class CentralMidi_Admin {
             $title = isset($item['title']) ? sanitize_text_field(wp_unslash($item['title'])) : '';
             if (empty($title)) continue;
 
-            $artist_name = isset($item['artist']) ? sanitize_text_field(wp_unslash($item['artist'])) : '';
+            $artist_name = !empty($item['artist']) ? sanitize_text_field(wp_unslash($item['artist'])) : $default_artist;
             $genre_name  = !empty($item['genero']) ? sanitize_text_field(wp_unslash($item['genero'])) : $default_genero;
-            $classif     = !empty($item['classificacao']) ? CentralMidi_DB::sanitize_classificacao($item['classificacao']) : $default_class;
-            $price       = !empty($item['price']) ? sanitize_text_field(wp_unslash($item['price'])) : $default_price;
-            $price       = str_replace(',', '.', $price);
+            $classif     = isset($item['classificacao']) ? CentralMidi_DB::sanitize_classificacao($item['classificacao']) : $default_class;
+            
+            $raw_price   = isset($item['price']) ? trim($item['price']) : $default_price;
+            if (strcasecmp($raw_price, 'Sem Preço') === 0 || strcasecmp($raw_price, 'sem preco') === 0 || $raw_price === '' || $raw_price === '0') {
+                $price = '';
+            } else {
+                $price = str_replace(',', '.', preg_replace('/[^0-9.,]/', '', $raw_price));
+            }
 
             $mp3_input   = isset($item['mp3_file']) ? sanitize_text_field(wp_unslash($item['mp3_file'])) : '';
             $midi_input  = isset($item['midi_file']) ? sanitize_text_field(wp_unslash($item['midi_file'])) : '';

@@ -495,7 +495,10 @@ class CentralMidi_DB {
 
     public static function sanitize_classificacao($value) {
         $value = strtoupper(trim((string) $value));
-        return in_array($value, array('M', 'L', 'RLM'), true) ? $value : 'M';
+        if ('' === $value || 'NONE' === $value) {
+            return '';
+        }
+        return in_array($value, array('M', 'L', 'RLM'), true) ? $value : '';
     }
 
     public static function classificacao_label($value) {

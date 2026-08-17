@@ -12,21 +12,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputAno = document.getElementById('batch_ano');
     const inputPrice = document.getElementById('batch_price');
     const selectClass = document.getElementById('batch_classificacao');
-    const selectGenero = document.getElementById('batch_genero');
+    const inputArtist = document.getElementById('batch_artist');
+    const inputGenero = document.getElementById('batch_genero');
     const folderDisplay = document.getElementById('cm-folder-display');
 
+    // 1. Direct Multi-MP3 Upload
+    const dropzone = document.getElementById('cm-mp3-dropzone');
+    const fileInput = document.getElementById('cm-mp3-upload-input');
+    const btnSelectFiles = document.getElementById('cm-btn-select-files');
+    const uploadCountEl = document.getElementById('cm-upload-count');
+
+    // 2. Folder Scanner
     const btnScan = document.getElementById('cm-btn-scan-folder');
     const scanStatus = document.getElementById('cm-scan-status');
 
+    // 3. Paste
     const pasteInput = document.getElementById('cm-paste-input');
     const btnParsePaste = document.getElementById('cm-btn-parse-paste');
 
+    // Table & Actions
     const tbody = document.getElementById('cm-batch-tbody');
     const totalCountEl = document.getElementById('cm-total-count');
     const btnAddRow = document.getElementById('cm-btn-add-row');
     const btnClearTable = document.getElementById('cm-btn-clear-table');
     const btnStart = document.getElementById('cm-btn-start-batch');
 
+    // Progress
     const progressWrapper = document.getElementById('cm-progress-wrapper');
     const progressLabel = document.getElementById('cm-progress-label');
     const progressPercent = document.getElementById('cm-progress-percent');
@@ -57,6 +68,117 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    function getDefaultArtist() {
+        return inputArtist && inputArtist.value.trim() ? inputArtist.value.trim() : 'Padrão';
+    }
+
+    function getDefaultGenero() {
+        return inputGenero && inputGenero.value.trim() ? inputGenero.value.trim() : 'Padrão';
+    }
+
+    function getDefaultPrice() {
+        return inputPrice && inputPrice.value.trim() ? inputPrice.value.trim() : '';
+    }
+
+    function getDefaultClass() {
+        return selectClass ? selectClass.value : '';
+    }
+
+    function cleanFilenameToTitle(filename) {
+        const base = filename.replace(/\.[^/.]+$/, '');
+        let clean = base.replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
+        return clean;
+    }
+
+    // Process selected File list
+    function handleSelectedFiles(files) {
+        if (!files || files.length === 0) return;
+
+        const newItems = [];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const filename = file.name;
+            const base = filename.replace(/\.[^/.]+$/, '');
+            let title = cleanFilenameToTitle(filename);
+            let artist = getDefaultArtist();
+
+            // Detect if filename has "Artist - Title" or "Title - Artist"
+            if (title.includes(' - ')) {
+                const parts = title.split(' - ');
+                artist = parts[0].trim();
+                title = parts[1].trim();
+            }
+
+            const midiFile = base + '.mid';
+
+            newItems.push({
+                title: title,
+                artist: artist,
+                genero: getDefaultGenero(),
+                classificacao: getDefaultClass(),
+                price: getDefaultPrice(),
+                mp3_file: filename,
+                midi_file: midiFile,
+                mp3_exists: true,
+                midi_exists: false,
+                _file: file,
+            });
+        }
+
+        currentItems = currentItems.concat(newItems);
+        renderTable();
+
+        if (uploadCountEl) {
+            uploadCountEl.classList.remove('hidden');
+            uploadCountEl.innerHTML = `<div class="cm-alert-success"><i class="ri-checkbox-circle-fill"></i> ${files.length} arquivos MP3 carregados com sucesso!</div>`;
+        }
+
+        const tableCard = document.querySelector('.cm-batch-table-card');
+        if (tableCard) tableCard.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Dropzone Events
+    if (dropzone) {
+        if (btnSelectFiles && fileInput) {
+            btnSelectFiles.addEventListener('click', (e) => {
+                e.stopPropagation();
+                fileInput.click();
+            });
+            dropzone.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
+
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => {
+                handleSelectedFiles(e.target.files);
+                fileInput.value = '';
+            });
+        }
+
+        ['dragenter', 'dragover'].forEach(evt => {
+            dropzone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.add('drag-over');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(evt => {
+            dropzone.addEventListener(evt, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove('drag-over');
+            });
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            if (e.dataTransfer && e.dataTransfer.files) {
+                handleSelectedFiles(e.dataTransfer.files);
+            }
+        });
+    }
+
     // Render Table
     function renderTable() {
         if (!currentItems || currentItems.length === 0) {
@@ -64,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <tr class="cm-empty-row">
                     <td colspan="9" style="text-align: center; padding: 40px; color: var(--text-muted);">
                         <i class="ri-inbox-line" style="font-size: 2rem; display: block; margin-bottom: 8px; opacity: 0.5;"></i>
-                        Nenhuma música carregada. Escaneie a pasta do servidor ou cole sua lista acima.
+                        Nenhuma música carregada. Faça upload de MP3s, escaneie a pasta ou cole uma lista.
                     </td>
                 </tr>
             `;
@@ -83,25 +205,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     <input type="text" class="cm-table-input item-title" value="${escapeHtml(item.title || '')}" placeholder="Título da música" required />
                 </td>
                 <td>
-                    <input type="text" class="cm-table-input item-artist" value="${escapeHtml(item.artist || '')}" placeholder="Artista / Banda" />
+                    <input type="text" class="cm-table-input item-artist" value="${escapeHtml(item.artist || 'Padrão')}" placeholder="Padrão" />
                 </td>
                 <td>
-                    <input type="text" class="cm-table-input item-genero" value="${escapeHtml(item.genero || '')}" placeholder="${escapeHtml(selectGenero.value || 'Geral')}" />
+                    <input type="text" class="cm-table-input item-genero" value="${escapeHtml(item.genero || 'Padrão')}" placeholder="Padrão" />
                 </td>
                 <td>
                     <select class="cm-table-input item-class">
+                        <option value="" ${!item.classificacao ? 'selected' : ''}>—</option>
                         <option value="RLM" ${item.classificacao === 'RLM' ? 'selected' : ''}>#RLM</option>
                         <option value="M" ${item.classificacao === 'M' ? 'selected' : ''}>#M</option>
                         <option value="L" ${item.classificacao === 'L' ? 'selected' : ''}>#L</option>
                     </select>
                 </td>
                 <td>
-                    <input type="text" class="cm-table-input item-price" value="${escapeHtml(item.price || selectPriceVal())}" style="text-align: right;" />
+                    <input type="text" class="cm-table-input item-price" value="${escapeHtml(item.price || '')}" placeholder="Sem Preço" style="text-align: right;" />
                 </td>
                 <td>
                     <div class="cm-file-cell">
                         <input type="text" class="cm-table-input item-mp3" value="${escapeHtml(item.mp3_file || '')}" placeholder="arquivo.mp3" />
-                        ${item.mp3_exists ? '<span class="cm-status-tag cm-status-ok" title="Arquivo presente no servidor"><i class="ri-checkbox-circle-fill"></i></span>' : ''}
+                        ${item.mp3_exists ? '<span class="cm-status-tag cm-status-ok" title="Arquivo pronto"><i class="ri-checkbox-circle-fill"></i></span>' : ''}
                     </div>
                 </td>
                 <td>
@@ -115,10 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
             </tr>
         `).join('');
-    }
-
-    function selectPriceVal() {
-        return inputPrice.value ? inputPrice.value.trim() : '19.90';
     }
 
     function escapeHtml(str) {
@@ -161,10 +280,10 @@ document.addEventListener('DOMContentLoaded', () => {
         btnAddRow.addEventListener('click', () => {
             currentItems.push({
                 title: '',
-                artist: '',
-                genero: selectGenero.value || '',
-                classificacao: selectClass.value || 'RLM',
-                price: selectPriceVal(),
+                artist: getDefaultArtist(),
+                genero: getDefaultGenero(),
+                classificacao: getDefaultClass(),
+                price: getDefaultPrice(),
                 mp3_file: '',
                 midi_file: '',
                 mp3_exists: false,
@@ -183,10 +302,11 @@ document.addEventListener('DOMContentLoaded', () => {
             currentItems = [];
             renderTable();
             if (scanStatus) scanStatus.classList.add('hidden');
+            if (uploadCountEl) uploadCountEl.classList.add('hidden');
         });
     }
 
-    // 1. Scanner Action
+    // 2. Scanner Action
     if (btnScan) {
         btnScan.addEventListener('click', async () => {
             const mes = selectMes.value;
@@ -195,7 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
             btnScan.disabled = true;
             btnScan.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Escaneando...';
             scanStatus.classList.remove('hidden');
-            scanStatus.innerHTML = `<span style="color: var(--text-muted);"><i class="ri-loader-4-line ri-spin"></i> Lendo pasta midis/${mes}/${ano}/...</span>`;
+            const mesPad = String(mes).padStart(2, '0');
+            scanStatus.innerHTML = `<span style="color: var(--text-muted);"><i class="ri-loader-4-line ri-spin"></i> Lendo pasta midis/${ano}${mesPad}/...</span>`;
 
             try {
                 const formData = new FormData();
@@ -217,9 +338,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         scanStatus.innerHTML = `<div class="cm-alert-success"><i class="ri-checkbox-circle-fill"></i> Sucesso! Encontrados <strong>${data.total_found} pares de faixas</strong> na pasta <code>${data.folder_path}</code>.</div>`;
                         currentItems = data.items.map(it => ({
                             ...it,
-                            price: selectPriceVal(),
-                            classificacao: selectClass.value || 'RLM',
-                            genero: selectGenero.value || it.genero || '',
+                            artist: it.artist || getDefaultArtist(),
+                            genero: it.genero || getDefaultGenero(),
+                            classificacao: getDefaultClass(),
+                            price: getDefaultPrice(),
                         }));
                         renderTable();
                     }
@@ -236,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. Parse Pasted Text
+    // 3. Parse Pasted Text
     if (btnParsePaste) {
         btnParsePaste.addEventListener('click', () => {
             const raw = pasteInput.value.trim();
@@ -249,36 +371,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const parsed = [];
 
             lines.forEach(line => {
-                let title = '';
-                let artist = '';
-                let genero = selectGenero.value || '';
-                let classif = selectClass.value || 'RLM';
-                let price = selectPriceVal();
+                let title = line;
+                let artist = getDefaultArtist();
 
-                if (line.includes('|')) {
-                    const cols = line.split('|').map(c => c.trim());
-                    title = cols[0] || '';
-                    artist = cols[1] || '';
-                    if (cols[2]) genero = cols[2];
-                    if (cols[3]) classif = cols[3];
-                    if (cols[4]) price = cols[4];
-                } else if (line.includes('\t')) {
-                    const cols = line.split('\t').map(c => c.trim());
-                    title = cols[0] || '';
-                    artist = cols[1] || '';
-                    if (cols[2]) genero = cols[2];
-                    if (cols[3]) classif = cols[3];
-                    if (cols[4]) price = cols[4];
-                } else if (line.includes(' - ')) {
+                if (line.includes(' - ')) {
                     const parts = line.split(' - ');
-                    title = parts[0].trim();
-                    artist = parts[1] ? parts[1].trim() : '';
-                } else if (line.includes(';')) {
-                    const cols = line.split(';').map(c => c.trim());
-                    title = cols[0] || '';
-                    artist = cols[1] || '';
-                } else {
-                    title = line;
+                    artist = parts[0].trim();
+                    title = parts[1].trim();
                 }
 
                 const slugBase = (title + (artist ? ' - ' + artist : ''))
@@ -290,9 +389,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 parsed.push({
                     title: title,
                     artist: artist,
-                    genero: genero,
-                    classificacao: classif,
-                    price: price,
+                    genero: getDefaultGenero(),
+                    classificacao: getDefaultClass(),
+                    price: getDefaultPrice(),
                     mp3_file: slugBase + '.mp3',
                     midi_file: slugBase + '.mid',
                     mp3_exists: false,
@@ -301,17 +400,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (parsed.length > 0) {
-                currentItems = parsed;
+                currentItems = currentItems.concat(parsed);
                 renderTable();
                 pasteInput.value = '';
-                // Switch focus to table
                 const tableCard = document.querySelector('.cm-batch-table-card');
                 if (tableCard) tableCard.scrollIntoView({ behavior: 'smooth' });
             }
         });
     }
 
-    // 3. Start Batch Chunked Upload
+    // 4. Start Batch Chunked Upload
     if (btnStart) {
         btnStart.addEventListener('click', async () => {
             if (!currentItems || currentItems.length === 0) return;
@@ -350,18 +448,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     formData.append('nonce', nonce);
                     formData.append('mes', selectMes.value);
                     formData.append('ano', inputAno.value);
-                    formData.append('default_genero', selectGenero.value || '');
-                    formData.append('default_classificacao', selectClass.value || 'RLM');
-                    formData.append('default_price', selectPriceVal());
+                    formData.append('default_genero', getDefaultGenero());
+                    formData.append('default_artist', getDefaultArtist());
+                    formData.append('default_classificacao', getDefaultClass());
+                    formData.append('default_price', getDefaultPrice());
 
                     chunk.forEach((item, i) => {
                         formData.append(`items[${i}][title]`, item.title || '');
-                        formData.append(`items[${i}][artist]`, item.artist || '');
-                        formData.append(`items[${i}][genero]`, item.genero || '');
-                        formData.append(`items[${i}][classificacao]`, item.classificacao || 'RLM');
-                        formData.append(`items[${i}][price]`, item.price || '19.90');
+                        formData.append(`items[${i}][artist]`, item.artist || getDefaultArtist());
+                        formData.append(`items[${i}][genero]`, item.genero || getDefaultGenero());
+                        formData.append(`items[${i}][classificacao]`, item.classificacao || '');
+                        formData.append(`items[${i}][price]`, item.price || '');
                         formData.append(`items[${i}][mp3_file]`, item.mp3_file || '');
                         formData.append(`items[${i}][midi_file]`, item.midi_file || '');
+
+                        if (item._file) {
+                            formData.append(`mp3_files[]`, item._file);
+                        }
                     });
 
                     const res = await fetch(ajaxUrl, { method: 'POST', body: formData });
@@ -375,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const logLine = document.createElement('div');
                         logLine.className = 'cm-log-success';
-                        logLine.innerHTML = `<i class="ri-checkbox-circle-fill"></i> Lote ${cIdx + 1} concluído: ${data.processed} músicas criadas/atualizadas.`;
+                        logLine.innerHTML = `<i class="ri-checkbox-circle-fill"></i> Lote ${cIdx + 1} concluído: ${data.processed} músicas cadastradas.`;
                         progressLog.appendChild(logLine);
                     } else {
                         const errLine = document.createElement('div');

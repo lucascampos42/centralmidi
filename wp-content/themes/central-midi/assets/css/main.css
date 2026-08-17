@@ -3741,6 +3741,53 @@ html.cm-theme-dark .cm-cta-box h2 {
     display: block;
 }
 
+/* MP3 Dropzone Upload */
+.cm-dropzone {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-lg);
+    background: var(--bg-main);
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.cm-dropzone:hover,
+.cm-dropzone.drag-over {
+    border-color: var(--primary);
+    background: rgba(0, 210, 132, 0.05);
+}
+
+.cm-dropzone-icon {
+    font-size: 3.2rem;
+    color: var(--primary);
+    margin-bottom: 4px;
+}
+
+.cm-dropzone h3 {
+    font-size: 1.25rem;
+    margin: 0;
+    color: var(--text-main);
+}
+
+.cm-dropzone p {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    max-width: 540px;
+    margin: 0 0 12px;
+}
+
+.cm-upload-count {
+    margin-top: 14px;
+    width: 100%;
+    max-width: 500px;
+}
+
 .cm-scanner-box {
     display: flex;
     justify-content: space-between;
