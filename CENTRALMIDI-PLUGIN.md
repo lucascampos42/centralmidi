@@ -87,6 +87,14 @@ Exemplo de uso:
 [centralmidi_catalogo por_pagina="24"]
 ```
 
+## Admin — listagem e edição em lote
+
+Página **Central MIDI › MIDIs** (`centralmidi-midis`):
+
+- Lista os MIDIs da tabela `wp_centralmidi_midis` com paginação e filtros (busca por título, artista, gênero, mês, ano, classificação).
+- **Edição em lote**: selecione os MIDIs (checkbox) e aplique uma operação — definir artista, gênero, mês, ano ou classificação, ou remover os metadados MIDI.
+- As operações atualizam post meta (`_centralmidi_*`) e sincronizam a tabela via `CentralMidi_DB::upsert()`; `clear_home_cache()` é chamado ao final.
+
 ## Arquivos do plugin
 
 ```
