@@ -327,6 +327,14 @@ function centralmidi_scripts() {
     // Mobile navigation toggle
     wp_enqueue_script('centralmidi-nav', get_template_directory_uri() . '/assets/js/nav.js', array(), $theme_version, true);
 
+    // Cart Toast & AJAX Add to Cart
+    wp_enqueue_script('centralmidi-cart-toast', get_template_directory_uri() . '/assets/js/cart-toast.js', array(), $theme_version, true);
+
+    // Catalog AJAX Filtering
+    if (is_page('midis') || is_page(22)) {
+        wp_enqueue_script('centralmidi-catalog-ajax', get_template_directory_uri() . '/assets/js/catalog.js', array('centralmidi-player'), $theme_version, true);
+    }
+
     // Theme (light/dark/system) toggle
     wp_enqueue_script('centralmidi-theme-toggle', get_template_directory_uri() . '/assets/js/theme-toggle.js', array(), $theme_version, true);
 }

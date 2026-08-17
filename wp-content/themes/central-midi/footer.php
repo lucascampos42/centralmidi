@@ -32,8 +32,9 @@
 
         <div class="cm-player-controls-center">
             <div class="cm-player-buttons">
-                <button type="button" class="cm-player-btn" id="cm-btn-prev" title="Reiniciar" aria-label="<?php esc_attr_e('Reiniciar faixa', 'central-midi'); ?>"><i class="ri-skip-back-fill"></i></button>
+                <button type="button" class="cm-player-btn" id="cm-btn-prev" title="Faixa anterior" aria-label="<?php esc_attr_e('Faixa anterior', 'central-midi'); ?>"><i class="ri-skip-back-fill"></i></button>
                 <button type="button" class="cm-player-btn cm-btn-play-pause" id="cm-btn-main-play" title="Tocar / Pausar" aria-label="<?php esc_attr_e('Tocar / Pausar', 'central-midi'); ?>"><i class="ri-play-fill" id="cm-main-play-icon"></i></button>
+                <button type="button" class="cm-player-btn" id="cm-btn-next" title="Próxima faixa" aria-label="<?php esc_attr_e('Próxima faixa', 'central-midi'); ?>"><i class="ri-skip-forward-fill"></i></button>
                 <button type="button" class="cm-player-btn" id="cm-btn-stop" title="Parar" aria-label="<?php esc_attr_e('Parar', 'central-midi'); ?>"><i class="ri-stop-fill"></i></button>
             </div>
             <div class="cm-player-timeline">

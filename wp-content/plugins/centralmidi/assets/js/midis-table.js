@@ -64,7 +64,7 @@
         if (field === 'artista') {
             var a = (cfg.artistas || []).filter(function (x) { return x.nome === value; })[0];
             if (!a) {
-                cell.setValueOriginal();
+                cell.restoreOldValue();
                 return;
             }
             payloadField = 'artista_id';
@@ -72,7 +72,7 @@
         } else if (field === 'genero') {
             var g = (cfg.generos || []).filter(function (x) { return x.nome === value; })[0];
             if (!g) {
-                cell.setValueOriginal();
+                cell.restoreOldValue();
                 return;
             }
             payloadField = 'genero_id';
@@ -92,11 +92,11 @@
                     callback();
                 }
             } else {
-                cell.setValueOriginal();
+                cell.restoreOldValue();
                 showNotice((resp && resp.data && resp.data.message) || cfg.textos.erro, 'error');
             }
         }).fail(function () {
-            cell.setValueOriginal();
+            cell.restoreOldValue();
             showNotice(cfg.textos.erro, 'error');
         });
     }
@@ -129,11 +129,12 @@
         },
         ajaxFiltering: true,
         ajaxSorting: true,
+        filterMode: 'remote',
+        sortMode: 'remote',
         paginationMode: 'remote',
         paginationSize: 20,
         paginationSizeSelector: [20, 50, 100],
         selectableRows: true,
-        selectableRowsHighlight: true,
         placeholder: 'Nenhum MIDI encontrado.',
         ajaxResponse: function (url, params, response) {
             if (response && response.success) {

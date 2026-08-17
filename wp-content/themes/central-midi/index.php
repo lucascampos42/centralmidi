@@ -76,9 +76,14 @@ if (false === $month_data) {
                     <p class="cm-section-subtitle"><?php echo esc_html($release['subtitle']); ?></p>
                 </div>
 
-                <div>
+                <div class="cm-section-actions">
+                    <?php if (!empty($release['product_ids'])) : ?>
+                        <button type="button" class="cm-btn cm-btn-primary cm-play-monthly-playlist" title="Reproduzir todas as músicas de <?php echo esc_attr($release['mes_nome']); ?>">
+                            <i class="ri-play-list-2-fill"></i> Reproduzir Lista
+                        </button>
+                    <?php endif; ?>
                     <a href="<?php echo esc_url(add_query_arg('mes_lancamento', $release['mes'], centralmidi_catalog_url())); ?>" class="cm-btn cm-btn-outline">
-                        Ver todos de <?php echo esc_html($release['mes_nome']); ?> <?php echo esc_html($release['ano']); ?> (<?php echo esc_html($release['total']); ?>) <i class="ri-arrow-right-line"></i>
+                        Ver todos de <?php echo esc_html($release['mes_nome']); ?> (<?php echo esc_html($release['total']); ?>) <i class="ri-arrow-right-line"></i>
                     </a>
                 </div>
             </div>

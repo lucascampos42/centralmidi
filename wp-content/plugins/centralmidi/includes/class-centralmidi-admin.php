@@ -21,7 +21,12 @@ class CentralMidi_Admin {
     }
 
     public function enqueue_admin_assets($hook) {
-        if (in_array($hook, array('toplevel_page_centralmidi', 'centralmidi_page_centralmidi-artistas', 'centralmidi_page_centralmidi-generos'), true)) {
+        $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+
+        $is_referencia = in_array($page, array('centralmidi', 'centralmidi-artistas', 'centralmidi-generos'), true);
+        $is_midis      = 'centralmidi-midis' === $page;
+
+        if ($is_referencia) {
             wp_enqueue_media();
             wp_enqueue_script(
                 'centralmidi-admin',
@@ -32,7 +37,7 @@ class CentralMidi_Admin {
             );
         }
 
-        if ('centralmidi_page_centralmidi-midis' === $hook) {
+        if ($is_midis) {
             wp_enqueue_style(
                 'centralmidi-tabulator',
                 CENTRALMIDI_PLUGIN_URL . 'assets/vendor/tabulator/tabulator.min.css',

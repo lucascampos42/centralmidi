@@ -3544,3 +3544,139 @@ html.cm-theme-dark .cm-cta-box {
 html.cm-theme-dark .cm-cta-box h2 {
     color: var(--text-main);
 }
+
+/* Section Actions & Playlist Button */
+.cm-section-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.cm-play-monthly-playlist {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+/* Cart Toast Notification */
+.cm-toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 380px;
+    width: calc(100% - 48px);
+    pointer-events: none;
+}
+
+.cm-toast {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    pointer-events: auto;
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.cm-toast.show {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.cm-toast.hide {
+    transform: translateY(10px) scale(0.95);
+    opacity: 0;
+}
+
+.cm-toast-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background: rgba(var(--primary-rgb), 0.15);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.cm-toast-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.cm-toast-msg {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+}
+
+.cm-toast-track {
+    font-size: 0.95rem;
+    color: var(--text-main);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 10px;
+}
+
+.cm-toast-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.cm-toast-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary);
+    color: #0c0f17 !important;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.cm-toast-btn-primary:hover {
+    opacity: 0.9;
+}
+
+.cm-toast-close {
+    background: transparent;
+    border: none;
+    color: var(--text-subtle);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0;
+    margin-left: -4px;
+    transition: color 0.2s ease;
+}
+
+.cm-toast-close:hover {
+    color: var(--text-main);
+}
+
+/* Catalog AJAX Loading State */
+.centralmidi-catalogo.cm-loading {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
