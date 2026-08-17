@@ -20,8 +20,8 @@ if (!$cm_product) {
 
 $cm_artista        = get_post_meta($cm_product_id, '_centralmidi_artista', true);
 $cm_genero         = get_post_meta($cm_product_id, '_centralmidi_genero', true);
-$cm_categoria      = get_post_meta($cm_product_id, '_centralmidi_categoria', true);
 $cm_mes_lancamento = get_post_meta($cm_product_id, '_centralmidi_mes_lancamento', true);
+$cm_ano_lancamento = get_post_meta($cm_product_id, '_centralmidi_ano_lancamento', true);
 $cm_classificacao  = class_exists('CentralMidi_DB') ? CentralMidi_DB::sanitize_classificacao(get_post_meta($cm_product_id, '_centralmidi_classificacao', true)) : 'M';
 $cm_demo_audio     = get_post_meta($cm_product_id, '_centralmidi_demo_audio', true);
 $cm_price_html     = $cm_product->get_price_html();
@@ -76,11 +76,8 @@ $cm_product_url    = get_permalink($cm_product_id);
             <?php if ($cm_genero) : ?>
                 <span class="cm-tag"><i class="ri-music-2-line"></i> <?php echo esc_html($cm_genero); ?></span>
             <?php endif; ?>
-            <?php if ($cm_categoria) : ?>
-                <span class="cm-tag"><i class="ri-price-tag-3-line"></i> <?php echo esc_html($cm_categoria); ?></span>
-            <?php endif; ?>
             <?php if ($cm_mes_lancamento) : ?>
-                <span class="cm-tag"><i class="ri-calendar-line"></i> <?php echo esc_html(CentralMidi_DB::mes_nome($cm_mes_lancamento)); ?></span>
+                <span class="cm-tag"><i class="ri-calendar-line"></i> <?php echo esc_html(CentralMidi_DB::mes_nome($cm_mes_lancamento)); ?><?php echo $cm_ano_lancamento ? ' ' . esc_html($cm_ano_lancamento) : ''; ?></span>
             <?php endif; ?>
         </div>
 

@@ -10,50 +10,50 @@ get_header();
 
 get_template_part('template-parts/carousel');
 
-// Determine 3 latest months from DB or calendar
+// Determine 3 latest months from DB (current year) or calendar
 $cm_db_available = class_exists('CentralMidi_DB');
-$db_months = $cm_db_available ? CentralMidi_DB::distinct('mes_lancamento') : array();
-rsort($db_months);
-
-$current_calendar_month = (int) date('n');
-$m1 = !empty($db_months[0]) ? (int)$db_months[0] : $current_calendar_month;
-$m2 = !empty($db_months[1]) ? (int)$db_months[1] : (($current_calendar_month - 1 < 1) ? 12 : $current_calendar_month - 1);
-$m3 = !empty($db_months[2]) ? (int)$db_months[2] : (($current_calendar_month - 2 < 1) ? (12 + ($current_calendar_month - 2)) : $current_calendar_month - 2);
+$ano_atual = (int) date('Y');
+$mes_atual = (int) date('n');
+$db_meses = $cm_db_available ? CentralMidi_DB::get_meses_por_ano($ano_atual) : array();
 
 $featured_months = array(
-    array(
-        'mes'      => $m1,
-        'badge'    => 'Lançamentos do Mês',
-        'icon'     => 'ri-fire-fill',
-        'subtitle' => 'Músicas recém-adicionadas e novidades para o seu repertório.',
-    ),
-    array(
-        'mes'      => $m2,
-        'badge'    => 'Lançamentos do Mês Anterior',
-        'icon'     => 'ri-sparkling-2-fill',
-        'subtitle' => 'Sucessos lançados no mês passado disponíveis para download.',
-    ),
-    array(
-        'mes'      => $m3,
-        'badge'    => 'Lançamentos Recentes',
-        'icon'     => 'ri-box-3-fill',
-        'subtitle' => 'Confira também as faixas lançadas há 2 meses.',
-    ),
+    0 => array('badge' => 'Lançamentos do Mês', 'icon' => 'ri-fire-fill', 'subtitle' => 'Músicas recém-adicionadas e novidades para o seu repertório.'),
+    1 => array('badge' => 'Lançamentos do Mês Anterior', 'icon' => 'ri-sparkling-2-fill', 'subtitle' => 'Sucessos lançados no mês passado disponíveis para download.'),
+    2 => array('badge' => 'Lançamentos Recentes', 'icon' => 'ri-box-3-fill', 'subtitle' => 'Confira também as faixas lançadas há 2 meses.'),
 );
 
+foreach ($featured_months as $i => $config) {
+    // Prefer the latest months that actually have releases in the current year;
+    // otherwise fall back to the calendar, rolling across the year boundary.
+    if (isset($db_meses[$i])) {
+        $mes = (int) $db_meses[$i];
+        $ano = $ano_atual;
+    } else {
+        $total = ($ano_atual * 12) + ($mes_atual - 1) - $i;
+        $mes = ($total % 12) + 1;
+        $ano = (int) intdiv($total, 12);
+    }
+    $featured_months[$i]['mes'] = $mes;
+    $featured_months[$i]['ano'] = $ano;
+}
+
 // Cache monthly release data (6h) so the homepage is stable and fast.
-$cache_key = 'centralmidi_home_' . implode('_', array($m1, $m2, $m3));
+$cache_key = 'centralmidi_home_' . implode('_', array_map(function ($m) {
+    return $m['mes'] . '-' . $m['ano'];
+}, $featured_months));
 $month_data = get_transient($cache_key);
 
 if (false === $month_data) {
     $month_data = array();
     foreach ($featured_months as $month_config) {
         $mes_num = $month_config['mes'];
-        $total_mes = $cm_db_available ? CentralMidi_DB::count_by_month($mes_num) : 0;
-        $product_ids = $cm_db_available ? CentralMidi_DB::get_midis_by_month($mes_num, 30) : array();
+        $ano_num = $month_config['ano'];
+        $total_mes = $cm_db_available ? CentralMidi_DB::count_by_month($mes_num, $ano_num) : 0;
+        $product_ids = $cm_db_available ? CentralMidi_DB::get_midis_by_month($mes_num, $ano_num, 30) : array();
 
         $month_data[] = array(
             'mes'          => $mes_num,
+            'ano'          => $ano_num,
             'mes_nome'     => $cm_db_available ? CentralMidi_DB::mes_nome($mes_num) : '',
             'total'        => $total_mes,
             'product_ids'  => $product_ids,
@@ -72,13 +72,13 @@ if (false === $month_data) {
             <div class="cm-section-header">
                 <div>
                     <span class="cm-badge"><i class="<?php echo esc_attr($release['icon']); ?>"></i> <?php echo esc_html($release['badge']); ?></span>
-                    <h2 class="cm-section-title">Lançamentos de <?php echo esc_html($release['mes_nome']); ?></h2>
+                    <h2 class="cm-section-title">Lançamentos de <?php echo esc_html($release['mes_nome']); ?> <?php echo esc_html($release['ano']); ?></h2>
                     <p class="cm-section-subtitle"><?php echo esc_html($release['subtitle']); ?></p>
                 </div>
 
                 <div>
                     <a href="<?php echo esc_url(add_query_arg('mes_lancamento', $release['mes'], centralmidi_catalog_url())); ?>" class="cm-btn cm-btn-outline">
-                        Ver todos de <?php echo esc_html($release['mes_nome']); ?> (<?php echo esc_html($release['total']); ?>) <i class="ri-arrow-right-line"></i>
+                        Ver todos de <?php echo esc_html($release['mes_nome']); ?> <?php echo esc_html($release['ano']); ?> (<?php echo esc_html($release['total']); ?>) <i class="ri-arrow-right-line"></i>
                     </a>
                 </div>
             </div>
@@ -92,7 +92,7 @@ if (false === $month_data) {
             <?php else : ?>
                 <div class="centralmidi-empty cm-empty-state">
                     <i class="ri-music-2-line"></i>
-                    <p>Nenhum lançamento cadastrado para o mês de <?php echo esc_html($release['mes_nome']); ?> ainda.</p>
+                    <p>Nenhum lançamento cadastrado para o mês de <?php echo esc_html($release['mes_nome']); ?> <?php echo esc_html($release['ano']); ?> ainda.</p>
                 </div>
             <?php endif; ?>
         </section>

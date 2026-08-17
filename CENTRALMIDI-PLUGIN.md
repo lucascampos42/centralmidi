@@ -36,6 +36,7 @@ Colunas:
 | `genero_id`      | BIGINT UNSIGNED   | FK para `wp_centralmidi_generos.id`   |
 | `categoria_id`   | BIGINT UNSIGNED   | FK para `wp_centralmidi_categorias.id` |
 | `mes_lancamento` | TINYINT UNSIGNED  | Mês de lançamento no site (1–12)      |
+| `ano_lancamento` | SMALLINT UNSIGNED | Ano de lançamento (ex.: 2026)         |
 | `classificacao`  | VARCHAR(3)        | `M`, `L` ou `RLM` (default `M`)       |
 | `created_at`     | DATETIME          | Data de criação                       |
 | `updated_at`     | DATETIME          | Data de atualização                   |
@@ -68,6 +69,7 @@ A migração de strings legadas (`artista`, `genero`) → IDs é feita em `Centr
 | `_centralmidi_categoria`       | Nome da categoria (denormalizado) |
 | `_centralmidi_categoria_id`    | FK `wp_centralmidi_categorias.id` |
 | `_centralmidi_mes_lancamento`  | Mês de lançamento (1–12)   |
+| `_centralmidi_ano_lancamento`  | Ano de lançamento          |
 | `_centralmidi_classificacao`   | `M`, `L` ou `RLM`          |
 | `_centralmidi_demo_audio`      | URL do MP3 de demonstração |
 

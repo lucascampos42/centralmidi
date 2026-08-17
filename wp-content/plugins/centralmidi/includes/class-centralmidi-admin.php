@@ -2,7 +2,7 @@
 /**
  * Central MIDI Admin: metabox on WooCommerce products + CRUD of reference lists.
  *
- * Fields: artista, genero, categoria, mes_lancamento, classificacao, demo_audio.
+ * Fields: artista, genero, mes_lancamento, classificacao, demo_audio.
  */
 
 defined('ABSPATH') || exit;
@@ -58,19 +58,10 @@ class CentralMidi_Admin {
             'centralmidi-generos',
             array($this, 'render_generos_page')
         );
-
-        add_submenu_page(
-            'centralmidi',
-            __('Categorias', 'centralmidi'),
-            __('Categorias', 'centralmidi'),
-            'manage_options',
-            'centralmidi-categorias',
-            array($this, 'render_categorias_page')
-        );
     }
 
     /**
-     * Config of a reference list (artista | genero | categoria).
+     * Config of a reference list (artista | genero).
      */
     private function referencia_config($kind) {
         $configs = array(
@@ -118,28 +109,6 @@ class CentralMidi_Admin {
                 'add'      => 'add_genero',
                 'update'   => 'update_genero',
                 'delete'   => 'delete_genero',
-            ),
-            'categoria' => array(
-                'page'     => 'centralmidi-categorias',
-                'title'    => __('Central MIDI — Categorias', 'centralmidi'),
-                'desc'     => __('Cadastre aqui as categorias de produto (ex: Instrumental, Playback, Religioso...). Elas aparecem como select na edição dos produtos MIDI.', 'centralmidi'),
-                'add_text' => __('Adicionar Categoria', 'centralmidi'),
-                'edit_text' => __('Editar Categoria', 'centralmidi'),
-                'list_title' => __('Categorias Cadastradas', 'centralmidi'),
-                'placeholder' => __('Nome da categoria', 'centralmidi'),
-                'empty'    => __('Nenhuma categoria cadastrada.', 'centralmidi'),
-                'confirm'  => __('Excluir esta categoria?', 'centralmidi'),
-                'added'    => __('Categoria adicionada com sucesso.', 'centralmidi'),
-                'updated'  => __('Categoria atualizada com sucesso.', 'centralmidi'),
-                'updated_err' => __('Não foi possível atualizar (nome duplicado ou vazio).', 'centralmidi'),
-                'removed'  => __('Categoria removida.', 'centralmidi'),
-                'empty_err' => __('Informe o nome da categoria.', 'centralmidi'),
-                'prefix'   => 'categoria',
-                'get_all'  => 'get_categorias',
-                'get_one'  => 'get_categoria',
-                'add'      => 'add_categoria',
-                'update'   => 'update_categoria',
-                'delete'   => 'delete_categoria',
             ),
         );
         return $configs[$kind] ?? null;
@@ -329,10 +298,6 @@ class CentralMidi_Admin {
         $this->render_referencia_page('genero');
     }
 
-    public function render_categorias_page() {
-        $this->render_referencia_page('categoria');
-    }
-
     public function add_meta_box() {
         add_meta_box(
             'centralmidi_metadados',
@@ -351,16 +316,15 @@ class CentralMidi_Admin {
         $artista        = get_post_meta($post->ID, '_centralmidi_artista', true);
         $genero_id      = (int) get_post_meta($post->ID, '_centralmidi_genero_id', true);
         $genero         = get_post_meta($post->ID, '_centralmidi_genero', true);
-        $categoria_id   = (int) get_post_meta($post->ID, '_centralmidi_categoria_id', true);
-        $categoria      = get_post_meta($post->ID, '_centralmidi_categoria', true);
         $mes_lancamento = get_post_meta($post->ID, '_centralmidi_mes_lancamento', true);
+        $ano_lancamento = get_post_meta($post->ID, '_centralmidi_ano_lancamento', true);
+        $ano_lancamento = $ano_lancamento ? (int) $ano_lancamento : (int) date('Y');
         $classificacao  = get_post_meta($post->ID, '_centralmidi_classificacao', true);
         $classificacao  = CentralMidi_DB::sanitize_classificacao($classificacao);
         $demo_audio     = get_post_meta($post->ID, '_centralmidi_demo_audio', true);
 
         $artistas   = CentralMidi_DB::get_artistas();
         $generos    = CentralMidi_DB::get_generos();
-        $categorias = CentralMidi_DB::get_categorias();
 
         $meses = array(
             1 => 'Janeiro', 2 => 'Fevereiro', 3 => 'Março', 4 => 'Abril',
@@ -410,23 +374,6 @@ class CentralMidi_Admin {
             </div>
 
             <div>
-                <label for="centralmidi_categoria" style="display:block;font-weight:600;margin-bottom:4px;"><?php esc_html_e('Categoria', 'centralmidi'); ?></label>
-                <select id="centralmidi_categoria" name="_centralmidi_categoria_id" style="width:100%;">
-                    <option value="0">— <?php esc_html_e('Selecione a categoria', 'centralmidi'); ?> —</option>
-                    <?php foreach ($categorias as $c) : ?>
-                        <option value="<?php echo esc_attr($c->id); ?>" <?php selected($categoria_id, $c->id); ?>><?php echo esc_html($c->nome); ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <p class="description">
-                    <?php echo wp_kses_post(sprintf(
-                        __('Selecione uma categoria cadastrada ou <a href="%s">gerencie a lista de categorias</a>.', 'centralmidi'),
-                        esc_url(admin_url('admin.php?page=centralmidi-categorias'))
-                    )); ?>
-                </p>
-                <input type="hidden" name="_centralmidi_categoria" value="<?php echo esc_attr($categoria); ?>" />
-            </div>
-
-            <div>
                 <label for="centralmidi_mes" style="display:block;font-weight:600;margin-bottom:4px;"><?php esc_html_e('Mês de Lançamento no Site', 'centralmidi'); ?></label>
                 <select id="centralmidi_mes" name="_centralmidi_mes_lancamento" style="width:100%;">
                     <option value="0">— Selecione o mês —</option>
@@ -437,6 +384,16 @@ class CentralMidi_Admin {
             </div>
 
             <div>
+                <label for="centralmidi_ano" style="display:block;font-weight:600;margin-bottom:4px;"><?php esc_html_e('Ano de Lançamento', 'centralmidi'); ?></label>
+                <select id="centralmidi_ano" name="_centralmidi_ano_lancamento" style="width:100%;">
+                    <option value="0">— Selecione o ano —</option>
+                    <?php for ($y = (int) date('Y'); $y >= (int) date('Y') - 4; $y--) : ?>
+                        <option value="<?php echo esc_attr($y); ?>" <?php selected($ano_lancamento, $y); ?>><?php echo esc_html($y); ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+
+            <div style="grid-column: 1 / -1;">
                 <label style="display:block;font-weight:600;margin-bottom:6px;"><?php esc_html_e('Classificação do MIDI', 'centralmidi'); ?></label>
                 <div style="background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
                     <label style="display:block;margin-bottom:6px;cursor:pointer;">
@@ -471,7 +428,6 @@ class CentralMidi_Admin {
 
         $artista_id = isset($_POST['_centralmidi_artista_id']) ? absint($_POST['_centralmidi_artista_id']) : 0;
         $genero_id  = isset($_POST['_centralmidi_genero_id']) ? absint($_POST['_centralmidi_genero_id']) : 0;
-        $categoria_id = isset($_POST['_centralmidi_categoria_id']) ? absint($_POST['_centralmidi_categoria_id']) : 0;
 
         $artista = '';
         if ($artista_id) {
@@ -502,21 +458,8 @@ class CentralMidi_Admin {
             $genero_id = CentralMidi_DB::add_genero($genero);
         }
 
-        $categoria = '';
-        if ($categoria_id) {
-            $c = CentralMidi_DB::get_categoria($categoria_id);
-            if ($c) {
-                $categoria = $c->nome;
-            }
-        }
-        if (!$categoria && isset($_POST['_centralmidi_categoria'])) {
-            $categoria = sanitize_text_field(wp_unslash($_POST['_centralmidi_categoria']));
-        }
-        if ($categoria && !$categoria_id) {
-            $categoria_id = CentralMidi_DB::add_categoria($categoria);
-        }
-
         $mes        = isset($_POST['_centralmidi_mes_lancamento']) ? absint($_POST['_centralmidi_mes_lancamento']) : 0;
+        $ano        = isset($_POST['_centralmidi_ano_lancamento']) ? absint($_POST['_centralmidi_ano_lancamento']) : (int) date('Y');
         $class      = isset($_POST['_centralmidi_classificacao']) ? CentralMidi_DB::sanitize_classificacao(sanitize_text_field(wp_unslash($_POST['_centralmidi_classificacao']))) : 'M';
         $demo_audio = isset($_POST['_centralmidi_demo_audio']) ? esc_url_raw(wp_unslash($_POST['_centralmidi_demo_audio'])) : '';
 
@@ -524,17 +467,16 @@ class CentralMidi_Admin {
         update_post_meta($post_id, '_centralmidi_artista', $artista);
         update_post_meta($post_id, '_centralmidi_genero_id', $genero_id);
         update_post_meta($post_id, '_centralmidi_genero', $genero);
-        update_post_meta($post_id, '_centralmidi_categoria_id', $categoria_id);
-        update_post_meta($post_id, '_centralmidi_categoria', $categoria);
         update_post_meta($post_id, '_centralmidi_mes_lancamento', $mes);
+        update_post_meta($post_id, '_centralmidi_ano_lancamento', $ano);
         update_post_meta($post_id, '_centralmidi_classificacao', $class);
         update_post_meta($post_id, '_centralmidi_demo_audio', $demo_audio);
 
         CentralMidi_DB::upsert($post_id, array(
             'artista_id'     => $artista_id,
             'genero_id'      => $genero_id,
-            'categoria_id'   => $categoria_id,
             'mes_lancamento' => $mes,
+            'ano_lancamento' => $ano,
             'classificacao'  => $class,
         ));
 

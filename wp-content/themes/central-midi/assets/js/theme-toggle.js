@@ -1,3 +1,6 @@
+/**
+ * Central MIDI - Theme Toggle (Light / Dark mode)
+ */
 document.addEventListener('DOMContentLoaded', () => {
     const toggle = document.getElementById('cm-theme-toggle');
     const icon = document.getElementById('cm-theme-icon');
@@ -6,50 +9,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const STORAGE_KEY = 'cm-theme';
-    const STATES = ['system', 'light', 'dark'];
-    const ICONS = {
-        system: 'ri-contrast-2-line',
-        light: 'ri-sun-line',
-        dark: 'ri-moon-line',
-    };
-    const LABELS = {
-        system: 'Tema: automático',
-        light: 'Tema: claro',
-        dark: 'Tema: escuro',
-    };
 
-    function getState() {
+    function getInitialTheme() {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
-            return STATES.includes(saved) ? saved : 'system';
-        } catch (e) {
-            return 'system';
-        }
+            if (saved === 'light' || saved === 'dark') {
+                return saved;
+            }
+        } catch (e) {}
+        return (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
     }
 
-    function apply(state) {
+    function applyTheme(theme) {
         const root = document.documentElement;
-        root.classList.toggle('cm-theme-light', state === 'light');
-        root.classList.toggle('cm-theme-dark', state === 'dark');
-        icon.className = ICONS[state] || ICONS.system;
-        toggle.setAttribute('aria-label', LABELS[state] || LABELS.system);
-        toggle.setAttribute('title', LABELS[state] || LABELS.system);
+        const isLight = theme === 'light';
+
+        root.classList.toggle('cm-theme-light', isLight);
+        root.classList.toggle('cm-theme-dark', !isLight);
+
+        // Icon shows what the NEXT click will activate: Sun when in dark mode, Moon when in light mode
+        icon.className = isLight ? 'ri-moon-line' : 'ri-sun-line';
+        const label = isLight ? 'Alternar para tema escuro' : 'Alternar para tema claro';
+        toggle.setAttribute('aria-label', label);
+        toggle.setAttribute('title', label);
+
         try {
-            if (state === 'system') {
-                localStorage.removeItem(STORAGE_KEY);
-            } else {
-                localStorage.setItem(STORAGE_KEY, state);
-            }
+            localStorage.setItem(STORAGE_KEY, theme);
         } catch (e) {}
     }
 
-    function next(state) {
-        return STATES[(STATES.indexOf(state) + 1) % STATES.length];
-    }
+    let currentTheme = getInitialTheme();
+    applyTheme(currentTheme);
 
-    apply(getState());
-
-    toggle.addEventListener('click', () => {
-        apply(next(getState()));
+    toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+        applyTheme(currentTheme);
     });
+
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+            try {
+                if (!localStorage.getItem(STORAGE_KEY)) {
+                    currentTheme = e.matches ? 'light' : 'dark';
+                    applyTheme(currentTheme);
+                }
+            } catch (err) {}
+        });
+    }
 });

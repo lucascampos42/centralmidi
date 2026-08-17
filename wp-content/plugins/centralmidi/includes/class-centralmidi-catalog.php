@@ -55,7 +55,6 @@ class CentralMidi_Catalog {
             <form class="centralmidi-filters" method="get">
                 <?php $this->render_filter('artista', __('Artista', 'centralmidi'), $filters['artista'] ?? ''); ?>
                 <?php $this->render_filter('genero', __('Gênero', 'centralmidi'), $filters['genero'] ?? ''); ?>
-                <?php $this->render_filter('categoria', __('Categoria', 'centralmidi'), $filters['categoria'] ?? ''); ?>
                 <?php $this->render_filter('mes_lancamento', __('Mês de Lançamento', 'centralmidi'), $filters['mes_lancamento'] ?? '', 'mes'); ?>
                 <?php $this->render_filter('classificacao', __('Classificação', 'centralmidi'), $filters['classificacao'] ?? '', 'classificacao'); ?>
                 
@@ -64,7 +63,7 @@ class CentralMidi_Catalog {
                         <i class="ri-filter-3-line"></i> <?php esc_html_e('Filtrar', 'centralmidi'); ?>
                     </button>
                     <?php if (!empty($filters)) : ?>
-                        <a class="centralmidi-btn centralmidi-btn-clear" href="<?php echo esc_url(remove_query_arg(array('artista', 'genero', 'categoria', 'mes_lancamento', 'classificacao'))); ?>">
+                        <a class="centralmidi-btn centralmidi-btn-clear" href="<?php echo esc_url(remove_query_arg(array('artista', 'genero', 'mes_lancamento', 'classificacao'))); ?>">
                             <i class="ri-close-circle-line"></i> <?php esc_html_e('Limpar Filtros', 'centralmidi'); ?>
                         </a>
                     <?php endif; ?>
@@ -102,7 +101,7 @@ class CentralMidi_Catalog {
 
     private function get_filters() {
         $filters = array();
-        foreach (array('artista', 'genero', 'categoria', 'mes_lancamento', 'classificacao') as $key) {
+        foreach (array('artista', 'genero', 'mes_lancamento', 'classificacao') as $key) {
             if (isset($_GET[$key]) && '' !== $_GET[$key]) {
                 $filters[$key] = sanitize_text_field(wp_unslash($_GET[$key]));
             }

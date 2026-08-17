@@ -96,12 +96,13 @@ Versão `1.1.0` (`style.css`). Todas as páginas passam por `header.php`/`footer
 | `_centralmidi_categoria` | Nome da categoria (denormalizado p/ exibição) |
 | `_centralmidi_categoria_id` | FK para `wp_centralmidi_categorias.id` |
 | `_centralmidi_mes_lancamento` | Mês (1–12) |
+| `_centralmidi_ano_lancamento` | Ano do lançamento (ex.: 2026) |
 | `_centralmidi_classificacao` | `M` / `L` / `RLM` |
 | `_centralmidi_demo_audio` | URL do MP3 de demonstração |
 
 ### Tabelas
 
-- `wp_centralmidi_midis`: `product_id` (UNIQUE), `artista_id`, `genero_id`, `categoria_id`, `mes_lancamento`, `classificacao`, `created_at`, `updated_at`. **Sem strings denormalizadas** (colunas `artista`/`genero` removidas na migração).
+- `wp_centralmidi_midis`: `product_id` (UNIQUE), `artista_id`, `genero_id`, `categoria_id`, `mes_lancamento`, `ano_lancamento`, `classificacao`, `created_at`, `updated_at`. **Sem strings denormalizadas** (colunas `artista`/`genero` removidas na migração).
 - `wp_centralmidi_artistas`: `id`, `nome` (UNIQUE), `created_at`, `updated_at`.
 - `wp_centralmidi_generos`: `id`, `nome` (UNIQUE), `created_at`, `updated_at`.
 - `wp_centralmidi_categorias`: `id`, `nome` (UNIQUE), `created_at`, `updated_at`.

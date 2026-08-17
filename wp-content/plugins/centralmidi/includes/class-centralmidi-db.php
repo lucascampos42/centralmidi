@@ -3,10 +3,9 @@
  * Central MIDI DB: custom tables for MIDI metadata.
  *
  * Tables:
- *   - wp_centralmidi_midis      (product_id, artista_id, genero_id, categoria_id, mes_lancamento, classificacao)
+ *   - wp_centralmidi_midis      (product_id, artista_id, genero_id, mes_lancamento, classificacao)
  *   - wp_centralmidi_artistas   (id, nome)
  *   - wp_centralmidi_generos    (id, nome)
- *   - wp_centralmidi_categorias (id, nome)
  *
  * Classification: M (melody), L (lyrics), RLM (melody + lyrics)
  */
@@ -30,11 +29,6 @@ class CentralMidi_DB {
         return $wpdb->prefix . CENTRALMIDI_GENEROS_TABLE;
     }
 
-    public static function categorias_table_name() {
-        global $wpdb;
-        return $wpdb->prefix . CENTRALMIDI_CATEGORIAS_TABLE;
-    }
-
     public static function create_table() {
         global $wpdb;
 
@@ -46,8 +40,8 @@ class CentralMidi_DB {
             product_id BIGINT UNSIGNED NOT NULL,
             artista_id BIGINT UNSIGNED NULL,
             genero_id BIGINT UNSIGNED NULL,
-            categoria_id BIGINT UNSIGNED NULL,
             mes_lancamento TINYINT UNSIGNED NOT NULL DEFAULT 0,
+            ano_lancamento SMALLINT UNSIGNED NOT NULL DEFAULT 0,
             classificacao VARCHAR(3) NOT NULL DEFAULT 'M',
             created_at DATETIME NOT NULL,
             updated_at DATETIME NOT NULL,
@@ -55,8 +49,8 @@ class CentralMidi_DB {
             UNIQUE KEY product_id (product_id),
             KEY artista_id (artista_id),
             KEY genero_id (genero_id),
-            KEY categoria_id (categoria_id),
             KEY mes_lancamento (mes_lancamento),
+            KEY ano_lancamento (ano_lancamento),
             KEY classificacao (classificacao)
         ) {$charset};";
 
@@ -72,10 +66,6 @@ class CentralMidi_DB {
 
     public static function create_generos_table() {
         self::create_referencia_table(self::generos_table_name());
-    }
-
-    public static function create_categorias_table() {
-        self::create_referencia_table(self::categorias_table_name());
     }
 
     /**
@@ -113,15 +103,12 @@ class CentralMidi_DB {
         foreach (array(
             'artista'   => self::artistas_table_name(),
             'genero'    => self::generos_table_name(),
-            'categoria' => self::categorias_table_name(),
         ) as $kind => $table) {
             if (!self::table_exists($table)) {
                 if ('artista' === $kind) {
                     self::create_artistas_table();
-                } elseif ('genero' === $kind) {
-                    self::create_generos_table();
                 } else {
-                    self::create_categorias_table();
+                    self::create_generos_table();
                 }
             }
         }
@@ -134,12 +121,20 @@ class CentralMidi_DB {
 
         // Ensure the midis table has the FK columns.
         $after = 'product_id';
-        foreach (array('artista_id', 'genero_id', 'categoria_id') as $col) {
+        foreach (array('artista_id', 'genero_id') as $col) {
             if (!self::column_exists($midis_table, $col)) {
                 $wpdb->query("ALTER TABLE {$midis_table} ADD COLUMN {$col} BIGINT UNSIGNED NULL AFTER {$after}");
             }
             $after = $col;
         }
+
+        // Ensure the midis table has the ano_lancamento column.
+        if (!self::column_exists($midis_table, 'ano_lancamento')) {
+            $wpdb->query("ALTER TABLE {$midis_table} ADD COLUMN ano_lancamento SMALLINT UNSIGNED NOT NULL DEFAULT 0 AFTER mes_lancamento");
+        }
+
+        // Backfill the year for legacy rows created before the column existed.
+        $wpdb->query("UPDATE {$midis_table} SET ano_lancamento = YEAR(created_at) WHERE ano_lancamento = 0 AND created_at IS NOT NULL");
 
         // Migrate legacy denormalized strings to the reference tables.
         self::migrate_legacy_data();
@@ -216,14 +211,14 @@ class CentralMidi_DB {
         $wpdb->query("DROP TABLE IF EXISTS " . self::table_name());
         $wpdb->query("DROP TABLE IF EXISTS " . self::artistas_table_name());
         $wpdb->query("DROP TABLE IF EXISTS " . self::generos_table_name());
-        $wpdb->query("DROP TABLE IF EXISTS " . self::categorias_table_name());
+        $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}centralmidi_categorias");
     }
 
     /**
      * Upsert one row for a product.
      *
      * @param int $product_id
-     * @param array $data Keys: artista_id, genero_id, categoria_id, mes_lancamento, classificacao
+     * @param array $data Keys: artista_id, genero_id, mes_lancamento, classificacao
      */
     public static function upsert($product_id, $data) {
         global $wpdb;
@@ -233,7 +228,6 @@ class CentralMidi_DB {
 
         $artista_id = isset($data['artista_id']) ? absint($data['artista_id']) : 0;
         $genero_id  = isset($data['genero_id']) ? absint($data['genero_id']) : 0;
-        $categoria_id = isset($data['categoria_id']) ? absint($data['categoria_id']) : 0;
 
         // Resolve reference IDs from legacy names when only the name was given.
         if (!$artista_id && !empty($data['artista'])) {
@@ -241,9 +235,6 @@ class CentralMidi_DB {
         }
         if (!$genero_id && !empty($data['genero'])) {
             $genero_id = self::add_genero($data['genero']);
-        }
-        if (!$categoria_id && !empty($data['categoria'])) {
-            $categoria_id = self::add_categoria($data['categoria']);
         }
 
         $row = $wpdb->get_row(
@@ -254,8 +245,8 @@ class CentralMidi_DB {
             'product_id'     => (int) $product_id,
             'artista_id'     => $artista_id ? $artista_id : null,
             'genero_id'      => $genero_id ? $genero_id : null,
-            'categoria_id'   => $categoria_id ? $categoria_id : null,
             'mes_lancamento' => absint($data['mes_lancamento'] ?? 0),
+            'ano_lancamento' => absint($data['ano_lancamento'] ?? 0),
             'classificacao'  => self::sanitize_classificacao($data['classificacao'] ?? 'M'),
             'updated_at'     => $now,
         );
@@ -398,38 +389,6 @@ class CentralMidi_DB {
     }
 
     /* ------------------------------------------------------------------
-     * Categorias
-     * ---------------------------------------------------------------- */
-
-    public static function get_categorias() {
-        return self::get_referencias(self::categorias_table_name());
-    }
-
-    public static function get_categoria($id) {
-        return self::get_referencia(self::categorias_table_name(), $id);
-    }
-
-    public static function get_categoria_by_nome($nome) {
-        return self::get_referencia_by_nome(self::categorias_table_name(), $nome);
-    }
-
-    public static function add_categoria($nome) {
-        return self::add_referencia(self::categorias_table_name(), $nome);
-    }
-
-    public static function update_categoria($id, $nome) {
-        return self::update_referencia(self::categorias_table_name(), $id, $nome);
-    }
-
-    public static function delete_categoria($id) {
-        return self::delete_referencia(self::categorias_table_name(), 'categoria_id', $id);
-    }
-
-    public static function categorias_count() {
-        return self::referencias_count(self::categorias_table_name());
-    }
-
-    /* ------------------------------------------------------------------
      * Helpers genéricos de referência
      * ---------------------------------------------------------------- */
 
@@ -560,7 +519,7 @@ class CentralMidi_DB {
     /**
      * Distinct values used to populate filter dropdowns.
      *
-     * @param string $column artista|genero|categoria|mes_lancamento|classificacao
+     * @param string $column artista|genero|mes_lancamento|classificacao
      * @return array
      */
     public static function distinct($column) {
@@ -577,12 +536,6 @@ class CentralMidi_DB {
         if ('genero' === $column) {
             $table = self::generos_table_name();
             $sql   = "SELECT DISTINCT g.nome AS val FROM {$midis_table} m INNER JOIN {$table} g ON g.id = m.genero_id WHERE g.nome <> '' ORDER BY g.nome ASC";
-            return $wpdb->get_col($sql);
-        }
-
-        if ('categoria' === $column) {
-            $table = self::categorias_table_name();
-            $sql   = "SELECT DISTINCT c.nome AS val FROM {$midis_table} m INNER JOIN {$table} c ON c.id = m.categoria_id WHERE c.nome <> '' ORDER BY c.nome ASC";
             return $wpdb->get_col($sql);
         }
 
@@ -612,29 +565,53 @@ class CentralMidi_DB {
     }
 
     /**
-     * Get product IDs for a specific launch month (up to $limit), newest first.
-     * Deterministic ordering (no RAND()) so pages are stable and cacheable.
+     * Months (with releases) for a given year, newest first.
+     *
+     * @param int $ano
+     * @return int[]
      */
-    public static function get_midis_by_month($month, $limit = 30) {
+    public static function get_meses_por_ano($ano) {
         global $wpdb;
         $table_name = self::table_name();
         $sql = $wpdb->prepare(
-            "SELECT product_id FROM {$table_name} WHERE mes_lancamento = %d ORDER BY created_at DESC, product_id DESC LIMIT %d",
+            "SELECT DISTINCT mes_lancamento FROM {$table_name} WHERE ano_lancamento = %d AND mes_lancamento <> 0 ORDER BY mes_lancamento DESC",
+            absint($ano)
+        );
+        return array_map('intval', $wpdb->get_col($sql));
+    }
+
+    /**
+     * Get product IDs for a specific launch month/year (up to $limit), newest first.
+     * Deterministic ordering (no RAND()) so pages are stable and cacheable.
+     */
+    public static function get_midis_by_month($month, $ano = 0, $limit = 30) {
+        global $wpdb;
+        $table_name = self::table_name();
+        if (!$ano) {
+            $ano = (int) date('Y');
+        }
+        $sql = $wpdb->prepare(
+            "SELECT product_id FROM {$table_name} WHERE mes_lancamento = %d AND ano_lancamento = %d ORDER BY created_at DESC, product_id DESC LIMIT %d",
             absint($month),
+            absint($ano),
             absint($limit)
         );
         return array_map('intval', $wpdb->get_col($sql));
     }
 
     /**
-     * Total count of MIDIs for a given month.
+     * Total count of MIDIs for a given month/year.
      */
-    public static function count_by_month($month) {
+    public static function count_by_month($month, $ano = 0) {
         global $wpdb;
         $table_name = self::table_name();
+        if (!$ano) {
+            $ano = (int) date('Y');
+        }
         $sql = $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$table_name} WHERE mes_lancamento = %d",
-            absint($month)
+            "SELECT COUNT(*) FROM {$table_name} WHERE mes_lancamento = %d AND ano_lancamento = %d",
+            absint($month),
+            absint($ano)
         );
         return (int) $wpdb->get_var($sql);
     }
@@ -642,7 +619,7 @@ class CentralMidi_DB {
     /**
      * Returns product IDs matching all given filters (AND).
      *
-     * @param array $filters Keys: artista, genero, categoria, mes_lancamento, classificacao
+     * @param array $filters Keys: artista, genero, mes_lancamento, classificacao
      * @return array|int[] product IDs
      */
     public static function search_product_ids($filters = array()) {
@@ -651,7 +628,6 @@ class CentralMidi_DB {
         $midis_table    = self::table_name();
         $artistas_table = self::artistas_table_name();
         $generos_table  = self::generos_table_name();
-        $categorias_table = self::categorias_table_name();
 
         $joins  = array();
         $where  = array('1=1');
@@ -667,12 +643,6 @@ class CentralMidi_DB {
             $joins[]  = "INNER JOIN {$generos_table} g ON g.id = m.genero_id";
             $where[]  = "g.nome = %s";
             $params[] = $filters['genero'];
-        }
-
-        if (!empty($filters['categoria'])) {
-            $joins[]  = "INNER JOIN {$categorias_table} c ON c.id = m.categoria_id";
-            $where[]  = "c.nome = %s";
-            $params[] = $filters['categoria'];
         }
 
         if (!empty($filters['mes_lancamento'])) {
@@ -704,7 +674,7 @@ class CentralMidi_DB {
     }
 
     /**
-     * Search MIDIs by artist, genre or category name (LIKE).
+     * Search MIDIs by artist or genre name (LIKE).
      *
      * @param string $term Search term.
      * @return int[] product IDs
@@ -715,7 +685,6 @@ class CentralMidi_DB {
         $midis_table    = self::table_name();
         $artistas_table = self::artistas_table_name();
         $generos_table  = self::generos_table_name();
-        $categorias_table = self::categorias_table_name();
 
         $like = '%' . $wpdb->esc_like(trim($term)) . '%';
         $sql = $wpdb->prepare(
@@ -723,9 +692,7 @@ class CentralMidi_DB {
              FROM {$midis_table} m
              LEFT JOIN {$artistas_table} a ON a.id = m.artista_id
              LEFT JOIN {$generos_table} g ON g.id = m.genero_id
-             LEFT JOIN {$categorias_table} c ON c.id = m.categoria_id
-             WHERE a.nome LIKE %s OR g.nome LIKE %s OR c.nome LIKE %s",
-            $like,
+             WHERE a.nome LIKE %s OR g.nome LIKE %s",
             $like,
             $like
         );

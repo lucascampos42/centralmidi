@@ -2896,12 +2896,53 @@ img.cm-logo-img,
     border-color: var(--primary);
 }
 
-/* ============ Light theme ============
-   Follows the device preference by default, or a manual
-   selection via .cm-theme-light / .cm-theme-dark on <html>. */
+/* ============ Light theme (Manual Toggle & Universal Light Mode) ============ */
+html.cm-theme-light {
+    --bg-main: #f4f6f9;
+    --bg-surface: #ffffff;
+    --bg-surface-elevated: #e9edf3;
+    --bg-card-hover: #dde3ec;
+
+    --primary-hover: #00b96f;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --text-subtle: #64748b;
+
+    --border-color: rgba(15, 23, 42, 0.12);
+    --border-focus: rgba(0, 210, 132, 0.5);
+
+    --shadow-card: 0 4px 20px rgba(15, 23, 42, 0.08);
+    --shadow-player: 0 -8px 30px rgba(15, 23, 42, 0.12);
+    --dropdown-bg: rgba(255, 255, 255, 0.98);
+    --player-bar-bg: rgba(255, 255, 255, 0.96);
+}
+
+html.cm-theme-light .cm-btn-play-pause,
+html.cm-theme-light .cm-carousel-arrow:hover,
+html.cm-theme-light .cm-az-box:hover,
+html.cm-theme-light .cm-az-box.active,
+html.cm-theme-light .cm-pagination .page-numbers:hover,
+html.cm-theme-light .cm-pagination .page-numbers.current,
+html.cm-theme-light .cm-step-number {
+    color: #ffffff;
+}
+
+html.cm-theme-light .cm-carousel-overlay {
+    background: linear-gradient(90deg, rgba(15, 23, 42, 0.55) 0%, rgba(15, 23, 42, 0.25) 60%, rgba(15, 23, 42, 0.1) 100%);
+}
+
+html.cm-theme-light .cm-cta-box {
+    background: linear-gradient(135deg, #e8f5ef, #e8f0f9);
+    border: 1px solid rgba(0, 210, 132, 0.4);
+}
+
+html.cm-theme-light .cm-cta-box h2 {
+    color: #0f172a;
+}
+
+/* Automatic device preference for light mode when no class is explicitly set */
 @media (prefers-color-scheme: light) {
-    :root,
-    html.cm-theme-light {
+    :root:not(.cm-theme-dark) {
         --bg-main: #f4f6f9;
         --bg-surface: #ffffff;
         --bg-surface-elevated: #e9edf3;
@@ -2920,42 +2961,9 @@ img.cm-logo-img,
         --dropdown-bg: rgba(255, 255, 255, 0.98);
         --player-bar-bg: rgba(255, 255, 255, 0.96);
     }
-
-    .cm-btn-play-pause,
-    html.cm-theme-light .cm-btn-play-pause,
-    .cm-carousel-arrow:hover,
-    html.cm-theme-light .cm-carousel-arrow:hover,
-    .cm-az-box:hover,
-    html.cm-theme-light .cm-az-box:hover,
-    .cm-az-box.active,
-    html.cm-theme-light .cm-az-box.active,
-    .cm-pagination .page-numbers:hover,
-    html.cm-theme-light .cm-pagination .page-numbers:hover,
-    .cm-pagination .page-numbers.current,
-    html.cm-theme-light .cm-pagination .page-numbers.current,
-    .cm-step-number,
-    html.cm-theme-light .cm-step-number {
-        color: #ffffff;
-    }
-
-    .cm-carousel-overlay,
-    html.cm-theme-light .cm-carousel-overlay {
-        background: linear-gradient(90deg, rgba(15, 23, 42, 0.55) 0%, rgba(15, 23, 42, 0.25) 60%, rgba(15, 23, 42, 0.1) 100%);
-    }
-
-    .cm-cta-box,
-    html.cm-theme-light .cm-cta-box {
-        background: linear-gradient(135deg, #e8f5ef, #e8f0f9);
-        border: 1px solid rgba(0, 210, 132, 0.4);
-    }
-
-    .cm-cta-box h2,
-    html.cm-theme-light .cm-cta-box h2 {
-        color: #0f172a;
-    }
 }
 
-/* Manual dark override (wins over a light device preference) */
+/* ============ Dark theme (Manual Toggle & Universal Dark Mode) ============ */
 html.cm-theme-dark {
     --bg-main: #0c0f17;
     --bg-surface: #141923;

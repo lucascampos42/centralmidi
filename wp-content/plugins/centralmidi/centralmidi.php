@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Central MIDI
  * Plugin URI: https://centralmidi.com.br
- * Description: Catálogo de MIDIs com classificação #M/#L/#RLM, metadados (artista, gênero, categoria, mês de lançamento) e tabelas próprias no banco. Integra com produtos WooCommerce.
- * Version: 1.1.0
+ * Description: Catálogo de MIDIs com classificação #M/#L/#RLM, metadados (artista, gênero, mês de lançamento) e tabelas próprias no banco. Integra com produtos WooCommerce.
+ * Version: 1.1.4
  * Author: Central MIDI
  * Text Domain: centralmidi
  * Requires Plugins: woocommerce
@@ -11,13 +11,12 @@
 
 defined('ABSPATH') || exit;
 
-define('CENTRALMIDI_VERSION', '1.1.2');
+define('CENTRALMIDI_VERSION', '1.1.4');
 define('CENTRALMIDI_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CENTRALMIDI_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('CENTRALMIDI_TABLE', 'centralmidi_midis');
 define('CENTRALMIDI_ARTISTAS_TABLE', 'centralmidi_artistas');
 define('CENTRALMIDI_GENEROS_TABLE', 'centralmidi_generos');
-define('CENTRALMIDI_CATEGORIAS_TABLE', 'centralmidi_categorias');
 
 require_once CENTRALMIDI_PLUGIN_DIR . 'includes/class-centralmidi-db.php';
 require_once CENTRALMIDI_PLUGIN_DIR . 'includes/class-centralmidi-admin.php';
@@ -30,7 +29,6 @@ function centralmidi_activate() {
     CentralMidi_DB::create_table();
     CentralMidi_DB::create_artistas_table();
     CentralMidi_DB::create_generos_table();
-    CentralMidi_DB::create_categorias_table();
 }
 register_activation_hook(__FILE__, 'centralmidi_activate');
 
