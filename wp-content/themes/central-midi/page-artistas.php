@@ -122,7 +122,11 @@ $alphabet = range('A', 'Z');
                 <a href="<?php echo esc_url(add_query_arg('artista', urlencode($artist_name), home_url('/artistas/'))); ?>"
                    class="cm-artist-pill <?php echo esc_attr($active_class); ?>">
                     <div class="cm-artist-pill-avatar">
-                        <i class="ri-user-voice-line"></i>
+                        <?php if (class_exists('CentralMidi_DB') && $art->foto_id) : ?>
+                            <?php echo wp_get_attachment_image((int) $art->foto_id, 'thumbnail'); ?>
+                        <?php else : ?>
+                            <i class="ri-user-voice-line"></i>
+                        <?php endif; ?>
                     </div>
                     <div class="cm-artist-pill-info">
                         <span class="cm-artist-pill-name"><?php echo esc_html($artist_name); ?></span>

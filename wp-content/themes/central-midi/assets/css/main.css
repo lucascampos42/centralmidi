@@ -116,21 +116,35 @@ a {
     height: 72px;
 }
 
-.cm-logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-main);
+.cm-logo,
+a.cm-logo,
+.cm-footer .cm-logo {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: var(--text-main) !important;
+    text-decoration: none !important;
+    flex-shrink: 0 !important;
+    max-height: 44px !important;
 }
 
-.cm-logo-img {
-    height: 42px;
-    width: auto;
-    max-width: 180px;
-    object-fit: contain;
-    display: block;
+.cm-logo-img,
+img.cm-logo-img,
+.cm-logo img,
+.woocommerce .cm-logo img,
+.woocommerce-page .cm-logo img,
+.woocommerce-cart .cm-logo img,
+.woocommerce-account .cm-logo img,
+.cm-header .cm-logo img,
+.cm-footer .cm-logo img {
+    height: 40px !important;
+    max-height: 40px !important;
+    width: auto !important;
+    max-width: 160px !important;
+    object-fit: contain !important;
+    display: block !important;
 }
 
 .cm-logo-icon {
@@ -1818,6 +1832,13 @@ a {
     justify-content: center;
     font-size: 1.25rem;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.cm-artist-pill-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .cm-artist-pill-info {

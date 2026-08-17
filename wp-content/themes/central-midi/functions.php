@@ -163,6 +163,29 @@ function centralmidi_single_demo_audio() {
 add_action('woocommerce_single_product_summary', 'centralmidi_single_demo_audio', 30);
 
 /**
+ * Use the artist photo as the product image when the product has no featured image.
+ * Covers the single product gallery, cart thumbnails and related products.
+ */
+function centralmidi_product_image_fallback($image_id, $product) {
+    if ($image_id || !class_exists('CentralMidi_DB')) {
+        return $image_id;
+    }
+
+    $artista_id = (int) get_post_meta($product->get_id(), '_centralmidi_artista_id', true);
+    if (!$artista_id) {
+        return $image_id;
+    }
+
+    $artista = CentralMidi_DB::get_artista($artista_id);
+    if ($artista && $artista->foto_id) {
+        return (int) $artista->foto_id;
+    }
+
+    return $image_id;
+}
+add_filter('woocommerce_product_get_image_id', 'centralmidi_product_image_fallback', 10, 2);
+
+/**
  * Enqueue scripts and styles
  */
 function centralmidi_scripts() {
