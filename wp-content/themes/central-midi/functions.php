@@ -70,6 +70,25 @@ function centralmidi_disable_downloads_endpoint() {
 add_action('template_redirect', 'centralmidi_disable_downloads_endpoint');
 
 /**
+ * Redirect WooCommerce Shop archive (/loja/) to canonical MIDIs catalog (/midis/)
+ */
+function centralmidi_redirect_shop_archive() {
+    if (function_exists('is_shop') && is_shop()) {
+        wp_safe_redirect(centralmidi_catalog_url(), 301);
+        exit;
+    }
+}
+add_action('template_redirect', 'centralmidi_redirect_shop_archive');
+
+/**
+ * Redirect "Return to Shop" and "Browse products" buttons to canonical /midis/
+ */
+function centralmidi_return_to_shop_redirect() {
+    return centralmidi_catalog_url();
+}
+add_filter('woocommerce_return_to_shop_redirect', 'centralmidi_return_to_shop_redirect');
+
+/**
  * Custom Portuguese (pt_BR) translations for WooCommerce strings
  */
 function centralmidi_translate_woocommerce_strings($translated_text, $text, $domain) {
