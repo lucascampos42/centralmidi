@@ -38,6 +38,7 @@ services:
     volumes:
       - ./wp-content:/var/www/html/wp-content
       - ./docker/wordpress-apache.conf:/etc/apache2/conf-enabled/zz-centralmidi.conf:ro
+      - ./docker/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini:ro
     networks:
       - centralmidi_net
 

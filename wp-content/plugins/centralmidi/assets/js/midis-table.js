@@ -53,6 +53,15 @@
         return v ? '#' + v : '';
     }
 
+    function formatPublicado(cell) {
+        var v = cell.getValue();
+        var publicado = cfg.publicado || {};
+        var sim = publicado['1'] || 'Sim';
+        var nao = publicado['0'] || 'Não';
+        return '<span class="cm-pub-badge ' + (v === 0 || v === '0' ? 'cm-pub-nao' : 'cm-pub-sim') + '">' +
+            $('<span></span>').text(v === 0 || v === '0' ? nao : sim).html() + '</span>';
+    }
+
     function saveCell(cell, callback) {
         var field = cell.getField();
         var row = cell.getRow().getData();
@@ -206,6 +215,28 @@
                 editorParams: { values: ['M', 'L', 'RLM'] },
                 headerFilter: 'list',
                 headerFilterParams: { values: classificacoesFiltro }
+            },
+            {
+                title: 'Publicado',
+                field: 'publicado',
+                hozAlign: 'center',
+                sorter: 'number',
+                formatter: formatPublicado,
+                editor: 'list',
+                editorParams: {
+                    values: [
+                        { label: (cfg.publicado || {})['1'] || 'Sim', value: 1 },
+                        { label: (cfg.publicado || {})['0'] || 'Não', value: 0 }
+                    ]
+                },
+                headerFilter: 'list',
+                headerFilterParams: {
+                    values: [
+                        { label: '— Todos —', value: '' },
+                        { label: (cfg.publicado || {})['1'] || 'Sim', value: 1 },
+                        { label: (cfg.publicado || {})['0'] || 'Não', value: 0 }
+                    ]
+                }
             },
             {
                 title: 'Arquivo',

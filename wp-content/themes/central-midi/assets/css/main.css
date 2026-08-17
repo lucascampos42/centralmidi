@@ -3233,6 +3233,25 @@ input.cm-input:focus {
     margin: 8px 0 16px;
 }
 
+.cm-single-em-breve {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0 16px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px dashed var(--border-color);
+    background: var(--bg-surface);
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.cm-single-em-breve i {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
 /* ============ Contact Section (Home) ============ */
 .cm-contact-section {
     padding: 70px 20px 80px;

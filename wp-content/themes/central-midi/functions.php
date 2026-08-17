@@ -284,6 +284,73 @@ function centralmidi_single_demo_audio() {
 add_action('woocommerce_single_product_summary', 'centralmidi_single_demo_audio', 30);
 
 /**
+ * Whether a MIDI product is published (available for sale).
+ * Products without the meta key default to published.
+ */
+function centralmidi_product_is_publicado($product_id) {
+    $publicado = get_post_meta($product_id, '_centralmidi_publicado', true);
+    return '' === $publicado || (int) (bool) $publicado;
+}
+
+/**
+ * Block purchase of MIDIs that are not yet published (product may still be publish in Woo).
+ */
+function centralmidi_is_purchasable($purchasable, $product) {
+    if ($purchasable && !centralmidi_product_is_publicado($product->get_id())) {
+        return false;
+    }
+    return $purchasable;
+}
+add_filter('woocommerce_is_purchasable', 'centralmidi_is_purchasable', 10, 2);
+
+/**
+ * "Em breve" notice on the single product page when the MIDI is not published.
+ */
+function centralmidi_single_em_breve() {
+    global $product;
+    if (!$product || centralmidi_product_is_publicado($product->get_id())) {
+        return;
+    }
+    ?>
+    <div class="cm-single-em-breve">
+        <i class="ri-time-line"></i>
+        <?php esc_html_e('Em breve — este MIDI ainda não está disponível para venda.', 'central-midi'); ?>
+    </div>
+    <?php
+}
+add_action('woocommerce_single_product_summary', 'centralmidi_single_em_breve', 31);
+
+/**
+ * Hide unpublished MIDIs from the WooCommerce shop/archive listings.
+ */
+function centralmidi_hide_unpublished_from_archives($query) {
+    if (is_admin() || !$query->is_main_query()) {
+        return;
+    }
+    if (!$query->is_post_type_archive('product') && !$query->is_tax(array('product_cat', 'product_tag'))) {
+        return;
+    }
+    $meta_query = $query->get('meta_query');
+    if (!is_array($meta_query)) {
+        $meta_query = array();
+    }
+    $meta_query[] = array(
+        'relation' => 'OR',
+        array(
+            'key'     => '_centralmidi_publicado',
+            'compare' => 'NOT EXISTS',
+        ),
+        array(
+            'key'     => '_centralmidi_publicado',
+            'value'   => '0',
+            'compare' => '!=',
+        ),
+    );
+    $query->set('meta_query', $meta_query);
+}
+add_action('pre_get_posts', 'centralmidi_hide_unpublished_from_archives');
+
+/**
  * Use the artist photo as the product image when the product has no featured image.
  * Covers the single product gallery, cart thumbnails and related products.
  */
@@ -615,6 +682,7 @@ function centralmidi_ajax_live_search() {
          LEFT JOIN {$generos_table} g ON g.id = m.genero_id
          WHERE p.post_type = 'product'
            AND p.post_status = 'publish'
+           AND (m.publicado = 1 OR m.product_id IS NULL)
            AND (
                p.post_title LIKE %s
                OR a.nome LIKE %s

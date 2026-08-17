@@ -85,6 +85,11 @@ class CentralMidi_Admin {
                     'L'   => __('Letra', 'centralmidi'),
                     'RLM' => __('Melodia + Letra', 'centralmidi'),
                 ),
+                'publicado'       => array(
+                    '1' => __('Sim', 'centralmidi'),
+                    '0' => __('Não', 'centralmidi'),
+                    'em_breve' => __('Em breve', 'centralmidi'),
+                ),
                 'textos'          => array(
                     'semArquivo' => __('Sem arquivo — clique para definir', 'centralmidi'),
                     'erro'       => __('Erro ao salvar.', 'centralmidi'),
@@ -433,6 +438,10 @@ class CentralMidi_Admin {
                                 <option value="set_classificacao:<?php echo esc_attr($code); ?>"><?php echo esc_html('#' . $code); ?></option>
                             <?php endforeach; ?>
                         </optgroup>
+                        <optgroup label="<?php esc_attr_e('Publicação', 'centralmidi'); ?>">
+                            <option value="publicar"><?php esc_html_e('Publicar (disponível para venda)', 'centralmidi'); ?></option>
+                            <option value="despublicar"><?php esc_html_e('Despublicar (Em breve)', 'centralmidi'); ?></option>
+                        </optgroup>
                         <optgroup label="<?php esc_attr_e('Arquivo', 'centralmidi'); ?>">
                             <option value="clear_file"><?php esc_html_e('Remover link do arquivo dos selecionados', 'centralmidi'); ?></option>
                         </optgroup>
@@ -521,6 +530,16 @@ class CentralMidi_Admin {
                 }
                 break;
 
+            case 'publicar':
+            case 'despublicar':
+                $publicado = 'publicar' === $action ? 1 : 0;
+                foreach ($ids as $pid) {
+                    update_post_meta($pid, '_centralmidi_publicado', $publicado);
+                    $this->upsert_product_meta($pid, array('publicado' => $publicado));
+                    $count++;
+                }
+                break;
+
             case 'clear_file':
                 foreach ($ids as $pid) {
                     delete_post_meta($pid, '_centralmidi_file_url');
@@ -535,7 +554,7 @@ class CentralMidi_Admin {
                         '_centralmidi_genero', '_centralmidi_genero_id',
                         '_centralmidi_mes_lancamento', '_centralmidi_ano_lancamento',
                         '_centralmidi_classificacao', '_centralmidi_demo_audio',
-                        '_centralmidi_file_url',
+                        '_centralmidi_file_url', '_centralmidi_publicado',
                     ) as $meta_key) {
                         delete_post_meta($pid, $meta_key);
                     }
@@ -582,6 +601,7 @@ class CentralMidi_Admin {
             'mes'          => 0,
             'ano'          => 0,
             'classificacao' => '',
+            'publicado'     => null,
         );
 
         $filter = isset($_REQUEST['filter']) ? wp_unslash($_REQUEST['filter']) : array();
@@ -589,7 +609,7 @@ class CentralMidi_Admin {
             $filter = json_decode($filter, true);
         }
         foreach ((array) $filter as $f) {
-            if (empty($f['value'])) {
+            if (!isset($f['value']) || '' === $f['value']) {
                 continue;
             }
             $field = sanitize_key($f['field'] ?? '');
@@ -614,6 +634,9 @@ class CentralMidi_Admin {
                 case 'classificacao':
                     $filters['classificacao'] = strtoupper($value);
                     break;
+                case 'publicado':
+                    $filters['publicado'] = in_array($value, array('1', '0'), true) ? (int) $value : 1;
+                    break;
             }
         }
 
@@ -633,6 +656,7 @@ class CentralMidi_Admin {
                 'mes'           => (int) $r->mes_lancamento,
                 'ano'           => (int) $r->ano_lancamento,
                 'classificacao' => $r->classificacao ? $r->classificacao : '',
+                'publicado'     => (int) $r->publicado,
                 'arquivo'       => $r->arquivo ? $r->arquivo : '',
                 'edit_url'      => get_edit_post_link($pid),
                 'view_url'      => get_permalink($pid),
@@ -703,6 +727,13 @@ class CentralMidi_Admin {
                 $result = $class;
                 break;
 
+            case 'publicado':
+                $publicado = in_array((string) $value, array('1', '0'), true) ? (int) $value : 1;
+                update_post_meta($product_id, '_centralmidi_publicado', $publicado);
+                $this->upsert_product_meta($product_id, array('publicado' => $publicado));
+                $result = (string) $publicado;
+                break;
+
             case 'arquivo':
                 $url = esc_url_raw(trim((string) $value));
                 if ('' === $url) {
@@ -756,6 +787,7 @@ class CentralMidi_Admin {
             'mes_lancamento' => (int) get_post_meta($product_id, '_centralmidi_mes_lancamento', true),
             'ano_lancamento' => (int) get_post_meta($product_id, '_centralmidi_ano_lancamento', true),
             'classificacao'  => CentralMidi_DB::sanitize_classificacao(get_post_meta($product_id, '_centralmidi_classificacao', true)),
+            'publicado'      => '' === get_post_meta($product_id, '_centralmidi_publicado', true) ? 1 : (int) (bool) get_post_meta($product_id, '_centralmidi_publicado', true),
         );
         CentralMidi_DB::upsert($product_id, array_merge($data, $override));
     }
@@ -785,6 +817,8 @@ class CentralMidi_Admin {
         $classificacao  = CentralMidi_DB::sanitize_classificacao($classificacao);
         $demo_audio     = get_post_meta($post->ID, '_centralmidi_demo_audio', true);
         $arquivo_midi   = get_post_meta($post->ID, '_centralmidi_file_url', true);
+        $publicado      = get_post_meta($post->ID, '_centralmidi_publicado', true);
+        $publicado      = ('' === $publicado) ? 1 : (int) (bool) $publicado;
 
         $artistas   = CentralMidi_DB::get_artistas();
         $generos    = CentralMidi_DB::get_generos();
@@ -879,6 +913,14 @@ class CentralMidi_Admin {
                     </label>
                 </div>
             </div>
+
+            <div style="grid-column: 1 / -1;">
+                <label style="display:block;font-weight:600;margin-bottom:6px;cursor:pointer;">
+                    <input type="checkbox" name="_centralmidi_publicado" value="1" <?php checked($publicado, 1); ?>>
+                    <?php esc_html_e('Publicado — disponível para venda', 'centralmidi'); ?>
+                </label>
+                <p class="description"><?php esc_html_e('Desmarque para preparar o MIDI sem exibi-lo no catálogo nem permitir a compra (fica "Em breve").', 'centralmidi'); ?></p>
+            </div>
         </div>
         <p class="description"><?php esc_html_e('Os dados são salvos no produto WooCommerce e sincronizados na tabela wp_centralmidi_midis.', 'centralmidi'); ?></p>
         <?php
@@ -932,6 +974,7 @@ class CentralMidi_Admin {
         $class      = isset($_POST['_centralmidi_classificacao']) ? CentralMidi_DB::sanitize_classificacao(sanitize_text_field(wp_unslash($_POST['_centralmidi_classificacao']))) : 'M';
         $demo_audio   = isset($_POST['_centralmidi_demo_audio']) ? esc_url_raw(wp_unslash($_POST['_centralmidi_demo_audio'])) : '';
         $arquivo_midi = isset($_POST['_centralmidi_file_url']) ? esc_url_raw(wp_unslash($_POST['_centralmidi_file_url'])) : '';
+        $publicado    = isset($_POST['_centralmidi_publicado']) ? 1 : 0;
 
         update_post_meta($post_id, '_centralmidi_artista_id', $artista_id);
         update_post_meta($post_id, '_centralmidi_artista', $artista);
@@ -941,6 +984,7 @@ class CentralMidi_Admin {
         update_post_meta($post_id, '_centralmidi_ano_lancamento', $ano);
         update_post_meta($post_id, '_centralmidi_classificacao', $class);
         update_post_meta($post_id, '_centralmidi_demo_audio', $demo_audio);
+        update_post_meta($post_id, '_centralmidi_publicado', $publicado);
 
         if ('' === $arquivo_midi) {
             delete_post_meta($post_id, '_centralmidi_file_url');
@@ -954,6 +998,7 @@ class CentralMidi_Admin {
             'mes_lancamento' => $mes,
             'ano_lancamento' => $ano,
             'classificacao'  => $class,
+            'publicado'      => $publicado,
         ));
 
         CentralMidi_DB::clear_home_cache();
@@ -1181,6 +1226,7 @@ class CentralMidi_Admin {
             update_post_meta($post_id, '_centralmidi_mes_lancamento', $mes_lancamento);
             update_post_meta($post_id, '_centralmidi_ano_lancamento', $ano_lancamento);
             update_post_meta($post_id, '_centralmidi_classificacao', $classif);
+            update_post_meta($post_id, '_centralmidi_publicado', 1);
 
             if ($mp3_input) update_post_meta($post_id, '_centralmidi_demo_audio', $mp3_input);
             if ($midi_input) update_post_meta($post_id, '_centralmidi_file_url', $midi_input);
@@ -1191,6 +1237,7 @@ class CentralMidi_Admin {
                 'mes_lancamento' => $mes_lancamento,
                 'ano_lancamento' => $ano_lancamento,
                 'classificacao'  => $classif,
+                'publicado'      => 1,
             ));
 
             $processed++;

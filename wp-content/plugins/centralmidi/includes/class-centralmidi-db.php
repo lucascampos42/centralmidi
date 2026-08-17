@@ -354,7 +354,7 @@ class CentralMidi_DB {
 
         $sql = "SELECT a.id, a.nome, a.foto_id, COUNT(m.id) as total_midis 
                 FROM {$artistas_table} a 
-                LEFT JOIN {$midis_table} m ON (m.artista_id = a.id)
+                LEFT JOIN {$midis_table} m ON (m.artista_id = a.id AND m.publicado = 1)
                 WHERE " . implode(' AND ', $where) . "
                 GROUP BY a.id, a.nome, a.foto_id
                 ORDER BY a.nome ASC";
@@ -542,13 +542,13 @@ class CentralMidi_DB {
 
         if ('artista' === $column) {
             $table = self::artistas_table_name();
-            $sql   = "SELECT DISTINCT a.nome AS val FROM {$midis_table} m INNER JOIN {$table} a ON a.id = m.artista_id WHERE a.nome <> '' ORDER BY a.nome ASC";
+            $sql   = "SELECT DISTINCT a.nome AS val FROM {$midis_table} m INNER JOIN {$table} a ON a.id = m.artista_id WHERE a.nome <> '' AND m.publicado = 1 ORDER BY a.nome ASC";
             return $wpdb->get_col($sql);
         }
 
         if ('genero' === $column) {
             $table = self::generos_table_name();
-            $sql   = "SELECT DISTINCT g.nome AS val FROM {$midis_table} m INNER JOIN {$table} g ON g.id = m.genero_id WHERE g.nome <> '' ORDER BY g.nome ASC";
+            $sql   = "SELECT DISTINCT g.nome AS val FROM {$midis_table} m INNER JOIN {$table} g ON g.id = m.genero_id WHERE g.nome <> '' AND m.publicado = 1 ORDER BY g.nome ASC";
             return $wpdb->get_col($sql);
         }
 
@@ -557,7 +557,7 @@ class CentralMidi_DB {
             return array();
         }
 
-        $query   = "SELECT DISTINCT {$column} AS val FROM {$midis_table} WHERE {$column} <> '' ORDER BY val ASC";
+        $query   = "SELECT DISTINCT {$column} AS val FROM {$midis_table} WHERE {$column} <> '' AND publicado = 1 ORDER BY val ASC";
         $results = $wpdb->get_col($query);
 
         return array_filter($results);
@@ -587,7 +587,7 @@ class CentralMidi_DB {
         global $wpdb;
         $table_name = self::table_name();
         $sql = $wpdb->prepare(
-            "SELECT DISTINCT mes_lancamento FROM {$table_name} WHERE ano_lancamento = %d AND mes_lancamento <> 0 ORDER BY mes_lancamento DESC",
+            "SELECT DISTINCT mes_lancamento FROM {$table_name} WHERE ano_lancamento = %d AND mes_lancamento <> 0 AND publicado = 1 ORDER BY mes_lancamento DESC",
             absint($ano)
         );
         return array_map('intval', $wpdb->get_col($sql));
@@ -604,7 +604,7 @@ class CentralMidi_DB {
             $ano = (int) date('Y');
         }
         $sql = $wpdb->prepare(
-            "SELECT product_id FROM {$table_name} WHERE mes_lancamento = %d AND ano_lancamento = %d ORDER BY created_at DESC, product_id DESC LIMIT %d",
+            "SELECT product_id FROM {$table_name} WHERE mes_lancamento = %d AND ano_lancamento = %d AND publicado = 1 ORDER BY created_at DESC, product_id DESC LIMIT %d",
             absint($month),
             absint($ano),
             absint($limit)
@@ -622,7 +622,7 @@ class CentralMidi_DB {
             $ano = (int) date('Y');
         }
         $sql = $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$table_name} WHERE mes_lancamento = %d AND ano_lancamento = %d",
+            "SELECT COUNT(*) FROM {$table_name} WHERE mes_lancamento = %d AND ano_lancamento = %d AND publicado = 1",
             absint($month),
             absint($ano)
         );
@@ -643,7 +643,7 @@ class CentralMidi_DB {
         $generos_table  = self::generos_table_name();
 
         $joins  = array();
-        $where  = array('1=1');
+        $where  = array('m.publicado = 1');
         $params = array();
 
         if (!empty($filters['artista'])) {
@@ -754,7 +754,7 @@ class CentralMidi_DB {
              FROM {$midis_table} m
              LEFT JOIN {$artistas_table} a ON a.id = m.artista_id
              LEFT JOIN {$generos_table} g ON g.id = m.genero_id
-             WHERE a.nome LIKE %s OR g.nome LIKE %s",
+             WHERE m.publicado = 1 AND (a.nome LIKE %s OR g.nome LIKE %s)",
             $like,
             $like
         );
