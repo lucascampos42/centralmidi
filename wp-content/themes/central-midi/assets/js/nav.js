@@ -34,4 +34,17 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleLink.parentElement.classList.toggle('is-open');
         });
     });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href*="#contato"]').forEach((anchor) => {
+        anchor.addEventListener('click', (e) => {
+            const isHomePage = window.location.pathname === '/' || window.location.pathname === '';
+            const targetEl = document.getElementById('contato');
+            if (isHomePage && targetEl) {
+                e.preventDefault();
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                history.pushState(null, '', '#contato');
+            }
+        });
+    });
 });

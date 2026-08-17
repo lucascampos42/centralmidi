@@ -166,6 +166,9 @@ function centralmidi_scripts() {
         wp_enqueue_script('centralmidi-carousel', get_template_directory_uri() . '/assets/js/carousel.js', array(), $theme_version, true);
     }
 
+    // Search autocomplete & live suggestions
+    wp_enqueue_script('centralmidi-search', get_template_directory_uri() . '/assets/js/search.js', array('centralmidi-player'), $theme_version, true);
+
     // Mobile navigation toggle
     wp_enqueue_script('centralmidi-nav', get_template_directory_uri() . '/assets/js/nav.js', array(), $theme_version, true);
 
@@ -365,3 +368,112 @@ function centralmidi_clear_slides_cache($post_id) {
 }
 add_action('save_post_cm_slide', 'centralmidi_clear_slides_cache');
 add_action('delete_post', 'centralmidi_clear_slides_cache');
+
+/**
+ * AJAX Live Search Suggestions
+ */
+function centralmidi_ajax_live_search() {
+    $q = isset($_GET['q']) ? sanitize_text_field(wp_unslash($_GET['q'])) : '';
+    if (mb_strlen($q) < 2) {
+        wp_send_json_success(array(
+            'tracks'  => array(),
+            'artists' => array(),
+            'total'   => 0,
+            'query'   => $q,
+        ));
+    }
+
+    global $wpdb;
+
+    // Search matching artists
+    $artists = array();
+    if (class_exists('CentralMidi_DB')) {
+        $art_results = CentralMidi_DB::get_artistas_alfabetico('', $q);
+        if (!empty($art_results)) {
+            foreach (array_slice($art_results, 0, 3) as $art) {
+                $artists[] = array(
+                    'id'    => (int) $art->id,
+                    'name'  => $art->nome,
+                    'count' => (int) $art->total_midis,
+                    'url'   => add_query_arg('artista', urlencode($art->nome), home_url('/artistas/')),
+                );
+            }
+        }
+    }
+
+    // Search matching products/MIDIs by title, artist, genre, category
+    $midis_table      = class_exists('CentralMidi_DB') ? CentralMidi_DB::table_name() : $wpdb->prefix . 'centralmidi_midis';
+    $artistas_table   = class_exists('CentralMidi_DB') ? CentralMidi_DB::artistas_table_name() : $wpdb->prefix . 'centralmidi_artistas';
+    $generos_table    = class_exists('CentralMidi_DB') ? CentralMidi_DB::generos_table_name() : $wpdb->prefix . 'centralmidi_generos';
+    $categorias_table = class_exists('CentralMidi_DB') ? CentralMidi_DB::categorias_table_name() : $wpdb->prefix . 'centralmidi_categorias';
+
+    $like = '%' . $wpdb->esc_like($q) . '%';
+
+    $sql = $wpdb->prepare(
+        "SELECT DISTINCT p.ID
+         FROM {$wpdb->posts} p
+         LEFT JOIN {$midis_table} m ON m.product_id = p.ID
+         LEFT JOIN {$artistas_table} a ON a.id = m.artista_id
+         LEFT JOIN {$generos_table} g ON g.id = m.genero_id
+         LEFT JOIN {$categorias_table} c ON c.id = m.categoria_id
+         WHERE p.post_type = 'product'
+           AND p.post_status = 'publish'
+           AND (
+               p.post_title LIKE %s
+               OR a.nome LIKE %s
+               OR g.nome LIKE %s
+               OR c.nome LIKE %s
+           )
+         ORDER BY (CASE WHEN p.post_title LIKE %s THEN 1 WHEN a.nome LIKE %s THEN 2 ELSE 3 END), p.post_title ASC
+         LIMIT 6",
+        $like,
+        $like,
+        $like,
+        $like,
+        $q . '%',
+        $q . '%'
+    );
+
+    $product_ids = $wpdb->get_col($sql);
+    $tracks = array();
+
+    if (!empty($product_ids)) {
+        foreach ($product_ids as $pid) {
+            $product = wc_get_product($pid);
+            if (!$product) {
+                continue;
+            }
+
+            $artista       = get_post_meta($pid, '_centralmidi_artista', true);
+            $genero        = get_post_meta($pid, '_centralmidi_genero', true);
+            $classificacao = class_exists('CentralMidi_DB') ? CentralMidi_DB::sanitize_classificacao(get_post_meta($pid, '_centralmidi_classificacao', true)) : 'M';
+            $class_label   = class_exists('CentralMidi_DB') ? CentralMidi_DB::classificacao_label($classificacao) : '';
+            $demo_audio    = get_post_meta($pid, '_centralmidi_demo_audio', true);
+            $price_html    = $product->get_price_html();
+            $thumbnail     = has_post_thumbnail($pid) ? get_the_post_thumbnail_url($pid, 'thumbnail') : '';
+
+            $tracks[] = array(
+                'id'            => (int) $pid,
+                'title'         => get_the_title($pid),
+                'url'           => get_permalink($pid),
+                'artista'       => $artista ? $artista : 'Geral',
+                'genero'        => $genero,
+                'classificacao' => $classificacao,
+                'class_label'   => $class_label,
+                'price_html'    => $price_html ? $price_html : 'R$ 0,00',
+                'demo_audio'    => $demo_audio,
+                'thumbnail'     => $thumbnail,
+            );
+        }
+    }
+
+    wp_send_json_success(array(
+        'tracks'  => $tracks,
+        'artists' => $artists,
+        'total'   => count($tracks),
+        'query'   => $q,
+        'allUrl'  => home_url('/?s=' . urlencode($q)),
+    ));
+}
+add_action('wp_ajax_centralmidi_live_search', 'centralmidi_ajax_live_search');
+add_action('wp_ajax_nopriv_centralmidi_live_search', 'centralmidi_ajax_live_search');

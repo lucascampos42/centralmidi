@@ -99,4 +99,120 @@ if (false === $month_data) {
     <?php endforeach; ?>
 </div>
 
+<?php
+// Contact details from theme options
+$whatsapp = get_theme_mod('centralmidi_whatsapp', '5531984511174');
+$whatsapp_url = 'https://wa.me/' . preg_replace('/\D/', '', $whatsapp) . '?text=' . rawurlencode('Oi! Estou no site da CentralMIDI e preciso de auxílio');
+$email = get_theme_mod('centralmidi_email', 'contato@centralmidi.com.br');
+$pix = get_theme_mod('centralmidi_pix', 'centralmidi@gmail.com');
+?>
+
+<!-- Contact Section -->
+<section id="contato" class="cm-contact-section">
+    <div class="cm-container">
+        <div class="cm-contact-header">
+            <span class="cm-badge"><i class="ri-customer-service-2-fill"></i> Atendimento &amp; Suporte</span>
+            <h2 class="cm-section-title">Fale Conosco</h2>
+            <p class="cm-section-subtitle">
+                Tire suas dúvidas, solicite encomendas de arranjos exclusivos ou peça auxílio com seus arquivos MIDI e playbacks.
+            </p>
+        </div>
+
+        <div class="cm-contact-grid">
+            <!-- WhatsApp -->
+            <div class="cm-contact-card cm-contact-card--whatsapp">
+                <div class="cm-contact-icon-wrapper">
+                    <i class="ri-whatsapp-fill"></i>
+                </div>
+                <h3 class="cm-contact-card-title">WhatsApp Direto</h3>
+                <p class="cm-contact-card-desc">
+                    Atendimento rápido de segunda a sábado para dúvidas, envio de referências e suporte aos pedidos.
+                </p>
+                <div class="cm-contact-pill-list" style="margin-bottom: 20px;">
+                    <div class="cm-contact-pill">
+                        <span><i class="ri-phone-line"></i> (31) 98451-1174</span>
+                    </div>
+                    <div class="cm-contact-pill">
+                        <span><i class="ri-phone-line"></i> (31) 99802-3523</span>
+                    </div>
+                </div>
+                <a href="<?php echo esc_url($whatsapp_url); ?>" target="_blank" rel="noopener noreferrer" class="cm-btn cm-btn-primary" style="width: 100%; justify-content: center; background: #25d366; color: #000; border-color: #25d366;">
+                    <i class="ri-whatsapp-line"></i> Iniciar Atendimento
+                </a>
+            </div>
+
+            <!-- Email -->
+            <div class="cm-contact-card cm-contact-card--email">
+                <div class="cm-contact-icon-wrapper">
+                    <i class="ri-mail-send-fill"></i>
+                </div>
+                <h3 class="cm-contact-card-title">E-mail Oficial</h3>
+                <p class="cm-contact-card-desc">
+                    Envie comprovantes, links de áudio ou solicite sugestões de repertório que não encontrou no catálogo.
+                </p>
+                <div class="cm-contact-pill-list" style="margin-bottom: 20px;">
+                    <div class="cm-contact-pill">
+                        <span><i class="ri-mail-line"></i> <?php echo esc_html($email); ?></span>
+                    </div>
+                    <div class="cm-contact-pill">
+                        <span><i class="ri-mail-line"></i> centralmidi@gmail.com</span>
+                    </div>
+                </div>
+                <a href="mailto:<?php echo esc_attr($email); ?>" class="cm-btn cm-btn-outline" style="width: 100%; justify-content: center;">
+                    <i class="ri-mail-line"></i> Enviar Mensagem
+                </a>
+            </div>
+
+            <!-- PIX -->
+            <div class="cm-contact-card cm-contact-card--pix">
+                <div class="cm-contact-icon-wrapper">
+                    <i class="ri-qr-code-fill"></i>
+                </div>
+                <h3 class="cm-contact-card-title">Chaves PIX</h3>
+                <p class="cm-contact-card-desc">
+                    Pagamento instantâneo com envio prioritário dos arquivos produzidos sob encomenda.
+                </p>
+                <div class="cm-contact-pill-list" style="margin-bottom: 20px;">
+                    <div class="cm-contact-pill">
+                        <span><i class="ri-key-2-line"></i> <?php echo esc_html($pix); ?></span>
+                    </div>
+                    <div class="cm-contact-pill">
+                        <span><i class="ri-key-2-line"></i> <?php echo esc_html($email); ?></span>
+                    </div>
+                </div>
+                <a href="<?php echo esc_url(home_url('/servicos/')); ?>" class="cm-btn cm-btn-outline" style="width: 100%; justify-content: center;">
+                    <i class="ri-information-line"></i> Ver Serviços &amp; Preços
+                </a>
+            </div>
+
+            <!-- Redes Sociais -->
+            <div class="cm-contact-card cm-contact-card--social">
+                <div class="cm-contact-icon-wrapper">
+                    <i class="ri-share-forward-fill"></i>
+                </div>
+                <h3 class="cm-contact-card-title">Redes Sociais</h3>
+                <p class="cm-contact-card-desc">
+                    Acompanhe lançamentos semanais, demonstrações em vídeo e cupons de desconto exclusivos.
+                </p>
+                <div class="cm-contact-social-links" style="margin-top: auto; width: 100%;">
+                    <a href="https://www.instagram.com/centralmidioficial/" target="_blank" rel="noopener noreferrer" class="cm-social-btn" style="flex: 1; justify-content: center;">
+                        <i class="ri-instagram-line"></i> Instagram
+                    </a>
+                    <a href="https://pt-br.facebook.com/centralmidioficial/" target="_blank" rel="noopener noreferrer" class="cm-social-btn" style="flex: 1; justify-content: center;">
+                        <i class="ri-facebook-fill"></i> Facebook
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="cm-contact-disclaimer">
+            <p>
+                <i class="ri-shield-check-line"></i> <strong>Aviso Legal &amp; Copyright:</strong>
+                O uso e divulgação dos arquivos é de responsabilidade do usuário para finalidades profissionais, estudo e apresentações.
+                Trabalhamos com garantia de qualidade e suporte dedicado para todos os nossos clientes.
+            </p>
+        </div>
+    </div>
+</section>
+
 <?php get_footer(); ?>

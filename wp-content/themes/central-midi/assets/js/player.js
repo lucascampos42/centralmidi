@@ -84,18 +84,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Attach click events to play triggers on cards
-    document.querySelectorAll('.cm-play-trigger').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            const card = btn.closest('.cm-track-card');
-            if (card) {
-                playTrack(card);
-            } else if (btn.dataset.audio) {
-                playTrack(btn);
-            }
-        });
+    // Expose global play function
+    window.CentralMidiPlayer = {
+        playTrack: playTrack,
+        playFromElement: function(el) {
+            const card = el.closest('.cm-track-card') || el;
+            playTrack(card);
+        }
+    };
+
+    // Delegated click event for any .cm-play-trigger (static or dynamic)
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.cm-play-trigger');
+        if (!btn) return;
+        e.stopPropagation();
+        e.preventDefault();
+        const card = btn.closest('.cm-track-card');
+        if (card) {
+            playTrack(card);
+        } else if (btn.dataset.audio) {
+            playTrack(btn);
+        }
     });
 
     // Main Play/Pause Button in Player Bar

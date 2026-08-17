@@ -87,8 +87,26 @@
 
 .centralmidi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: 1fr;
     gap: 22px;
+}
+
+@media (min-width: 768px) {
+    .centralmidi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .centralmidi-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1920px) {
+    .centralmidi-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 /* Badge Classification on Cover */
