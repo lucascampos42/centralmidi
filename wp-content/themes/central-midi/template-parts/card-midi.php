@@ -39,11 +39,17 @@ $cm_product_url    = get_permalink($cm_product_id);
     <div class="cm-card-cover centralmidi-card-cover">
         <?php if (has_post_thumbnail($cm_product_id)) : ?>
             <?php echo get_the_post_thumbnail($cm_product_id, 'medium'); ?>
-        <?php else : ?>
-            <div class="cm-cover-placeholder">
-                <i class="ri-disc-fill"></i>
-            </div>
-        <?php endif; ?>
+        <?php else :
+            $cm_artista_id = (int) get_post_meta($cm_product_id, '_centralmidi_artista_id', true);
+            $cm_artista_foto = $cm_artista_id && class_exists('CentralMidi_DB') ? CentralMidi_DB::get_artista_foto_html($cm_artista_id, 'medium') : '';
+            if ($cm_artista_foto) :
+                echo $cm_artista_foto;
+            else : ?>
+                <div class="cm-cover-placeholder">
+                    <i class="ri-disc-fill"></i>
+                </div>
+            <?php endif;
+        endif; ?>
 
         <?php if ($cm_demo_audio) : ?>
             <button type="button" class="cm-cover-play-btn cm-play-trigger" title="Ouvir Demonstração MP3" aria-label="<?php echo esc_attr(sprintf(__('Ouvir demonstração de %s', 'central-midi'), $cm_title)); ?>">

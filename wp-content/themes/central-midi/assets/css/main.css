@@ -149,9 +149,16 @@ a {
     color: var(--primary);
 }
 
+.cm-header-brand-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
 .cm-header-search {
-    flex: 1;
-    max-width: 460px;
+    width: 320px;
+    max-width: 320px;
 }
 
 .cm-header-search form {
@@ -162,19 +169,20 @@ a {
 
 .cm-header-search i {
     position: absolute;
-    left: 14px;
+    left: 12px;
     color: var(--text-subtle);
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 .cm-header-search input {
     width: 100%;
+    height: 38px;
     background: var(--bg-main);
     border: 1px solid var(--border-color);
-    padding: 10px 16px 10px 42px;
+    padding: 6px 14px 6px 36px;
     border-radius: var(--radius-full);
     color: var(--text-main);
-    font-size: 0.9rem;
+    font-size: 0.84rem;
     font-family: var(--font-sans);
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
@@ -183,6 +191,99 @@ a {
 .cm-header-search input:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+}
+
+/* Header Actions (Cart, Login, Theme, Mobile Toggle) */
+.cm-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.cm-header-cart-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+}
+
+.cm-header-cart-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-1px);
+    background: var(--bg-card-hover);
+}
+
+.cm-cart-count {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: var(--primary);
+    color: #0c0f17;
+    font-size: 0.68rem;
+    font-weight: 800;
+    font-family: var(--font-mono);
+    border-radius: var(--radius-full);
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid var(--bg-surface);
+    line-height: 1;
+}
+
+.cm-header-user-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+    height: 40px;
+    white-space: nowrap;
+    background: var(--primary);
+    color: #0c0f17;
+    border: 1px solid var(--primary);
+}
+
+.cm-header-user-btn:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.35);
+}
+
+.cm-header-user-btn.logged-in {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+}
+
+.cm-header-user-btn.logged-in:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--bg-card-hover);
+}
+
+.cm-nav-mobile-only {
+    display: none;
 }
 
 /* ============ Live Search Autocomplete Suggestions ============ */
@@ -1231,6 +1332,12 @@ a {
     .cm-nav-link {
         justify-content: space-between;
         padding: 12px 14px;
+    }
+    .cm-nav-mobile-only {
+        display: block;
+        border-top: 1px solid var(--border-color);
+        margin-top: 4px;
+        padding-top: 4px;
     }
     .cm-nav-search {
         display: block;

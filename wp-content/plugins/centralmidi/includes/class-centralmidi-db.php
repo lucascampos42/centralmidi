@@ -67,7 +67,7 @@ class CentralMidi_DB {
     }
 
     public static function create_artistas_table() {
-        self::create_referencia_table(self::artistas_table_name());
+        self::create_referencia_table(self::artistas_table_name(), true);
     }
 
     public static function create_generos_table() {
@@ -81,14 +81,17 @@ class CentralMidi_DB {
     /**
      * Create a simple reference table (id, nome, timestamps).
      */
-    private static function create_referencia_table($table_name) {
+    private static function create_referencia_table($table_name, $with_foto = false) {
         global $wpdb;
 
         $charset = $wpdb->get_charset_collate();
 
+        $foto_column = $with_foto ? "foto_id BIGINT UNSIGNED NULL," : "";
+
         $sql = "CREATE TABLE {$table_name} (
             id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
             nome VARCHAR(255) NOT NULL,
+            {$foto_column}
             created_at DATETIME NOT NULL,
             updated_at DATETIME NOT NULL,
             PRIMARY KEY  (id),
@@ -121,6 +124,12 @@ class CentralMidi_DB {
                     self::create_categorias_table();
                 }
             }
+        }
+
+        // Ensure the artistas table has the foto_id column.
+        $artistas_table = self::artistas_table_name();
+        if (self::table_exists($artistas_table) && !self::column_exists($artistas_table, 'foto_id')) {
+            $wpdb->query("ALTER TABLE {$artistas_table} ADD COLUMN foto_id BIGINT UNSIGNED NULL AFTER nome");
         }
 
         // Ensure the midis table has the FK columns.
@@ -286,12 +295,13 @@ class CentralMidi_DB {
     /**
      * Insert a new artist, returning its ID (or existing ID if name already present).
      */
-    public static function add_artista($nome) {
-        return self::add_referencia(self::artistas_table_name(), $nome);
+    public static function add_artista($nome, $foto_id = 0) {
+        return self::add_referencia(self::artistas_table_name(), $nome, array('foto_id' => $foto_id));
     }
 
-    public static function update_artista($id, $nome) {
-        return self::update_referencia(self::artistas_table_name(), $id, $nome);
+    public static function update_artista($id, $nome, $foto_id = null) {
+        $extra = (null !== $foto_id) ? array('foto_id' => $foto_id) : array();
+        return self::update_referencia(self::artistas_table_name(), $id, $nome, $extra);
     }
 
     public static function delete_artista($id) {
@@ -300,6 +310,21 @@ class CentralMidi_DB {
 
     public static function artistas_count() {
         return self::referencias_count(self::artistas_table_name());
+    }
+
+    /**
+     * HTML of the artist photo (attachment), or '' when there is none.
+     *
+     * @param int $artista_id
+     * @param string|array $size
+     * @return string
+     */
+    public static function get_artista_foto_html($artista_id, $size = 'medium') {
+        $a = self::get_artista($artista_id);
+        if ($a && $a->foto_id) {
+            return wp_get_attachment_image((int) $a->foto_id, $size);
+        }
+        return '';
     }
 
     /**
@@ -326,11 +351,11 @@ class CentralMidi_DB {
             $params[] = '%' . $wpdb->esc_like(trim($busca)) . '%';
         }
 
-        $sql = "SELECT a.id, a.nome, COUNT(m.id) as total_midis 
+        $sql = "SELECT a.id, a.nome, a.foto_id, COUNT(m.id) as total_midis 
                 FROM {$artistas_table} a 
                 LEFT JOIN {$midis_table} m ON (m.artista_id = a.id)
                 WHERE " . implode(' AND ', $where) . "
-                GROUP BY a.id, a.nome
+                GROUP BY a.id, a.nome, a.foto_id
                 ORDER BY a.nome ASC";
 
         if (!empty($params)) {
@@ -426,7 +451,7 @@ class CentralMidi_DB {
     /**
      * Insert a new reference row, returning its ID (or existing ID if name already present).
      */
-    private static function add_referencia($table, $nome) {
+    private static function add_referencia($table, $nome, $extra = array()) {
         global $wpdb;
 
         $nome = sanitize_text_field($nome);
@@ -436,20 +461,29 @@ class CentralMidi_DB {
 
         $existing = self::get_referencia_by_nome($table, $nome);
         if ($existing) {
+            if (isset($extra['foto_id']) && self::column_exists($table, 'foto_id')) {
+                $wpdb->update($table, array('foto_id' => absint($extra['foto_id']) ? absint($extra['foto_id']) : null), array('id' => $existing->id));
+            }
             return (int) $existing->id;
         }
 
-        $now = current_time('mysql');
-        $wpdb->insert($table, array(
+        $now     = current_time('mysql');
+        $payload = array(
             'nome'       => $nome,
             'created_at' => $now,
             'updated_at' => $now,
-        ));
+        );
+
+        if (isset($extra['foto_id']) && self::column_exists($table, 'foto_id')) {
+            $payload['foto_id'] = absint($extra['foto_id']) ? absint($extra['foto_id']) : null;
+        }
+
+        $wpdb->insert($table, $payload);
 
         return (int) $wpdb->insert_id;
     }
 
-    private static function update_referencia($table, $id, $nome) {
+    private static function update_referencia($table, $id, $nome, $extra = array()) {
         global $wpdb;
 
         $nome = sanitize_text_field($nome);
@@ -465,10 +499,16 @@ class CentralMidi_DB {
             return false;
         }
 
-        $updated = $wpdb->update($table, array(
+        $data = array(
             'nome'       => $nome,
             'updated_at' => current_time('mysql'),
-        ), array('id' => absint($id)));
+        );
+
+        if (isset($extra['foto_id']) && self::column_exists($table, 'foto_id')) {
+            $data['foto_id'] = absint($extra['foto_id']) ? absint($extra['foto_id']) : null;
+        }
+
+        $updated = $wpdb->update($table, $data, array('id' => absint($id)));
 
         return false !== $updated;
     }

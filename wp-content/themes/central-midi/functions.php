@@ -34,6 +34,20 @@ add_filter('woocommerce_currency_symbol', function($currency_symbol, $currency) 
 }, 10, 2);
 
 /**
+ * Update header cart count via AJAX fragments
+ */
+function centralmidi_cart_count_fragments($fragments) {
+    ob_start();
+    $count = (function_exists('WC') && is_object(WC()->cart)) ? WC()->cart->get_cart_contents_count() : 0;
+    ?>
+    <span class="cm-cart-count"><?php echo esc_html($count); ?></span>
+    <?php
+    $fragments['span.cm-cart-count'] = ob_get_clean();
+    return $fragments;
+}
+add_filter('woocommerce_add_to_cart_fragments', 'centralmidi_cart_count_fragments');
+
+/**
  * Central MIDI site options (WhatsApp, e-mail, PIX) via Customizer.
  */
 function centralmidi_get_option($key, $default = '') {

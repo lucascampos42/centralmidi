@@ -28,26 +28,19 @@
 
 <header class="cm-header">
     <div class="cm-container cm-header-content">
-        <a href="<?php echo esc_url(home_url('/')); ?>" class="cm-logo" aria-label="<?php esc_attr_e('Central Midi - Início', 'central-midi'); ?>">
-            <img class="cm-logo-img" src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/logo.webp'); ?>" alt="Central MIDI" width="160" height="42" />
-        </a>
+        <div class="cm-header-brand-group">
+            <a href="<?php echo esc_url(home_url('/')); ?>" class="cm-logo" aria-label="<?php esc_attr_e('Central Midi - Início', 'central-midi'); ?>">
+                <img class="cm-logo-img" src="<?php echo esc_url(get_template_directory_uri() . '/assets/img/logo.webp'); ?>" alt="Central MIDI" width="150" height="39" />
+            </a>
 
-        <div class="cm-header-search">
-            <form role="search" method="get" action="<?php echo esc_url(home_url('/')); ?>">
-                <i class="ri-search-line"></i>
-                <label class="cm-visually-hidden" for="cm-search-input"><?php esc_html_e('Buscar MIDIs', 'central-midi'); ?></label>
-                <input type="search" id="cm-search-input" placeholder="Busque por música, artista ou gênero..." value="<?php echo get_search_query(); ?>" name="s" />
-            </form>
+            <div class="cm-header-search">
+                <form role="search" method="get" action="<?php echo esc_url(home_url('/')); ?>">
+                    <i class="ri-search-line"></i>
+                    <label class="cm-visually-hidden" for="cm-search-input"><?php esc_html_e('Buscar MIDIs', 'central-midi'); ?></label>
+                    <input type="search" id="cm-search-input" placeholder="Buscar música, artista..." value="<?php echo get_search_query(); ?>" name="s" autocomplete="off" />
+                </form>
+            </div>
         </div>
-
-        <button type="button" class="cm-theme-toggle" id="cm-theme-toggle" aria-label="Alternar tema">
-            <i class="ri-contrast-2-line" id="cm-theme-icon"></i>
-        </button>
-
-        <button type="button" class="cm-menu-toggle" id="cm-menu-toggle" aria-controls="cm-primary-nav" aria-expanded="false" aria-label="<?php esc_attr_e('Abrir menu', 'central-midi'); ?>">
-            <i class="ri-menu-line cm-menu-open-icon"></i>
-            <i class="ri-close-line cm-menu-close-icon"></i>
-        </button>
 
         <nav id="cm-primary-nav" class="cm-nav" aria-label="<?php esc_attr_e('Menu principal', 'central-midi'); ?>">
             <ul class="cm-nav-list">
@@ -55,7 +48,7 @@
                     <form role="search" method="get" action="<?php echo esc_url(home_url('/')); ?>">
                         <i class="ri-search-line"></i>
                         <label class="cm-visually-hidden" for="cm-search-input-mobile"><?php esc_html_e('Buscar MIDIs', 'central-midi'); ?></label>
-                        <input type="search" id="cm-search-input-mobile" placeholder="Busque por música, artista ou gênero..." value="<?php echo get_search_query(); ?>" name="s" />
+                        <input type="search" id="cm-search-input-mobile" placeholder="Buscar música, artista..." value="<?php echo get_search_query(); ?>" name="s" autocomplete="off" />
                     </form>
                 </li>
                 <li class="cm-nav-item">
@@ -105,8 +98,52 @@
                         <i class="ri-mail-line"></i> Contato
                     </a>
                 </li>
+                <li class="cm-nav-item cm-nav-mobile-only">
+                    <a href="<?php echo esc_url(wc_get_cart_url()); ?>" class="cm-nav-link">
+                        <i class="ri-shopping-cart-2-line"></i> Carrinho (<?php echo (function_exists('WC') && is_object(WC()->cart)) ? esc_html(WC()->cart->get_cart_contents_count()) : '0'; ?>)
+                    </a>
+                </li>
+                <li class="cm-nav-item cm-nav-mobile-only">
+                    <?php if (is_user_logged_in()) : ?>
+                        <a href="<?php echo esc_url(wc_get_page_permalink('myaccount')); ?>" class="cm-nav-link">
+                            <i class="ri-user-smile-line"></i> Minha Conta
+                        </a>
+                    <?php else : ?>
+                        <a href="<?php echo esc_url(wc_get_page_permalink('myaccount')); ?>" class="cm-nav-link">
+                            <i class="ri-user-line"></i> Fazer Login
+                        </a>
+                    <?php endif; ?>
+                </li>
             </ul>
         </nav>
+
+        <div class="cm-header-actions">
+            <button type="button" class="cm-theme-toggle" id="cm-theme-toggle" aria-label="Alternar tema" title="Alternar tema">
+                <i class="ri-contrast-2-line" id="cm-theme-icon"></i>
+            </button>
+
+            <a href="<?php echo esc_url(wc_get_cart_url()); ?>" class="cm-header-cart-btn" aria-label="<?php esc_attr_e('Carrinho de compras', 'central-midi'); ?>" title="Carrinho">
+                <i class="ri-shopping-cart-2-line"></i>
+                <span class="cm-cart-count"><?php echo (function_exists('WC') && is_object(WC()->cart)) ? esc_html(WC()->cart->get_cart_contents_count()) : '0'; ?></span>
+            </a>
+
+            <?php if (is_user_logged_in()) : ?>
+                <a href="<?php echo esc_url(wc_get_page_permalink('myaccount')); ?>" class="cm-header-user-btn logged-in" title="Minha Conta">
+                    <i class="ri-user-smile-line"></i>
+                    <span>Minha Conta</span>
+                </a>
+            <?php else : ?>
+                <a href="<?php echo esc_url(wc_get_page_permalink('myaccount')); ?>" class="cm-header-user-btn" title="Entrar na conta">
+                    <i class="ri-user-line"></i>
+                    <span>Entrar</span>
+                </a>
+            <?php endif; ?>
+
+            <button type="button" class="cm-menu-toggle" id="cm-menu-toggle" aria-controls="cm-primary-nav" aria-expanded="false" aria-label="<?php esc_attr_e('Abrir menu', 'central-midi'); ?>">
+                <i class="ri-menu-line cm-menu-open-icon"></i>
+                <i class="ri-close-line cm-menu-close-icon"></i>
+            </button>
+        </div>
     </div>
 </header>
 

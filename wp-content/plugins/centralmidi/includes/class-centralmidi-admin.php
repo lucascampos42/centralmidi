@@ -11,8 +11,23 @@ class CentralMidi_Admin {
 
     public function __construct() {
         add_action('admin_menu', array($this, 'register_menu'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
         add_action('add_meta_boxes', array($this, 'add_meta_box'));
         add_action('save_post_product', array($this, 'save_meta_box'));
+    }
+
+    public function enqueue_admin_assets($hook) {
+        if (!in_array($hook, array('toplevel_page_centralmidi', 'centralmidi_page_centralmidi-artistas'), true)) {
+            return;
+        }
+        wp_enqueue_media();
+        wp_enqueue_script(
+            'centralmidi-admin',
+            CENTRALMIDI_PLUGIN_URL . 'assets/js/admin.js',
+            array('jquery'),
+            CENTRALMIDI_VERSION,
+            true
+        );
     }
 
     public function register_menu() {
@@ -75,6 +90,7 @@ class CentralMidi_Admin {
                 'removed'  => __('Artista removido.', 'centralmidi'),
                 'empty_err' => __('Informe o nome do artista.', 'centralmidi'),
                 'prefix'   => 'artista',
+                'has_foto' => true,
                 'get_all'  => 'get_artistas',
                 'get_one'  => 'get_artista',
                 'add'      => 'add_artista',
@@ -144,7 +160,12 @@ class CentralMidi_Admin {
         if (isset($_POST['centralmidi_add_' . $prefix]) && check_admin_referer($nonce)) {
             $nome = sanitize_text_field(wp_unslash($_POST['centralmidi_novo_' . $prefix] ?? ''));
             if ('' !== $nome) {
-                $id = CentralMidi_DB::{$cfg['add']}($nome);
+                $foto_id = absint($_POST['centralmidi_' . $prefix . '_foto'] ?? 0);
+                if (!empty($cfg['has_foto'])) {
+                    $id = CentralMidi_DB::{$cfg['add']}($nome, $foto_id);
+                } else {
+                    $id = CentralMidi_DB::{$cfg['add']}($nome);
+                }
                 $this->set_notice($id ? 'success' : 'error', $id ? $cfg['added'] : $cfg['empty_err']);
             } else {
                 $this->set_notice('error', $cfg['empty_err']);
@@ -154,7 +175,12 @@ class CentralMidi_Admin {
         if (isset($_POST['centralmidi_update_' . $prefix]) && check_admin_referer($nonce)) {
             $id   = absint($_POST['centralmidi_' . $prefix . '_id'] ?? 0);
             $nome = sanitize_text_field(wp_unslash($_POST['centralmidi_' . $prefix . '_nome'] ?? ''));
-            $ok   = CentralMidi_DB::{$cfg['update']}($id, $nome);
+            if (!empty($cfg['has_foto'])) {
+                $foto_id = absint($_POST['centralmidi_' . $prefix . '_foto'] ?? 0);
+                $ok      = CentralMidi_DB::{$cfg['update']}($id, $nome, $foto_id);
+            } else {
+                $ok = CentralMidi_DB::{$cfg['update']}($id, $nome);
+            }
             if ($ok) {
                 $this->set_notice('success', $cfg['updated']);
             } else {
@@ -204,6 +230,9 @@ class CentralMidi_Admin {
         if (isset($_GET['centralmidi_edit_' . $prefix])) {
             $editing = CentralMidi_DB::{$cfg['get_one']}(absint($_GET['centralmidi_edit_' . $prefix]));
         }
+
+        $foto_id      = $editing ? (int) $editing->foto_id : 0;
+        $foto_preview = $foto_id ? wp_get_attachment_image_url($foto_id, 'thumbnail') : '';
         ?>
         <div class="wrap">
             <h1><?php echo esc_html($cfg['title']); ?></h1>
@@ -219,6 +248,7 @@ class CentralMidi_Admin {
                     <p>
                         <input type="text" name="centralmidi_<?php echo esc_attr($prefix); ?>_nome" value="<?php echo esc_attr($editing->nome); ?>" class="regular-text" style="width:100%;" />
                     </p>
+                    <?php $this->render_foto_field($cfg, $foto_id, $foto_preview); ?>
                     <p>
                         <button type="submit" name="centralmidi_update_<?php echo esc_attr($prefix); ?>" class="button button-primary"><?php esc_html_e('Salvar', 'centralmidi'); ?></button>
                         <a href="<?php echo esc_url(admin_url('admin.php?page=' . $cfg['page'])); ?>" class="button"><?php esc_html_e('Cancelar', 'centralmidi'); ?></a>
@@ -227,6 +257,7 @@ class CentralMidi_Admin {
                     <p>
                         <input type="text" name="centralmidi_novo_<?php echo esc_attr($prefix); ?>" placeholder="<?php echo esc_attr($cfg['placeholder']); ?>" class="regular-text" style="width:100%;" />
                     </p>
+                    <?php $this->render_foto_field($cfg, $foto_id, $foto_preview); ?>
                     <p>
                         <button type="submit" name="centralmidi_add_<?php echo esc_attr($prefix); ?>" class="button button-primary"><?php esc_html_e('Adicionar', 'centralmidi'); ?></button>
                     </p>
@@ -259,6 +290,33 @@ class CentralMidi_Admin {
                     <?php endif; ?>
                 </tbody>
             </table>
+        </div>
+        <?php
+    }
+
+    /**
+     * Media-picker field for the artist photo (used only when config has_foto).
+     */
+    private function render_foto_field($cfg, $foto_id, $foto_preview) {
+        if (empty($cfg['has_foto'])) {
+            return;
+        }
+        $prefix = $cfg['prefix'];
+        ?>
+        <div class="cm-artist-foto-field">
+            <label style="display:block;font-weight:600;margin-bottom:4px;"><?php esc_html_e('Foto do Artista', 'centralmidi'); ?></label>
+            <p class="description" style="margin-top:0;"><?php esc_html_e('Usada como imagem do produto quando o MIDI não tiver foto própria.', 'centralmidi'); ?></p>
+            <div style="margin: 10px 0;">
+                <img id="centralmidi_<?php echo esc_attr($prefix); ?>_foto_preview"
+                     src="<?php echo esc_url($foto_preview); ?>"
+                     style="max-width:120px; max-height:120px; border-radius:8px; border:1px solid #cbd5e1; <?php echo $foto_preview ? '' : 'display:none;'; ?>"
+                     alt="" />
+            </div>
+            <input type="hidden" id="centralmidi_<?php echo esc_attr($prefix); ?>_foto" name="centralmidi_<?php echo esc_attr($prefix); ?>_foto" value="<?php echo esc_attr($foto_id); ?>" />
+            <p style="margin:0;">
+                <button type="button" id="cm-artista-foto-choose" class="button"><?php esc_html_e('Selecionar imagem', 'centralmidi'); ?></button>
+                <button type="button" id="cm-artista-foto-remove" class="button"><?php esc_html_e('Remover', 'centralmidi'); ?></button>
+            </p>
         </div>
         <?php
     }
