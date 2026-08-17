@@ -48,6 +48,28 @@ function centralmidi_cart_count_fragments($fragments) {
 add_filter('woocommerce_add_to_cart_fragments', 'centralmidi_cart_count_fragments');
 
 /**
+ * Remove 'Downloads' tab from WooCommerce My Account and redirect endpoint
+ * (MIDI files are delivered directly via Email and WhatsApp)
+ */
+function centralmidi_remove_downloads_account_menu_item($items) {
+    if (isset($items['downloads'])) {
+        unset($items['downloads']);
+    }
+    return $items;
+}
+add_filter('woocommerce_account_menu_items', 'centralmidi_remove_downloads_account_menu_item', 99);
+
+function centralmidi_disable_downloads_endpoint() {
+    if (function_exists('is_account_page') && function_exists('is_wc_endpoint_url')) {
+        if (is_account_page() && is_wc_endpoint_url('downloads')) {
+            wp_safe_redirect(wc_get_page_permalink('myaccount'));
+            exit;
+        }
+    }
+}
+add_action('template_redirect', 'centralmidi_disable_downloads_endpoint');
+
+/**
  * Central MIDI site options (WhatsApp, e-mail, PIX) via Customizer.
  */
 function centralmidi_get_option($key, $default = '') {
