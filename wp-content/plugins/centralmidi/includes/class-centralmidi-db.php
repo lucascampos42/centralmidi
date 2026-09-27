@@ -454,6 +454,34 @@ class CentralMidi_DB {
         return $wpdb->get_results($sql);
     }
 
+    /**
+     * Iniciais que têm ao menos um artista com MIDI, em ordem alfabética.
+     *
+     * Substitui a consulta que fazia DISTINCT sobre wp_terms: o menu A-Z precisa
+     * só das iniciais, não dos 13 mil artistas. Traz '#' quando existe artista
+     * começando por caractere não-alfabético.
+     *
+     * @return string[]
+     */
+    public static function get_iniciais_com_artistas() {
+        global $wpdb;
+        $artistas_table = self::artistas_table_name();
+        $midis_table    = self::table_name();
+
+        $rows = $wpdb->get_results(
+            "SELECT DISTINCT UPPER(LEFT(a.nome, 1)) AS inicial
+               FROM {$artistas_table} AS a
+               JOIN {$midis_table} AS m ON m.artista_id = a.id
+              ORDER BY inicial ASC"
+        );
+
+        $out = array();
+        foreach ((array) $rows as $row) {
+            $out[] = (string) $row->inicial;
+        }
+        return $out;
+    }
+
     /* ------------------------------------------------------------------
      * Gêneros
      * ---------------------------------------------------------------- */
@@ -679,6 +707,36 @@ class CentralMidi_DB {
             absint($ano)
         );
         return array_map('intval', $wpdb->get_col($sql));
+    }
+
+    /**
+     * Todos os gêneros com a contagem de MIDIs, em ordem alfabética.
+     *
+     * Mantém gêneros sem nenhum MIDI, com qtd = 0, porque a listagem pública
+     * usava hide_empty => false e exibia os 25. Uma query só, com LEFT JOIN.
+     *
+     * @return array[] Cada item: nome, qtd.
+     */
+    public static function get_generos_com_contagem() {
+        global $wpdb;
+        $generos_table = self::generos_table_name();
+        $table_name    = self::table_name();
+        $rows = $wpdb->get_results(
+            "SELECT g.nome, COUNT(m.id) AS qtd
+               FROM {$generos_table} AS g
+          LEFT JOIN {$table_name} AS m ON m.genero_id = g.id
+           GROUP BY g.id, g.nome
+           ORDER BY g.nome ASC"
+        );
+
+        $out = array();
+        foreach ((array) $rows as $row) {
+            $out[] = array(
+                'nome' => (string) $row->nome,
+                'qtd'  => (int) $row->qtd,
+            );
+        }
+        return $out;
     }
 
     /**

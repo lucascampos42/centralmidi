@@ -4,7 +4,11 @@
  * WooCommerce catalog (legacy taxonomies + ACF fields) into the plugin tables.
  *
  * Source (legacy, read-only):
- *   - artistas : child terms of `product_cat` (roots are the A-Z letters)
+ *   - artistas : `product_cat` terms that have at least one product attached.
+ *     The A-Z roots (A, B, C... 0-9, SEM-CATEGORIA) are grouping nodes with no
+ *     relationships of their own, so "has a product" is what distinguishes an
+ *     artist from a letter bucket. Do NOT filter on `parent <> 0`: a number of
+ *     artists were filed as roots and would be silently dropped.
  *   - foto     : `thumbnail_id` termmeta on those artists
  *   - genero   : `genero_musical` terms
  *   - mes/ano  : `mes_de_lancamento` terms (slug `set-2025`, name `SET 2025`)
@@ -182,13 +186,17 @@ class CentralMidi_Migration {
         $artistas = (int) $wpdb->get_var(
             "SELECT COUNT(DISTINCT t.term_id) FROM {$wpdb->terms} t
              JOIN {$wpdb->term_taxonomy} tt ON tt.term_id = t.term_id
-             WHERE tt.taxonomy='product_cat' AND tt.parent <> 0"
+             WHERE tt.taxonomy='product_cat'
+               AND EXISTS (SELECT 1 FROM {$wpdb->term_relationships} tr
+                            WHERE tr.term_taxonomy_id = tt.term_taxonomy_id)"
         );
         $artistas_foto = (int) $wpdb->get_var(
             "SELECT COUNT(DISTINCT t.term_id) FROM {$wpdb->terms} t
              JOIN {$wpdb->term_taxonomy} tt ON tt.term_id = t.term_id
              JOIN {$wpdb->termmeta} tm ON tm.term_id = t.term_id AND tm.meta_key='thumbnail_id' AND NULLIF(tm.meta_value, '0') IS NOT NULL AND tm.meta_value <> ''
-             WHERE tt.taxonomy='product_cat' AND tt.parent <> 0"
+             WHERE tt.taxonomy='product_cat'
+               AND EXISTS (SELECT 1 FROM {$wpdb->term_relationships} tr
+                            WHERE tr.term_taxonomy_id = tt.term_taxonomy_id)"
         );
         $generos = (int) $wpdb->get_var(
             "SELECT COUNT(*) FROM {$wpdb->term_taxonomy} WHERE taxonomy='genero_musical'"
@@ -229,7 +237,7 @@ class CentralMidi_Migration {
         $multi_artista = (int) $wpdb->get_var(
             "SELECT COUNT(*) FROM (SELECT tr.object_id FROM {$wpdb->term_relationships} tr
               JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
-              WHERE tt.taxonomy='product_cat' AND tt.parent <> 0
+              WHERE tt.taxonomy='product_cat'
               GROUP BY tr.object_id HAVING COUNT(*) > 1) x"
         );
         $multi_mes = (int) $wpdb->get_var(
@@ -279,8 +287,10 @@ class CentralMidi_Migration {
                       WHERE tm.term_id = t.term_id AND tm.meta_key='thumbnail_id' LIMIT 1) AS foto
              FROM {$wpdb->terms} t
              JOIN {$wpdb->term_taxonomy} tt ON tt.term_id = t.term_id
-             WHERE tt.taxonomy='product_cat' AND tt.parent <> 0
-             ORDER BY t.term_id ASC"
+            WHERE tt.taxonomy='product_cat'
+              AND EXISTS (SELECT 1 FROM {$wpdb->term_relationships} tr
+                           WHERE tr.term_taxonomy_id = tt.term_taxonomy_id)
+            ORDER BY t.term_id ASC"
         );
 
         foreach ($rows as $r) {
@@ -458,15 +468,25 @@ class CentralMidi_Migration {
         );
         $conflicts = array();
 
-        // --- artists (children of product_cat) -----------------------------
+        // --- artists (product_cat terms that actually have products) --------
+        // The A-Z roots are grouping nodes with zero relationships, so "has a
+        // product" is what separates an artist from a letter bucket. Filtering
+        // on parent <> 0 instead would drop the artists that were filed as
+        // roots (159 MIDIs across 118 artists).
+        //
+        // When a product carries more than one artist term the most-used term
+        // wins, so a typo duplicate ("ANDRE LEONNO" vs "ANDRE LEONO") never
+        // steals MIDIs from the canonical artist. term_id breaks true ties.
         $artista_por_produto = array();
         $rows = $wpdb->get_results(
-            "SELECT tr.object_id, t.term_id, t.name
+            "SELECT tr.object_id, t.term_id, t.name,
+                    (SELECT COUNT(*) FROM {$wpdb->term_relationships} tr2
+                      WHERE tr2.term_taxonomy_id = tt.term_taxonomy_id) AS qtd
              FROM {$wpdb->term_relationships} tr
              JOIN {$wpdb->term_taxonomy} tt ON tt.term_taxonomy_id = tr.term_taxonomy_id
              JOIN {$wpdb->terms} t ON t.term_id = tt.term_id
-             WHERE tt.taxonomy='product_cat' AND tt.parent <> 0 AND tr.object_id IN ({$ids})
-             ORDER BY tr.object_id, t.term_id"
+             WHERE tt.taxonomy='product_cat' AND tr.object_id IN ({$ids})
+             ORDER BY tr.object_id, qtd DESC, t.term_id"
         );
         foreach ($rows as $r) {
             $pid = (int) $r->object_id;
