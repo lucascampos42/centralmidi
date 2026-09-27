@@ -95,10 +95,18 @@ class CentralMidi_DB {
     }
 
     /**
-     * Run on every load (cheap checks) to apply schema upgrades and data migration.
+     * Run once per plugin version to apply schema upgrades and data migration.
+     *
+     * Guarded by `centralmidi_db_version`: without it every request would pay for
+     * four INFORMATION_SCHEMA lookups plus a full-table UPDATE, which is not
+     * viable once the catalog holds tens of thousands of products.
      */
     public static function maybe_upgrade() {
         global $wpdb;
+
+        if (get_option('centralmidi_db_version') === CENTRALMIDI_VERSION) {
+            return;
+        }
 
         $midis_table = self::table_name();
 
@@ -152,9 +160,89 @@ class CentralMidi_DB {
                 $wpdb->query("ALTER TABLE {$midis_table} DROP COLUMN {$col}");
             }
         }
+
+        self::align_collations();
+
+        // Stamp the version last, so an interrupted upgrade runs again.
+        update_option('centralmidi_db_version', CENTRALMIDI_VERSION);
     }
 
-    private static function table_exists($table) {
+    /**
+     * Align our table collations with the ones WordPress already uses.
+     *
+     * The plugin tables are created with $wpdb->get_charset_collate(), which on
+     * WordPress 6.x is utf8mb4_unicode_520_ci. Sites imported from older
+     * WordPress installs keep utf8mb4_unicode_ci on wp_posts/wp_terms, and any
+     * query comparing an artist name against a legacy term then dies with:
+     *   ERROR 1267 (HY000): Illegal mix of collations
+     *
+     * Rather than hardcoding a collation, follow whatever the site itself uses,
+     * so the catalog tables always join cleanly against the core tables.
+     */
+    private static function align_collations() {
+        global $wpdb;
+
+        $reference = $wpdb->get_row($wpdb->prepare(
+            "SELECT c.CHARACTER_SET_NAME, t.TABLE_COLLATION
+               FROM INFORMATION_SCHEMA.TABLES AS t
+               JOIN INFORMATION_SCHEMA.COLUMNS AS c
+                 ON c.TABLE_SCHEMA = t.TABLE_SCHEMA
+                AND c.TABLE_NAME  = t.TABLE_NAME
+                AND c.COLLATION_NAME = t.TABLE_COLLATION
+              WHERE t.TABLE_SCHEMA = %s AND t.TABLE_NAME = %s
+              LIMIT 1",
+            DB_NAME,
+            $wpdb->posts
+        ));
+        if (!$reference || empty($reference->CHARACTER_SET_NAME) || empty($reference->TABLE_COLLATION)) {
+            // Loud on purpose: silently skipping here leaves a schema that only
+            // breaks much later, inside a query nobody suspects.
+            error_log('CentralMidi: align_collations() could not read the reference collation from ' . $wpdb->posts);
+            return;
+        }
+
+        $charset   = $reference->CHARACTER_SET_NAME;
+        $collation = $reference->TABLE_COLLATION;
+
+        foreach (array(
+            self::table_name(),
+            self::artistas_table_name(),
+            self::generos_table_name(),
+        ) as $table) {
+            if (!self::table_exists($table)) {
+                continue;
+            }
+            $current = $wpdb->get_var($wpdb->prepare(
+                "SELECT TABLE_COLLATION FROM INFORMATION_SCHEMA.TABLES
+                  WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s",
+                DB_NAME,
+                $table
+            ));
+            if ($current === $collation) {
+                continue;
+            }
+            // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- identifiers come from self::table_name().
+            $converted = $wpdb->query("ALTER TABLE {$table} CONVERT TO CHARACTER SET {$charset} COLLATE {$collation}");
+            if (false === $converted) {
+                error_log(sprintf(
+                    'CentralMidi: failed to align %s from %s to %s: %s',
+                    $table,
+                    (string) $current,
+                    $collation,
+                    $wpdb->last_error
+                ));
+            }
+        }
+    }
+
+    /**
+     * Forget the schema version and re-run the upgrade on the next load.
+     */
+    public static function force_upgrade() {
+        delete_option('centralmidi_db_version');
+    }
+
+    public static function table_exists($table) {
         global $wpdb;
         return (bool) $wpdb->get_var($wpdb->prepare(
             "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s",
@@ -591,6 +679,37 @@ class CentralMidi_DB {
             absint($ano)
         );
         return array_map('intval', $wpdb->get_col($sql));
+    }
+
+    /**
+     * Todos os meses com lançamentos, do mais novo para o mais antigo.
+     *
+     * Substitui a consulta sobre a taxonomia legada `mes_de_lancamento`, que
+     * trazia slug + nome + contagem. Não há mais slug: o chamador precisa usar
+     * CentralMidi_Frontend::mes_label() para exibir o texto.
+     *
+     * @return array[] Cada item: mes, ano, qtd.
+     */
+    public static function get_meses_disponiveis() {
+        global $wpdb;
+        $table_name = self::table_name();
+        $rows = $wpdb->get_results(
+            "SELECT mes_lancamento, ano_lancamento, COUNT(*) AS qtd
+               FROM {$table_name}
+              WHERE mes_lancamento > 0 AND ano_lancamento > 0
+              GROUP BY mes_lancamento, ano_lancamento
+              ORDER BY ano_lancamento DESC, mes_lancamento DESC"
+        );
+
+        $out = array();
+        foreach ((array) $rows as $row) {
+            $out[] = array(
+                'mes' => absint($row->mes_lancamento),
+                'ano' => absint($row->ano_lancamento),
+                'qtd' => (int) $row->qtd,
+            );
+        }
+        return $out;
     }
 
     /**
