@@ -14,6 +14,13 @@ defined('ABSPATH') || exit;
 
 class CentralMidi_DB {
 
+    /**
+     * Cache em memória de get_midis_by_products(), por product_id.
+     *
+     * @var array
+     */
+    private static $midi_cache = array();
+
     public static function table_name() {
         global $wpdb;
         return $wpdb->prefix . CENTRALMIDI_TABLE;
@@ -44,6 +51,7 @@ class CentralMidi_DB {
             ano_lancamento SMALLINT UNSIGNED NOT NULL DEFAULT 0,
             classificacao VARCHAR(3) NOT NULL DEFAULT 'M',
             publicado TINYINT(1) NOT NULL DEFAULT 1,
+            demo_audio VARCHAR(255) NOT NULL DEFAULT '',
             created_at DATETIME NOT NULL,
             updated_at DATETIME NOT NULL,
             PRIMARY KEY  (id),
@@ -148,6 +156,19 @@ class CentralMidi_DB {
             $wpdb->query("ALTER TABLE {$midis_table} ADD COLUMN publicado TINYINT(1) NOT NULL DEFAULT 1 AFTER classificacao");
         }
 
+        // Ensure the midis table has the demo_audio column, and backfill it from
+        // the legacy postmeta key. The column only exists after this runs, so the
+        // backfill stays inside the guard. Depois disso, a demo sai do postmeta.
+        if (!self::column_exists($midis_table, 'demo_audio')) {
+            $wpdb->query("ALTER TABLE {$midis_table} ADD COLUMN demo_audio VARCHAR(255) NOT NULL DEFAULT '' AFTER publicado");
+            $wpdb->query(
+                "UPDATE {$midis_table} m
+                 JOIN {$wpdb->postmeta} pm
+                   ON pm.post_id = m.product_id AND pm.meta_key = '_centralmidi_demo_audio'
+                 SET m.demo_audio = pm.meta_value"
+            );
+        }
+
         // Backfill the year for legacy rows created before the column existed.
         $wpdb->query("UPDATE {$midis_table} SET ano_lancamento = YEAR(created_at) WHERE ano_lancamento = 0 AND created_at IS NOT NULL");
 
@@ -161,10 +182,13 @@ class CentralMidi_DB {
             }
         }
 
-        self::align_collations();
-
-        // Stamp the version last, so an interrupted upgrade runs again.
-        update_option('centralmidi_db_version', CENTRALMIDI_VERSION);
+        // Stamp the version last, so an interrupted upgrade runs again. Leaving the
+        // stamp off when the collation fix failed keeps the guard at the top open,
+        // so the next request retries instead of inheriting a broken schema for
+        // good. Every step above is guarded by column_exists(), so re-running is safe.
+        if (self::align_collations()) {
+            update_option('centralmidi_db_version', CENTRALMIDI_VERSION);
+        }
     }
 
     /**
@@ -178,6 +202,8 @@ class CentralMidi_DB {
      *
      * Rather than hardcoding a collation, follow whatever the site itself uses,
      * so the catalog tables always join cleanly against the core tables.
+     *
+     * @return bool True only when every existing table is on the reference collation.
      */
     private static function align_collations() {
         global $wpdb;
@@ -198,11 +224,12 @@ class CentralMidi_DB {
             // Loud on purpose: silently skipping here leaves a schema that only
             // breaks much later, inside a query nobody suspects.
             error_log('CentralMidi: align_collations() could not read the reference collation from ' . $wpdb->posts);
-            return;
+            return false;
         }
 
         $charset   = $reference->CHARACTER_SET_NAME;
         $collation = $reference->TABLE_COLLATION;
+        $aligned   = true;
 
         foreach (array(
             self::table_name(),
@@ -224,6 +251,7 @@ class CentralMidi_DB {
             // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- identifiers come from self::table_name().
             $converted = $wpdb->query("ALTER TABLE {$table} CONVERT TO CHARACTER SET {$charset} COLLATE {$collation}");
             if (false === $converted) {
+                $aligned = false;
                 error_log(sprintf(
                     'CentralMidi: failed to align %s from %s to %s: %s',
                     $table,
@@ -233,6 +261,8 @@ class CentralMidi_DB {
                 ));
             }
         }
+
+        return $aligned;
     }
 
     /**
@@ -346,6 +376,12 @@ class CentralMidi_DB {
             'updated_at'     => $now,
         );
 
+        // demo_audio é opcional: só entra no payload quando informado, para não
+        // zerar a demo de quem chama upsert() só para atualizar outros campos.
+        if (array_key_exists('demo_audio', $data)) {
+            $payload['demo_audio'] = (string) $data['demo_audio'];
+        }
+
         if ($row) {
             // Preserve the current publicado flag unless explicitly provided.
             $payload['publicado'] = isset($data['publicado']) ? (int) (bool) $data['publicado'] : (int) $row->publicado;
@@ -355,6 +391,49 @@ class CentralMidi_DB {
             $payload['created_at'] = $now;
             $wpdb->insert($table_name, $payload);
         }
+
+        self::flush_midi_cache();
+    }
+
+    /**
+     * Atualiza SÓ a coluna demo_audio, sem mexer nos demais campos.
+     *
+     * upsert() reescreve o registro inteiro e zera mes/ano quando recebe payload
+     * parcial — por isso este caminho dirigido existe para edições isoladas da
+     * demo (ex.: edição inline na /ferramentas-admin/).
+     */
+    public static function set_demo_audio($product_id, $value) {
+        global $wpdb;
+
+        $product_id = (int) $product_id;
+        if ($product_id <= 0) {
+            return;
+        }
+
+        $table = self::table_name();
+        $now   = current_time('mysql');
+        $value = (string) $value;
+
+        $existe = (int) $wpdb->get_var(
+            $wpdb->prepare("SELECT COUNT(*) FROM {$table} WHERE product_id = %d", $product_id)
+        );
+
+        if ($existe) {
+            $wpdb->update(
+                $table,
+                array('demo_audio' => $value, 'updated_at' => $now),
+                array('product_id' => $product_id)
+            );
+        } else {
+            $wpdb->insert($table, array(
+                'product_id' => $product_id,
+                'demo_audio' => $value,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ));
+        }
+
+        self::flush_midi_cache();
     }
 
     /**
@@ -363,6 +442,7 @@ class CentralMidi_DB {
     public static function delete($product_id) {
         global $wpdb;
         $wpdb->delete(self::table_name(), array('product_id' => (int) $product_id));
+        self::flush_midi_cache();
     }
 
     /* ------------------------------------------------------------------
@@ -1040,6 +1120,264 @@ class CentralMidi_DB {
         return $wpdb->get_results($sql);
     }
 
+    /* ------------------------------------------------------------------
+     * Leitura consolidada por produto
+     *
+     * Usada pelo child theme para não ler wp_postmeta. Os escalares (mês, ano,
+     * classificação, gênero) vêm das tabelas; a lista de artistas vem do
+     * product_cat, que segue como taxonomia de artistas e suporta N por produto.
+     * ------------------------------------------------------------------ */
+
+    /**
+     * Dados de um MIDI. Wrapper de get_midis_by_products() para um único ID.
+     *
+     * @param int $product_id
+     * @return array|null
+     */
+    public static function get_midi_by_product($product_id) {
+        $product_id = (int) $product_id;
+        if ($product_id <= 0) {
+            return null;
+        }
+        $map = self::get_midis_by_products(array($product_id));
+        return isset($map[$product_id]) ? $map[$product_id] : null;
+    }
+
+    /**
+     * Dados de vários MIDIs em quatro consultas (tabela, gêneros já vêm no JOIN,
+     * demo, artistas), evitando N+1 na home e na busca.
+     *
+     * IDs sem linha na tabela ainda retornam um registro com os valores padrão,
+     * para que a vitrine não quebre em produto legado.
+     *
+     * @param int[] $product_ids
+     * @return array<int, array> mapeado por product_id
+     */
+    public static function get_midis_by_products($product_ids) {
+        global $wpdb;
+
+        $ids = array_values(array_unique(array_filter(array_map('absint', (array) $product_ids))));
+        if (!$ids) {
+            return array();
+        }
+
+        $out  = array();
+        $todo = array();
+
+        foreach ($ids as $id) {
+            if (isset(self::$midi_cache[$id])) {
+                $out[$id] = self::$midi_cache[$id];
+            } else {
+                $todo[] = $id;
+            }
+        }
+        if (!$todo) {
+            return $out;
+        }
+
+        $midis_table    = self::table_name();
+        $artistas_table = self::artistas_table_name();
+        $generos_table  = self::generos_table_name();
+
+        $artistas_por_produto = array();
+
+        foreach (array_chunk($todo, 500) as $chunk) {
+            $ids_flat = implode(',', $chunk);
+
+            $rows = $wpdb->get_results(
+                "SELECT m.product_id, m.artista_id, m.genero_id, m.mes_lancamento,
+                        m.ano_lancamento, m.classificacao, m.publicado, m.demo_audio,
+                        a.nome AS artista_nome, a.foto_id AS artista_foto_id,
+                        g.nome AS genero
+                 FROM {$midis_table} m
+                 LEFT JOIN {$artistas_table} a ON a.id = m.artista_id
+                 LEFT JOIN {$generos_table} g ON g.id = m.genero_id
+                 WHERE m.product_id IN ({$ids_flat})"
+            );
+
+            foreach ($rows as $row) {
+                $pid = (int) $row->product_id;
+                $out[$pid] = array(
+                    'product_id'     => $pid,
+                    'artista_id'     => (int) $row->artista_id,
+                    'artista_nome'   => (string) $row->artista_nome,
+                    'artista_foto_id' => (int) $row->artista_foto_id,
+                    'genero_id'      => (int) $row->genero_id,
+                    'genero'         => (string) $row->genero,
+                    'mes_lancamento' => (int) $row->mes_lancamento,
+                    'ano_lancamento' => (int) $row->ano_lancamento,
+                    'classificacao'  => self::sanitize_classificacao($row->classificacao),
+                    'publicado'      => (int) $row->publicado,
+                    'demo_raw'       => (string) $row->demo_audio,
+                );
+            }
+
+            $term_rows = $wpdb->get_results(
+                "SELECT tr.object_id, t.term_id, t.name
+                 FROM {$wpdb->term_relationships} tr
+                 JOIN {$wpdb->term_taxonomy} tt
+                   ON tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.taxonomy = 'product_cat'
+                 JOIN {$wpdb->terms} t ON t.term_id = tt.term_id
+                 WHERE tr.object_id IN ({$ids_flat})
+                 ORDER BY t.name ASC"
+            );
+            foreach ($term_rows as $term) {
+                $artistas_por_produto[(int) $term->object_id][] = array(
+                    'id'   => (int) $term->term_id,
+                    'nome' => (string) $term->name,
+                );
+            }
+        }
+
+        foreach ($todo as $pid) {
+            if (!isset($out[$pid])) {
+                $out[$pid] = array(
+                    'product_id'     => $pid,
+                    'artista_id'     => 0,
+                    'artista_nome'   => '',
+                    'artista_foto_id' => 0,
+                    'genero_id'      => 0,
+                    'genero'         => '',
+                    'mes_lancamento' => 0,
+                    'ano_lancamento' => 0,
+                    'classificacao'  => '',
+                    'publicado'      => 0,
+                    'demo_raw'       => '',
+                );
+            }
+
+            $artistas = isset($artistas_por_produto[$pid]) ? $artistas_por_produto[$pid] : array();
+            $nomes    = array();
+            $ids_art  = array();
+            foreach ($artistas as $artista) {
+                $ids_art[] = (int) $artista['id'];
+                $nomes[]   = (string) $artista['nome'];
+            }
+
+            // midis.artista_id é o artista principal: ele vem primeiro na exibição,
+            // os demais ficam em ordem alfabética.
+            $primario = isset($out[$pid]['artista_nome']) ? $out[$pid]['artista_nome'] : '';
+            if ($primario !== '' && count($nomes) > 1) {
+                $idx = array_search($primario, $nomes, true);
+                if ($idx !== false && $idx > 0) {
+                    unset($nomes[$idx], $ids_art[$idx]);
+                    array_unshift($nomes, $primario);
+                    array_unshift($ids_art, (int) $artistas[$idx]['id']);
+                    $nomes   = array_values($nomes);
+                    $ids_art = array_values($ids_art);
+                }
+            }
+
+            $demo_raw = isset($out[$pid]['demo_raw']) ? $out[$pid]['demo_raw'] : '';
+
+            $out[$pid]['artista_ids']   = $ids_art;
+            $out[$pid]['artistas']      = $nomes;
+            $out[$pid]['artista']       = implode(' & ', $nomes);
+            $out[$pid]['demo_raw']      = $demo_raw;
+            $out[$pid]['demo_url']      = self::resolve_media_url(
+                $demo_raw,
+                $out[$pid]['mes_lancamento'],
+                $out[$pid]['ano_lancamento']
+            );
+
+            self::$midi_cache[$pid] = $out[$pid];
+            $out[$pid] = self::$midi_cache[$pid];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Anexa à consulta os filtros de demo, sem vazar detalhes para o child.
+     *
+     * A demo é a coluna `demo_audio` de wp_centralmidi_midis (mesmo nome de
+     * coluna em toda a API). Produto sem linha na tabela conta como "sem demo".
+     *
+     * @param string $mode  'has', 'none' ou '' (sem filtro)
+     * @param string $search texto parcial da URL da demo
+     * @param string $join  referência ao trecho JOIN being montado
+     * @param string $where referência ao trecho WHERE being montado
+     */
+    public static function apply_demo_filter($mode, $search, &$join, &$where) {
+        global $wpdb;
+
+        $table    = self::table_name();
+        $pesquisa = trim((string) $search);
+
+        if ('none' === $mode) {
+            $join  .= " LEFT JOIN {$table} mdemo ON mdemo.product_id=p.ID AND mdemo.demo_audio!=''";
+            $where .= " AND mdemo.product_id IS NULL";
+            return;
+        }
+
+        if ('has' === $mode || '' !== $pesquisa) {
+            $join .= " JOIN {$table} mdemo ON mdemo.product_id=p.ID";
+        }
+
+        if ('has' === $mode) {
+            $where .= " AND mdemo.demo_audio != ''";
+        }
+
+        if ('' !== $pesquisa) {
+            $where .= $wpdb->prepare(
+                " AND mdemo.demo_audio LIKE %s",
+                '%' . $wpdb->esc_like($pesquisa) . '%'
+            );
+        }
+    }
+
+    /**
+     * Quantos produtos publicados têm demo cadastrada.
+     */
+    public static function count_products_with_demo() {
+        global $wpdb;
+
+        return (int) $wpdb->get_var(
+            "SELECT COUNT(*)
+             FROM " . self::table_name() . " m
+             JOIN {$wpdb->posts} p ON p.ID = m.product_id
+             WHERE p.post_type='product' AND p.post_status='publish'
+               AND m.demo_audio != ''"
+        );
+    }
+
+    /**
+     * Limpa o cache em memória de get_midis_by_products().
+     */
+    public static function flush_midi_cache() {
+        self::$midi_cache = array();
+    }
+
+    /**
+     * Produtos publicados que compartilham a mesma URL de demo.
+     *
+     * Uma única consulta com GROUP BY, porque o duplicatário varre o catálogo
+     * inteiro. Os aliases post_id/meta_value são mantidos para não quebrar quem
+     * já consumia o formato antigo (postmeta).
+     *
+     * @return array[] linhas com post_id, post_title, meta_value
+     */
+    public static function get_duplicated_demo_urls() {
+        global $wpdb;
+
+        $table = self::table_name();
+
+        return (array) $wpdb->get_results(
+            "SELECT m.product_id AS post_id, p.post_title, m.demo_audio AS meta_value
+             FROM {$table} m
+             JOIN {$wpdb->posts} p ON p.ID = m.product_id
+             JOIN (
+                 SELECT demo_audio
+                 FROM {$table}
+                 WHERE demo_audio != ''
+                 GROUP BY demo_audio
+                 HAVING COUNT(*) > 1
+             ) dup ON m.demo_audio = dup.demo_audio
+             WHERE p.post_type='product' AND p.post_status='publish'
+             ORDER BY m.demo_audio, p.ID"
+        );
+    }
+
     /**
      * Resolve media URL (MP3 demo or MIDI file).
      * Handles:
@@ -1074,12 +1412,28 @@ class CentralMidi_DB {
 
     /**
      * Get resolved demo audio URL for a product ID.
+     *
+     * Lê a coluna demo_audio (e mês/ano para montar o caminho de arquivo) da
+     * tabela. Não toca em postmeta.
      */
     public static function get_product_demo_url($product_id) {
-        $raw = get_post_meta($product_id, '_centralmidi_demo_audio', true);
-        if (!$raw) return '';
-        $mes = (int) get_post_meta($product_id, '_centralmidi_mes_lancamento', true);
-        $ano = (int) get_post_meta($product_id, '_centralmidi_ano_lancamento', true);
-        return self::resolve_media_url($raw, $mes, $ano);
+        global $wpdb;
+
+        $row = $wpdb->get_row($wpdb->prepare(
+            "SELECT demo_audio, mes_lancamento, ano_lancamento
+             FROM " . self::table_name() . "
+             WHERE product_id = %d",
+            (int) $product_id
+        ));
+
+        if (!$row || '' === (string) $row->demo_audio) {
+            return '';
+        }
+
+        return self::resolve_media_url(
+            $row->demo_audio,
+            (int) $row->mes_lancamento,
+            (int) $row->ano_lancamento
+        );
     }
 }

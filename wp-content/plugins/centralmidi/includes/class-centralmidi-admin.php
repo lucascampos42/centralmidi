@@ -479,10 +479,7 @@ class CentralMidi_Admin {
         switch ($action) {
             case 'set_artista':
                 $value   = absint($value);
-                $artista = CentralMidi_DB::get_artista($value);
                 foreach ($ids as $pid) {
-                    update_post_meta($pid, '_centralmidi_artista_id', $value);
-                    update_post_meta($pid, '_centralmidi_artista', $artista ? $artista->nome : '');
                     $this->upsert_product_meta($pid, array('artista_id' => $value));
                     $count++;
                 }
@@ -490,10 +487,7 @@ class CentralMidi_Admin {
 
             case 'set_genero':
                 $value  = absint($value);
-                $genero = CentralMidi_DB::get_genero($value);
                 foreach ($ids as $pid) {
-                    update_post_meta($pid, '_centralmidi_genero_id', $value);
-                    update_post_meta($pid, '_centralmidi_genero', $genero ? $genero->nome : '');
                     $this->upsert_product_meta($pid, array('genero_id' => $value));
                     $count++;
                 }
@@ -502,7 +496,6 @@ class CentralMidi_Admin {
             case 'set_mes':
                 $value = absint($value);
                 foreach ($ids as $pid) {
-                    update_post_meta($pid, '_centralmidi_mes_lancamento', $value);
                     $this->upsert_product_meta($pid, array('mes_lancamento' => $value));
                     $count++;
                 }
@@ -511,7 +504,6 @@ class CentralMidi_Admin {
             case 'set_ano':
                 $value = absint($value);
                 foreach ($ids as $pid) {
-                    update_post_meta($pid, '_centralmidi_ano_lancamento', $value);
                     $this->upsert_product_meta($pid, array('ano_lancamento' => $value));
                     $count++;
                 }
@@ -520,7 +512,6 @@ class CentralMidi_Admin {
             case 'set_classificacao':
                 $value = CentralMidi_DB::sanitize_classificacao($value);
                 foreach ($ids as $pid) {
-                    update_post_meta($pid, '_centralmidi_classificacao', $value);
                     $this->upsert_product_meta($pid, array('classificacao' => $value));
                     $count++;
                 }
@@ -530,7 +521,6 @@ class CentralMidi_Admin {
             case 'despublicar':
                 $publicado = 'publicar' === $action ? 1 : 0;
                 foreach ($ids as $pid) {
-                    update_post_meta($pid, '_centralmidi_publicado', $publicado);
                     $this->upsert_product_meta($pid, array('publicado' => $publicado));
                     $count++;
                 }
@@ -538,15 +528,6 @@ class CentralMidi_Admin {
 
             case 'delete':
                 foreach ($ids as $pid) {
-                    foreach (array(
-                        '_centralmidi_artista', '_centralmidi_artista_id',
-                        '_centralmidi_genero', '_centralmidi_genero_id',
-                        '_centralmidi_mes_lancamento', '_centralmidi_ano_lancamento',
-                        '_centralmidi_classificacao', '_centralmidi_demo_audio',
-                        '_centralmidi_file_url', '_centralmidi_publicado',
-                    ) as $meta_key) {
-                        delete_post_meta($pid, $meta_key);
-                    }
                     CentralMidi_DB::delete($pid);
                     $count++;
                 }
@@ -679,8 +660,6 @@ class CentralMidi_Admin {
             case 'artista':
                 $artista = CentralMidi_DB::get_artista_by_nome(sanitize_text_field((string) $value));
                 $artista_id = $artista ? (int) $artista->id : 0;
-                update_post_meta($product_id, '_centralmidi_artista_id', $artista_id);
-                update_post_meta($product_id, '_centralmidi_artista', $artista ? $artista->nome : '');
                 $this->upsert_product_meta($product_id, array('artista_id' => $artista_id));
                 $result = $artista ? $artista->nome : '';
                 break;
@@ -688,36 +667,30 @@ class CentralMidi_Admin {
             case 'genero':
                 $genero = CentralMidi_DB::get_genero_by_nome(sanitize_text_field((string) $value));
                 $genero_id = $genero ? (int) $genero->id : 0;
-                update_post_meta($product_id, '_centralmidi_genero_id', $genero_id);
-                update_post_meta($product_id, '_centralmidi_genero', $genero ? $genero->nome : '');
                 $this->upsert_product_meta($product_id, array('genero_id' => $genero_id));
                 $result = $genero ? $genero->nome : '';
                 break;
 
             case 'mes':
                 $mes = max(1, min(12, absint($value)));
-                update_post_meta($product_id, '_centralmidi_mes_lancamento', $mes);
                 $this->upsert_product_meta($product_id, array('mes_lancamento' => $mes));
                 $result = (string) $mes;
                 break;
 
             case 'ano':
                 $ano = absint($value);
-                update_post_meta($product_id, '_centralmidi_ano_lancamento', $ano);
                 $this->upsert_product_meta($product_id, array('ano_lancamento' => $ano));
                 $result = (string) $ano;
                 break;
 
             case 'classificacao':
                 $class = CentralMidi_DB::sanitize_classificacao(sanitize_text_field((string) $value));
-                update_post_meta($product_id, '_centralmidi_classificacao', $class);
                 $this->upsert_product_meta($product_id, array('classificacao' => $class));
                 $result = $class;
                 break;
 
             case 'publicado':
                 $publicado = in_array((string) $value, array('1', '0'), true) ? (int) $value : 1;
-                update_post_meta($product_id, '_centralmidi_publicado', $publicado);
                 $this->upsert_product_meta($product_id, array('publicado' => $publicado));
                 $result = (string) $publicado;
                 break;
@@ -757,15 +730,22 @@ class CentralMidi_Admin {
 
     /**
      * Upsert a product row keeping the current values for fields not being changed.
+     *
+     * Lê os valores atuais da TABELA (fonte de verdade), não do postmeta.
      */
     private function upsert_product_meta($product_id, $override = array()) {
+        $row = CentralMidi_DB::get_midi_by_product($product_id);
+        if (!is_array($row)) {
+            $row = array();
+        }
+
         $data = array(
-            'artista_id'     => (int) get_post_meta($product_id, '_centralmidi_artista_id', true),
-            'genero_id'      => (int) get_post_meta($product_id, '_centralmidi_genero_id', true),
-            'mes_lancamento' => (int) get_post_meta($product_id, '_centralmidi_mes_lancamento', true),
-            'ano_lancamento' => (int) get_post_meta($product_id, '_centralmidi_ano_lancamento', true),
-            'classificacao'  => CentralMidi_DB::sanitize_classificacao(get_post_meta($product_id, '_centralmidi_classificacao', true)),
-            'publicado'      => '' === get_post_meta($product_id, '_centralmidi_publicado', true) ? 1 : (int) (bool) get_post_meta($product_id, '_centralmidi_publicado', true),
+            'artista_id'     => isset($row['artista_id']) ? (int) $row['artista_id'] : 0,
+            'genero_id'      => isset($row['genero_id']) ? (int) $row['genero_id'] : 0,
+            'mes_lancamento' => isset($row['mes_lancamento']) ? (int) $row['mes_lancamento'] : 0,
+            'ano_lancamento' => isset($row['ano_lancamento']) ? (int) $row['ano_lancamento'] : 0,
+            'classificacao'  => CentralMidi_DB::sanitize_classificacao(isset($row['classificacao']) ? $row['classificacao'] : 'M'),
+            'publicado'      => isset($row['publicado']) ? (int) $row['publicado'] : 1,
         );
         CentralMidi_DB::upsert($product_id, array_merge($data, $override));
     }
@@ -784,18 +764,21 @@ class CentralMidi_Admin {
     public function render($post) {
         wp_nonce_field('centralmidi_save_metadados', 'centralmidi_metadados_nonce');
 
-        $artista_id     = (int) get_post_meta($post->ID, '_centralmidi_artista_id', true);
-        $artista        = get_post_meta($post->ID, '_centralmidi_artista', true);
-        $genero_id      = (int) get_post_meta($post->ID, '_centralmidi_genero_id', true);
-        $genero         = get_post_meta($post->ID, '_centralmidi_genero', true);
-        $mes_lancamento = get_post_meta($post->ID, '_centralmidi_mes_lancamento', true);
-        $ano_lancamento = get_post_meta($post->ID, '_centralmidi_ano_lancamento', true);
-        $ano_lancamento = $ano_lancamento ? (int) $ano_lancamento : (int) date('Y');
-        $classificacao  = get_post_meta($post->ID, '_centralmidi_classificacao', true);
-        $classificacao  = CentralMidi_DB::sanitize_classificacao($classificacao);
-        $demo_audio     = get_post_meta($post->ID, '_centralmidi_demo_audio', true);
-        $publicado      = get_post_meta($post->ID, '_centralmidi_publicado', true);
-        $publicado      = ('' === $publicado) ? 1 : (int) (bool) $publicado;
+        $row = CentralMidi_DB::get_midi_by_product($post->ID);
+        if (!is_array($row)) {
+            $row = array();
+        }
+
+        $artista_id     = isset($row['artista_id']) ? (int) $row['artista_id'] : 0;
+        $artista        = isset($row['artista_nome']) ? $row['artista_nome'] : '';
+        $genero_id      = isset($row['genero_id']) ? (int) $row['genero_id'] : 0;
+        $genero         = isset($row['genero']) ? $row['genero'] : '';
+        $mes_lancamento = isset($row['mes_lancamento']) ? (int) $row['mes_lancamento'] : 0;
+        $ano_lancamento = isset($row['ano_lancamento']) ? (int) $row['ano_lancamento'] : 0;
+        $ano_lancamento = $ano_lancamento ? $ano_lancamento : (int) date('Y');
+        $classificacao  = CentralMidi_DB::sanitize_classificacao(isset($row['classificacao']) ? $row['classificacao'] : 'M');
+        $demo_audio     = isset($row['demo_raw']) ? $row['demo_raw'] : '';
+        $publicado      = isset($row['publicado']) ? (int) $row['publicado'] : 1;
 
         $artistas   = CentralMidi_DB::get_artistas();
         $generos    = CentralMidi_DB::get_generos();
@@ -976,16 +959,6 @@ class CentralMidi_Admin {
             }
         }
 
-        update_post_meta($post_id, '_centralmidi_artista_id', $artista_id);
-        update_post_meta($post_id, '_centralmidi_artista', $artista);
-        update_post_meta($post_id, '_centralmidi_genero_id', $genero_id);
-        update_post_meta($post_id, '_centralmidi_genero', $genero);
-        update_post_meta($post_id, '_centralmidi_mes_lancamento', $mes);
-        update_post_meta($post_id, '_centralmidi_ano_lancamento', $ano);
-        update_post_meta($post_id, '_centralmidi_classificacao', $class);
-        update_post_meta($post_id, '_centralmidi_demo_audio', $demo_audio);
-        update_post_meta($post_id, '_centralmidi_publicado', $publicado);
-
         CentralMidi_DB::upsert($post_id, array(
             'artista_id'     => $artista_id,
             'genero_id'      => $genero_id,
@@ -993,6 +966,7 @@ class CentralMidi_Admin {
             'ano_lancamento' => $ano,
             'classificacao'  => $class,
             'publicado'      => $publicado,
+            'demo_audio'     => $demo_audio,
         ));
 
         CentralMidi_DB::clear_home_cache();
@@ -1219,25 +1193,19 @@ class CentralMidi_Admin {
             update_post_meta($post_id, '_virtual', 'yes');
             update_post_meta($post_id, '_downloadable', 'yes');
 
-            if ($artist_name) update_post_meta($post_id, '_centralmidi_artista', $artist_name);
-            if ($artista_id) update_post_meta($post_id, '_centralmidi_artista_id', $artista_id);
-            if ($genre_name) update_post_meta($post_id, '_centralmidi_genero', $genre_name);
-            if ($genero_id) update_post_meta($post_id, '_centralmidi_genero_id', $genero_id);
-            update_post_meta($post_id, '_centralmidi_mes_lancamento', $mes_lancamento);
-            update_post_meta($post_id, '_centralmidi_ano_lancamento', $ano_lancamento);
-            update_post_meta($post_id, '_centralmidi_classificacao', $classif);
-            update_post_meta($post_id, '_centralmidi_publicado', $publicar);
-
-            if ($mp3_input) update_post_meta($post_id, '_centralmidi_demo_audio', $mp3_input);
-
-            CentralMidi_DB::upsert($post_id, array(
+            $upsert_data = array(
                 'artista_id'     => $artista_id,
                 'genero_id'      => $genero_id,
                 'mes_lancamento' => $mes_lancamento,
                 'ano_lancamento' => $ano_lancamento,
                 'classificacao'  => $classif,
                 'publicado'      => $publicar,
-            ));
+            );
+            if ($mp3_input) {
+                $upsert_data['demo_audio'] = $mp3_input;
+            }
+
+            CentralMidi_DB::upsert($post_id, $upsert_data);
 
             $processed++;
             $results[] = array(

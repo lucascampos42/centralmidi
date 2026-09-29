@@ -61,13 +61,17 @@ class CentralMidi_Migration {
         'jul' => 7, 'ago' => 8, 'set' => 9, 'out' => 10, 'nov' => 11, 'dez' => 12,
     );
 
+    /**
+     * Deliberately registers no hooks.
+     *
+     * The migration finished on 2026-09-27 and the legacy `url_demo`/`rlm` meta
+     * was purged afterwards, so both endpoints are now destructive: a re-run would
+     * find no legacy keys and blank out `_centralmidi_*`, and the reset handler
+     * drops the new tables. The menu and the four `wp_ajax_*` actions are left
+     * unregistered on purpose; the methods stay in place so the routine can be
+     * re-enabled from code should the catalog ever need rebuilding.
+     */
     public function __construct() {
-        add_action('admin_menu', array($this, 'register_menu'));
-        add_action('admin_enqueue_scripts', array($this, 'enqueue'));
-        add_action('wp_ajax_centralmidi_migration_analyze', array($this, 'handle_analyze'));
-        add_action('wp_ajax_centralmidi_migration_prepare', array($this, 'handle_prepare'));
-        add_action('wp_ajax_centralmidi_migration_batch', array($this, 'handle_batch'));
-        add_action('wp_ajax_centralmidi_migration_reset', array($this, 'handle_reset'));
     }
 
     /* ------------------------------------------------------------------

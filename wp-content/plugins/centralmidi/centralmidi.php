@@ -3,7 +3,7 @@
  * Plugin Name: Central MIDI
  * Plugin URI: https://centralmidi.com.br
  * Description: Catálogo de MIDIs com classificação #M/#L/#RLM, metadados (artista, gênero, mês de lançamento) e tabelas próprias no banco. Integra com produtos WooCommerce.
- * Version: 1.2.3
+ * Version: 1.2.4
  * Author: Central MIDI
  * Text Domain: centralmidi
  * Requires Plugins: woocommerce
@@ -11,7 +11,7 @@
 
 defined('ABSPATH') || exit;
 
-define('CENTRALMIDI_VERSION', '1.2.3');
+define('CENTRALMIDI_VERSION', '1.2.4');
 define('CENTRALMIDI_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CENTRALMIDI_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('CENTRALMIDI_TABLE', 'centralmidi_midis');
@@ -23,6 +23,7 @@ require_once CENTRALMIDI_PLUGIN_DIR . 'includes/class-centralmidi-frontend.php';
 require_once CENTRALMIDI_PLUGIN_DIR . 'includes/class-centralmidi-admin.php';
 require_once CENTRALMIDI_PLUGIN_DIR . 'includes/class-centralmidi-migration.php';
 require_once CENTRALMIDI_PLUGIN_DIR . 'includes/class-centralmidi-catalog.php';
+require_once CENTRALMIDI_PLUGIN_DIR . 'includes/class-centralmidi-artistas.php';
 
 /**
  * Fired on activation: create the custom tables.
@@ -42,6 +43,7 @@ function centralmidi_init() {
     new CentralMidi_Admin();
     new CentralMidi_Migration();
     new CentralMidi_Catalog();
+    new CentralMidi_Artistas();
 
     foreach (array('save_post_page', 'wp_trash_post', 'untrash_post', 'delete_post') as $hook) {
         add_action($hook, 'centralmidi_refresh_catalog_url_cache_on_page_change');

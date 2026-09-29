@@ -1,139 +1,300 @@
 # Central MIDI — Plugin
 
-Plugin WordPress para catálogo de MIDIs integrado ao WooCommerce, com classificação `#M`/`#L`/`#RLM`.
+Plugin WordPress para catálogo de MIDIs integrado ao WooCommerce, com
+classificação `#M` / `#L` / `#RLM`.
+
+- **Versão:** 1.2.4 (`centralmidi.php`, `CENTRALMIDI_VERSION`)
+- **Requer:** WooCommerce (`Requires Plugins: woocommerce`)
+- **Text domain:** `centralmidi`
+
+> Este documento descreve o plugin **como está** em `atual/`. Foi reescrito em
+> 2026-09-28 a partir do código e do banco; a versão anterior estava defasada e
+> descrevia o plugin de outro projeto (tema `central-midi`, banco
+> `centralmidi_db`, porta 8080 — nada disso existe mais aqui).
 
 ## Localização
 
-- Plugin: `wp-content/plugins/centralmidi/`
-- Tema (custom): `wp-content/themes/central-midi/`
+| Peça | Caminho |
+|---|---|
+| Plugin | `wp-content/plugins/centralmidi/` |
+| Tema | `wp-content/themes/flatsome-child/` (child theme do Flatsome) |
 
-## Recursos
+O tema `central-midi` **não existe mais**. O tema ativo é o child theme do
+Flatsome, que consome o plugin via `CentralMidi_DB`.
 
-- **Tabela própria no banco** `wp_centralmidi_midis`
-- **Metabox** no produto WooCommerce para metadados do catálogo
-- **Shortcode** `[centralmidi_catalogo]` com filtros e grid público
-- **Badges de classificação** nos cards
+## Fonte da verdade: a tabela, não o post meta
+
+Este é o ponto mais importante do plugin atual.
+
+Toda a classificação/artista/gênero/mês/ano de um MIDI vive na tabela
+`wp_centralmidi_midis`. **Nada mais grava as chaves `_centralmidi_*` em
+`wp_postmeta`** — o que restou ali é resíduo, removível.
+
+- Estado verificado no banco local: **0 linhas** de `_centralmidi_*`.
+- `CentralMidi_Admin::upsert_product_meta()` é um nome enganoso: apesar do
+  nome, ele chama `CentralMidi_DB::upsert()` e escreve **só na tabela**.
+- O metabox do produto, a edição inline e o bulk da tela de MIDIs grava tudo
+  via `CentralMidi_DB::upsert()`.
+- `CentralMidi_DB::maybe_upgrade()` faz backfill de `demo_audio` da coluna para
+  a tabela lendo `_centralmidi_demo_audio` — é o último resto de uso do post
+  meta, e só em instalações antigas.
+
+Se for mexer no tema, **não** procure `_centralmidi_artista` esperando achar
+chave de banco: use a API estática de `CentralMidi_DB`.
 
 ## Classificação
 
 | Código | Significado |
 |--------|-------------|
-| `#M`   | MIDI somente com Melodia |
-| `#L`   | MIDI somente com Letra sincronizada |
-| `#RLM` | MIDI com Melodia e Letra sincronizada |
+| `M`   | MIDI somente com Melodia |
+| `L`   | MIDI somente com Letra sincronizada |
+| `RLM` | MIDI com Melodia e Letra sincronizada |
+
+`sanitize_classificacao()` normaliza para maiúsculas e aceita `M`, `L`, `RLM`.
+Vazio ou `NONE` viram `''` (sem classificação) — **não** é erro.
+
+Distribuição real no banco local (81.852 linhas):
+
+| Valor | Linhas |
+|---|---:|
+| *(vazio)* | 47.047 |
+| `RLM` | 16.590 |
+| `L` | 10.506 |
+| `M` | 7.709 |
+
+Mais da metade do catálogo está **sem classificação**.
 
 ## Tabelas do banco
 
+Criadas em `register_activation_hook` (`CentralMidi_DB::create_table()`,
+`create_artistas_table()`, `create_generos_table()`). `centralmidi_uninstall()`
+faz drop. `maybe_upgrade()` roda a cada load (`plugins_loaded`) e cria colunas
+faltantes.
+
 ### `wp_centralmidi_midis`
 
-Colunas:
+| Coluna           | Tipo              | Null | Default | Descrição |
+|------------------|-------------------|------|---------|-----------|
+| `id`             | bigint unsigned   | não  | AI      | PK |
+| `product_id`     | bigint unsigned   | não  | —       | ID do produto WooCommerce, **UNIQUE** |
+| `artista_id`     | bigint unsigned   | sim  | `NULL`  | FK `wp_centralmidi_artistas.id` |
+| `genero_id`      | bigint unsigned   | sim  | `NULL`  | FK `wp_centralmidi_generos.id` |
+| `mes_lancamento` | tinyint unsigned  | não  | `0`     | 1–12 |
+| `ano_lancamento` | smallint unsigned | não  | `0`     | ex.: 2026 |
+| `classificacao`  | varchar(3)        | não  | `'M'`   | `M` / `L` / `RLM` / `''` |
+| `publicado`      | tinyint(1)        | não  | `1`     | `1` disponível, `0` em breve |
+| `demo_audio`     | varchar(255)      | não  | `''`    | URL ou **nome do arquivo** do MP3 |
+| `created_at`     | datetime          | não  | —       | |
+| `updated_at`     | datetime          | não  | —       | |
 
-| Coluna           | Tipo              | Descrição                             |
-|------------------|-------------------|---------------------------------------|
-| `id`             | BIGINT UNSIGNED   | PK auto increment                     |
-| `product_id`     | BIGINT UNSIGNED   | ID do produto WooCommerce (único)     |
-| `artista_id`     | BIGINT UNSIGNED   | FK para `wp_centralmidi_artistas.id`  |
-| `genero_id`      | BIGINT UNSIGNED   | FK para `wp_centralmidi_generos.id`   |
-| `mes_lancamento` | TINYINT UNSIGNED  | Mês de lançamento no site (1–12)      |
-| `ano_lancamento` | SMALLINT UNSIGNED | Ano de lançamento (ex.: 2026)         |
-| `classificacao`  | VARCHAR(3)        | `M`, `L` ou `RLM` (default `M`)       |
-| `publicado`      | TINYINT(1)        | `1` disponível p/ venda (default), `0` em breve — oculto do público e não comprável |
-| `created_at`     | DATETIME          | Data de criação                       |
-| `updated_at`     | DATETIME          | Data de atualização                   |
+Índices: `PRIMARY (id)`, **UNIQUE `product_id`**, e chaves simples em
+`artista_id`, `genero_id`, `mes_lancamento`, `ano_lancamento`,
+`classificacao`, `publicado`.
 
-Índices: `UNIQUE (product_id)`, `KEY (mes_lancamento)`, `KEY (classificacao)`, `KEY (publicado)`.
-
-A tabela é criada na ativação do plugin (`register_activation_hook`) e removida no uninstall. `maybe_upgrade()` adiciona colunas novas (ex.: `publicado`) em instalações existentes, com backfill default `1`.
+Não há mais colunas denormalizadas `artista`/`genero`: `maybe_upgrade()` as
+dropa depois da migração de strings legadas → IDs.
 
 ### Tabelas de referência
 
-`wp_centralmidi_artistas` (com coluna extra `foto_id`) e `wp_centralmidi_generos`:
+`wp_centralmidi_artistas`: `id`, `nome` (UNIQUE), **`foto_id`**, `created_at`,
+`updated_at`.
 
-| Coluna       | Tipo            | Descrição              |
-|--------------|-----------------|------------------------|
-| `id`         | BIGINT UNSIGNED | PK auto increment      |
-| `nome`       | VARCHAR(255)    | Nome (UNIQUE)          |
-| `created_at` | DATETIME        | Data de criação        |
-| `updated_at` | DATETIME        | Data de atualização    |
+`wp_centralmidi_generos`: `id`, `nome` (UNIQUE), `created_at`, `updated_at` —
+**sem** `foto_id`.
 
-A migração de strings legadas (`artista`, `genero`) → IDs é feita em `CentralMidi_DB::maybe_upgrade()`, que roda a cada load e, após migrar, dropa as colunas antigas.
+Contagens no banco local: **81.852** MIDIs, **13.625** artistas, **25** gêneros.
+Nenhum MIDI com `publicado=0` no momento.
 
-## Metadados por produto (post meta)
+### `publicado`
 
-| Meta key                       | Descrição                  |
-|--------------------------------|----------------------------|
-| `_centralmidi_artista`         | Nome do artista (denormalizado) |
-| `_centralmidi_artista_id`      | FK `wp_centralmidi_artistas.id` |
-| `_centralmidi_genero`          | Nome do gênero (denormalizado) |
-| `_centralmidi_genero_id`       | FK `wp_centralmidi_generos.id` |
-| `_centralmidi_mes_lancamento`  | Mês de lançamento (1–12)   |
-| `_centralmidi_ano_lancamento`  | Ano de lançamento          |
-| `_centralmidi_classificacao`   | `M`, `L` ou `RLM`          |
-| `_centralmidi_publicado`       | `1` disponível p/ venda (default) / `0` em breve |
-| `_centralmidi_demo_audio`      | URL ou **nome do arquivo** do MP3 de demo. Metabox aceita upload (grava em `midis/<ano><mes>/`) ou URL/nome manual; resolve p/ `/midis/<ano><mes>/arquivo.mp3` |
+Filtra os MIDIs dentro das consultas do próprio plugin: home, catálogo,
+diretório de artistas, busca, busca ao vivo. `publicado=0` é omitido de todas
+elas (a condição aparece como `AND publicado = 1` nos métodos de
+`class-centralmidi-db.php`).
 
-Ao salvar o produto, os valores são persistidos como post meta e sincronizados (`upsert`) na tabela `wp_centralmidi_midis`.
+**Limitação conhecida:** não existe filtro `woocommerce_is_purchasable` no
+plugin nem no tema. O bloqueio de compra descrito em versões anteriores deste
+documento **não está implementado**. Todos os produtos locais estão com
+`post_status = publish`, então `publicado` só é garantido nas telas que passam
+pelo plugin.
 
-### Importação em lote (`/importar-midis/`)
+## Demo de áudio
 
-MIDIs cadastrados via importador entram como **não publicados** (`publicado=0`, "Em breve") por padrão — ficam ocultos do site e não compráveis até serem publicados manualmente (grid admin/metabox). A opção **"Publicar imediatamente no site"** no formulário envia `publicar=1` e os publica na hora.
+`demo_audio` é **coluna da tabela**, não post meta. A API relevante:
 
-O importador trabalha **somente com MP3** (demo). O scanner lê os arquivos de áudio da pasta `midis/<ano><mes>/`; não há pareamento com `.mid` nem referência de arquivo MIDI no servidor.
+- `CentralMidi_DB::set_demo_audio($product_id, $value)` — atualiza só essa coluna.
+- `resolve_media_url($value, $mes, $ano)` — resolve nome de arquivo para
+  `/midis/<ano><mes>/arquivo.mp3`.
+- `get_product_demo_url($product_id)` — URL final da demo.
+- `apply_demo_filter($mode, $search, &$join, &$where)` — filtro de busca por demo.
+- `count_products_with_demo()`, `get_duplicated_demo_urls()` — auditoria.
+
+O metabox aceita upload (grava em `midis/<ano><mes>/`) ou URL/nome manual.
 
 ## Shortcode `[centralmidi_catalogo]`
 
-- Filtros por **artista**, **gênero**, **mês de lançamento** e **classificação** (via GET)
-- Lista produtos WooCommerce publicados
-- Paginação
-- Cards com capa, artista, título, gênero, mês, classificação (`#M`/`#L`/`#RLM`) e preço
-- Atributos: `por_pagina` (padrão `12`)
+Registrado via `add_shortcode` em `class-centralmidi-catalog.php`, com filtros
+por artista, gênero, mês e classificação (GET), paginação
+(`por_pagina`, padrão 12) e cards com `template-parts/card-midi.php`.
 
-Exemplo de uso:
+**Está registrado mas não é usado em nenhuma página publicada.** Verificado no
+banco: nenhuma página contém o shortcode. E `CentralMidi_DB::catalog_page_id()`
+procura justamente uma página com o shortcode, então retorna `0` e
+`catalog_url()` cai no fallback `home_url('/midis/')`.
 
-```
-[centralmidi_catalogo]
-[centralmidi_catalogo por_pagina="24"]
-```
+Consequência prática: nada renderiza. `enqueue_assets()` apenas faz
+`wp_register_style('centralmidi-catalog')`; o `wp_enqueue_style()` de verdade
+está dentro do callback do shortcode (`render()`). Como o shortcode nunca roda,
+o `catalog.css` **não chega a ser carregado** — fica registrado e órfão.
 
-## Admin — listagem interativa e edição em lote
+## Admin
 
-Página **Central MIDI › MIDIs** (`centralmidi-midis`) usa **Tabulator 6.5.2** (vendor local em `assets/vendor/tabulator/`):
+Menu de topo **Central MIDI** (ícone `dashicons-format-audio`, posição 56,
+capacidade `manage_options`) com três submenus:
 
-- Tabela com **dados server-side** (`wp_ajax_centralmidi_midis_table`): paginação remota (20/50/100), ordenação e filtros de cabeçalho (produto, artista, gênero, mês, ano, classificação) — só a página atual trafega.
-- **Edição inline** de células (`wp_ajax_centralmidi_midis_save`): selects para artista/gênero/classificação, número para mês/ano.
-- **Edição em lote** (`wp_ajax_centralmidi_midis_bulk`): definir artista, gênero, mês, ano ou classificação, publicar/despublicar ou remover os metadados MIDI.
-- Botões "Selecionar página", "Limpar seleção" e **"Exportar CSV"**.
-- Todos os endpoints exigem `manage_options` + nonce `centralmidi_ajax`; operações atualizam post meta (`_centralmidi_*`) e sincronizam via `CentralMidi_DB::upsert()`; `clear_home_cache()` ao final.
+| Página | Slug | Render |
+|---|---|---|
+| MIDIs | `centralmidi-midis` | `render_midis_page()` |
+| Artistas | `centralmidi-artistas` | `render_artistas_page()` |
+| Gêneros | `centralmidi-generos` | `render_generos_page()` |
+
+### Tabela de MIDIs (Tabulator 6.5.2)
+
+Vendor local em `assets/vendor/tabulator/` (`tabulator.min.js` / `.css`) — sem CDN.
+
+- Dados server-side via `wp_ajax_centralmidi_midis_table`: paginação remota
+  (20/50/100), ordenação e filtros de cabeçalho. Só a página atual trafega.
+- Edição inline via `wp_ajax_centralmidi_midis_save`: selects para
+  artista/gênero/classificação, número para mês/ano.
+- Bulk via `wp_ajax_centralmidi_midis_bulk`: definir artista, gênero, mês, ano ou
+  classificação; publicar/despublicar; limpar metadados.
+- Botões "Selecionar página", "Limpar seleção" e "Exportar CSV".
+- Todos exigem `manage_options` + nonce, gravam via `CentralMidi_DB::upsert()` e
+  chamam `clear_home_cache()`.
+
+### Endpoints AJAX registrados
+
+| Action | Handler |
+|---|---|
+| `centralmidi_midis_table` | `handle_midis_table_ajax()` |
+| `centralmidi_midis_save` | `handle_midis_save_ajax()` |
+| `centralmidi_midis_bulk` | `handle_midis_bulk_ajax()` |
+| `centralmidi_scan_folder` | `handle_scan_folder_ajax()` |
+| `centralmidi_process_batch_chunk` | `handle_process_batch_chunk_ajax()` |
+
+Os dois últimos implementam a importação em lote por scan de pasta + chunks.
+**Não existe página `/importar-midis/`** — o fluxo é dirigido pelo admin, não
+por uma página do site. A importação cria MIDIs com `publicado=0` por padrão.
+
+## Classes
+
+| Arquivo | Linhas | Papel |
+|---|---:|---|
+| `centralmidi.php` | 66 | Bootstrap, constantes, activate/uninstall |
+| `includes/class-centralmidi-db.php` | 1.438 | Schema, upsert, consultas, referências, cache |
+| `includes/class-centralmidi-admin.php` | 1.226 | Menu, metabox, tela MIDIs, AJAX, importador |
+| `includes/class-centralmidi-migration.php` | 809 | Rotina de migração **desregistrada** |
+| `includes/class-centralmidi-frontend.php` | 242 | Helpers estáticos **órfãos** |
+| `includes/class-centralmidi-catalog.php` | 148 | Shortcode, filtros, `render_card()` |
+
+### `CentralMidi_Migration` — desregistrada de propósito
+
+`__construct()` é vazio e o comentário no código é explícito: o menu
+`centralmidi-migracao` e os quatro `wp_ajax_*` da migração foram
+**deliberadamente deixados sem registro**. A migração terminou em 2026-09-27 e
+o meta legado (`url_demo`, `rlm`) foi purgado; reexecutar agora encontraria
+zero chaves legadas, apagaria `_centralmidi_*` em massa, e o handler de reset
+droparia as tabelas novas. Os métodos continuam no arquivo caso o catálogo
+precise ser reconstruído.
+
+Não_registered = a classe é instanciada em `centralmidi_init()`, mas não faz
+nada. Não mexa aqui achando que o fluxo está ativo.
+
+### `CentralMidi_Frontend` — órfã
+
+Só expõe métodos estáticos (`get()`, `get_many()`, `classificacao_label()`,
+`mes_label()`, `mes_label_nav()`, `flush()`). Carregada no bootstrap, mas
+**nada no projeto a chama** — o tema usa `CentralMidi_DB` diretamente. Os únicos
+`CentralMidi_Frontend` no restante do código são menções em comentários.
+Código morto candidato a remoção.
 
 ## Arquivos do plugin
 
 ```
 wp-content/plugins/centralmidi/
-├── centralmidi.php                         # Bootstrap + hooks de ativação/uninstall
+├── centralmidi.php                      # Bootstrap + hooks de ativação/uninstall
 ├── includes/
-│   ├── class-centralmidi-db.php            # Tabela, upsert, distinct, busca de IDs
-│   ├── class-centralmidi-admin.php         # Metabox, página MIDIs (Tabulator) + endpoints AJAX
-│   └── class-centralmidi-catalog.php       # Shortcode, filtros e render dos cards
+│   ├── class-centralmidi-db.php          # Tabelas, upsert, consultas, referências
+│   ├── class-centralmidi-admin.php       # Menu, metabox, tela MIDIs, AJAX, importador
+│   ├── class-centralmidi-migration.php   # Migração legada (DESREGISTRADA)
+│   ├── class-centralmidi-frontend.php    # Helpers estáticos (ÓRFÃ)
+│   └── class-centralmidi-catalog.php     # Shortcode, filtros, cards
 └── assets/
-    ├── css/catalog.css                     # Estilos do catálogo público
-    ├── css/admin-midis.css                 # Ajustes do Tabulator no admin
-    ├── js/midis-table.js                   # Tabela interativa (Tabulator) + bulk + inline edit
-    └── vendor/tabulator/                   # Tabulator 6.5.2 (tabulator.min.js / .css) — local, sem CDN
+    ├── css/catalog.css                   # Catálogo público
+    ├── css/admin-midis.css               # Ajustes do Tabulator
+    ├── css/admin-migration.css           # Tela de migração (inativa)
+    ├── js/midis-table.js                 # Tabela + bulk + inline edit
+    ├── js/admin.js                       # CRUD de artistas/gêneros
+    ├── js/migration.js                   # Tela de migração (inativa)
+    └── vendor/tabulator/                 # Tabulator 6.5.2, local
 ```
 
-## Ajustes extras realizados
+## Integração com o tema
 
-- **`page.php` no tema** `central-midi` — não existia; o `index.php` ignorava o conteúdo das páginas, então foi criado para renderizar o conteúdo (ex.: página com o shortcode).
-- **Apache `AllowOverride All`** — via `docker/wordpress-apache.conf` montado em `/etc/apache2/conf-enabled/zz-centralmidi.conf` no `docker-compose.yml`.
-- **`.htaccess` com regras de rewrite** — para URLs limpas (`/midis/`).
-- Página canônica do catálogo: **`/midis/`** (ID 22) com o shortcode.
+O plugin **não** carrega o card: `CentralMidi_Catalog::render_card()` faz
+`get_template_part('template-parts/card-midi', ...)`. O card é do tema.
 
-## Ambiente
+O tema consome o plugin por `CentralMidi_DB` (em `functions.php`,
+`inc/cmidi-artistas.php`, `page-artistas.php`, `page-ferramentas-admin.php` e
+os templates de taxonomia), com guarda `class_exists('CentralMidi_DB')`.
 
-- `docker-compose.yml`: WordPress (`:8080`), MariaDB, phpMyAdmin (`:8081`)
-- URL do catálogo: `http://localhost:8080/midis/`
-- URL do site: `http://localhost:8080/`
+Funções do tema que escrevem na tabela: `cmidi_sync_tabela_classificacao()`,
+`cmidi_sync_tabela_colunas()`, `cmidi_sync_artista_meta()`,
+`cmidi_sync_genero_meta()`, `cmidi_sync_mes_meta()`.
 
-## Nota
+## URLs
 
-O `wp-cli` não fazia parte da imagem oficial do WordPress (desaparece ao recriar o container). Para usá-lo de forma persistente, instalar no Dockerfile ou usar `docker compose exec`.
+O catálogo **não** está em `/midis/`.
+
+| URL | Realidade |
+|---|---|
+| `/` | Homepage — é aqui que a grade de produtos renderiza (72 `cm-track-card` na home local) |
+| `/midis/` | Página ID 9, **vazia** — sem shortcode, sem produtos |
+| `/midis-por-genero/` | Arquivo de `genero_musical` (25 termos) |
+| `/midis-por-mes-de-lancamento/` | Arquivo de `mes_de_lancamento` (13 termos) |
+| `product_cat` | Artistas — **13.662** termos |
+| `/ferramentas-admin/` | Página ID 1219186 (admin do tema, fora do plugin) |
+
+`/loja/` e `/shop/` retornam **404** — não há página de shop WooCommerce criada.
+Existe `taxonomy-product_cat.php` no tema, então os artistas são servidos por
+`product_cat`.
+
+## Ambiente local
+
+O ambiente deste projeto **não** é o do `new_centralmidi/`.
+
+| Serviço | Container | Endereço |
+|---|---|---|
+| WordPress | `local_wp` | `http://127.0.0.1:8090` |
+| MariaDB | `local_db` | `3306` (interno) |
+| phpMyAdmin | `local_pma` | `http://127.0.0.1:8091` |
+
+Banco: `local_midi`, prefixo `wp_`, root em `local_root_pass` (ver
+`docker-compose.yml`). A home redireciona `127.0.0.1` → `localhost`, então
+use `http://localhost:8090`.
+
+`wp-cli` não faz parte da imagem oficial do WordPress e some ao recriar o
+container — prefira SQL direto (`docker exec local_db mysql …`).
+
+## Pendências conhecidas
+
+1. **`/midis/` está vazia** e o shortcode não está em página nenhuma. Se a
+   intenção era usar o shortcode, ele precisa ser inserido — hoje
+   `catalog_page_id()` retorna `0`.
+2. **`CentralMidi_Frontend` é código morto** (242 linhas).
+3. **`publicado=0` não bloqueia compra** — falta o filtro
+   `woocommerce_is_purchasable`.
+4. **47.047 MIDIs sem classificação** (56% do catálogo).
+5. **`/loja/` e `/shop/` dão 404** — não há página de shop.
+6. **Assets da migração** (`admin-migration.css`, `migration.js`) são carregados
+   por código de tela que não registra mais nada.
