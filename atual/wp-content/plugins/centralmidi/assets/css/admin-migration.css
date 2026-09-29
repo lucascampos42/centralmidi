@@ -1,0 +1,70 @@
+/* Central MIDI — tela de Migração */
+
+.cm-mig-status {
+    margin-left: 8px;
+    font-style: italic;
+    color: #50575e;
+}
+
+.cm-mig-panel {
+    margin: 12px 0 24px;
+    max-width: 900px;
+}
+
+.cm-mig-table {
+    margin-bottom: 16px;
+}
+
+.cm-mig-table th[scope="row"] {
+    width: 320px;
+    font-weight: 600;
+}
+
+.cm-mig-destaque {
+    font-weight: 700;
+}
+
+.cm-mig-alerta {
+    color: #8a6100;
+}
+
+tr.cm-mig-alerta td,
+tr.cm-mig-alerta th {
+    background: #fcf9e8;
+}
+
+.cm-mig-progress {
+    margin: 10px 0;
+    max-width: 640px;
+}
+
+.cm-mig-progress progress {
+    width: 460px;
+    vertical-align: middle;
+}
+
+.cm-mig-progress span {
+    margin-left: 10px;
+    color: #50575e;
+}
+
+/* Relatório de conflitos */
+#cm-mig-conflitos h3 {
+    margin-top: 24px;
+}
+
+#cm-mig-conflitos h4 {
+    margin: 20px 0 6px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #50575e;
+}
+
+#cm-mig-conflitos code {
+    font-size: 11px;
+}
+
+#cm-mig-conflitos td:first-child {
+    width: 80px;
+}

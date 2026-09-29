@@ -1,0 +1,955 @@
+/**
+ * ==========================================================================
+ * CENTRAL MIDI - GLOBAL STICKY AUDIO PLAYER & PLAYLIST DRAWER
+ * ==========================================================================
+ * 
+ * Arquivo: assets/css/player.css
+ * Descrição: Estilos isolados para o player de áudio flutuante fixo no rodapé,
+ *            controles de reprodução, linha do tempo interativa, gaveta retrátil
+ *            de playlist (queue), volume e adaptação responsiva mobile/desktop.
+ * 
+ * ÍNDICE DE SEÇÕES:
+ * 1. BOTÃO DE LISTA DE REPRODUÇÃO (Cabeçalhos / Lançamentos)
+ * 2. ESTRUTURA PRINCIPAL DA BARRA FIXA (Desktop Bar)
+ * 3. INFORMAÇÕES DA FAIXA (Capa, Título e Artista)
+ * 4. CONTROLES CENTRAIS E TIMELINE (Play/Pause, Progresso)
+ * 5. AÇÕES À DIREITA (Comprar, Playlist Toggle, Volume, Fechar)
+ * 6. GAVETA RETRÁTIL DE PLAYLIST (Slide-up Drawer)
+ * 7. AJUSTES GLOBAIS DE PÁGINA (WhatsApp Float & Back-to-Top Clearance)
+ * 8. RESPONSIVIDADE MOBILE & TABLET (Breakpoints: 960px, 480px, 360px)
+ * ==========================================================================
+ */
+
+/* ==========================================================================
+   1. BOTÃO DE LISTA DE REPRODUÇÃO (Cabeçalhos / Lançamentos)
+   ========================================================================== */
+
+/**
+ * Botão "Reproduzir Lista" presente nos cabeçalhos das listas mensais
+ * Dispara o carregamento e reprodução sequencial de todas as faixas do bloco
+ */
+.cm-play-monthly-playlist {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: linear-gradient(135deg, #00dfa0, #00b4d8) !important;
+    color: #06130f !important;
+    font-size: 0.86rem !important;
+    font-weight: 800 !important;
+    padding: 9px 18px !important;
+    border-radius: 9999px !important;
+    border: none !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 16px rgba(0, 223, 160, 0.35) !important;
+    transition: all 0.25s ease !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+}
+
+.cm-play-monthly-playlist:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 22px rgba(0, 223, 160, 0.55) !important;
+    filter: brightness(1.08);
+}
+
+.cm-play-monthly-playlist i {
+    font-size: 1.1rem;
+}
+
+
+/* ==========================================================================
+   2. ESTRUTURA PRINCIPAL DA BARRA FIXA (Desktop Bar)
+   ========================================================================== */
+
+/**
+ * Container principal do Player fixado no rodapé da viewport
+ * Efeito Glassmorphism com backdrop blur e sombra superior
+ */
+.cm-player-bar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    background: rgba(10, 16, 26, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6) !important;
+    z-index: 9999 !important;
+    padding: 10px 0 !important;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease !important;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Linha de progresso sutil no topo do player (estilo Spotify/SoundCloud) */
+.cm-player-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Estado oculto: recolhido abaixo da tela */
+.cm-player-bar.hidden {
+    transform: translateY(110%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/**
+ * Grid interno de 3 colunas:
+ * [Info da Faixa (280px)] [Controles + Timeline (1fr)] [Ações + Volume (340px)]
+ */
+.cm-player-inner {
+    display: grid !important;
+    grid-template-columns: 280px 1fr 340px !important;
+    align-items: center !important;
+    gap: 20px !important;
+    max-width: 1560px !important;
+    margin: 0 auto !important;
+    padding: 0 20px !important;
+    box-sizing: border-box !important;
+}
+
+
+/* ==========================================================================
+   3. INFORMAÇÕES DA FAIXA (Capa, Título e Artista)
+   ========================================================================== */
+
+.cm-player-track-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    overflow: hidden !important;
+}
+
+/* Thumbnail da capa do produto / artista */
+.cm-player-cover {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    background: #060b12 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.cm-player-cover img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+/* Ícone de disco girando quando não há thumbnail */
+.cm-player-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00dfa0;
+    font-size: 24px;
+}
+
+.cm-player-details {
+    overflow: hidden !important;
+    min-width: 0 !important;
+}
+
+.cm-player-title {
+    font-weight: 700 !important;
+    font-size: 0.92rem !important;
+    color: #f1f5f9 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.3 !important;
+}
+
+.cm-player-artist {
+    font-size: 0.8rem !important;
+    color: #00cfff !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-weight: 600 !important;
+    margin-top: 2px !important;
+}
+
+
+/* ==========================================================================
+   4. CONTROLES CENTRAIS E TIMELINE (Play/Pause, Progresso)
+   ========================================================================== */
+
+.cm-player-controls-center {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: 100% !important;
+}
+
+.cm-player-buttons {
+    display: flex !important;
+    align-items: center !important;
+    gap: 14px !important;
+}
+
+/* Botões padrão circulares transparentes */
+.cm-player-btn {
+    background: transparent !important;
+    border: none !important;
+    color: #94a3b8 !important;
+    font-size: 1.25rem !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 6px !important;
+    border-radius: 50% !important;
+    transition: all 0.2s ease !important;
+    line-height: 1 !important;
+}
+
+.cm-player-btn:hover {
+    color: #ffffff !important;
+    transform: scale(1.1);
+}
+
+/* Botão principal de Play / Pause destacado */
+.cm-btn-play-pause {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    aspect-ratio: 1 / 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #00dfa0 !important;
+    color: #06130f !important;
+    border-radius: 50% !important;
+    font-size: 1.4rem !important;
+    box-shadow: 0 0 16px rgba(0, 223, 160, 0.4) !important;
+    flex-shrink: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.cm-btn-play-pause i {
+    font-size: 1.4rem !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
+}
+
+.cm-btn-play-pause .ri-play-fill {
+    margin-left: 2px !important;
+}
+
+.cm-btn-play-pause:hover {
+    background: #05f2ab !important;
+    transform: scale(1.08) !important;
+    box-shadow: 0 0 24px rgba(0, 223, 160, 0.6) !important;
+    color: #06130f !important;
+}
+
+/* Linha do tempo: Tempo decorrido + Barra clicável + Tempo total */
+.cm-player-timeline {
+    width: 100% !important;
+    max-width: 540px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.cm-time {
+    font-family: monospace, sans-serif !important;
+    font-size: 0.76rem !important;
+    color: #94a3b8 !important;
+    width: 36px !important;
+    text-align: center !important;
+}
+
+.cm-progress-container {
+    flex: 1 !important;
+    height: 6px !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-radius: 9999px !important;
+    cursor: pointer !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: height 0.15s ease !important;
+}
+
+.cm-progress-container:hover {
+    height: 8px !important;
+}
+
+.cm-progress-fill {
+    width: 0% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, #00dfa0, #00cfff) !important;
+    border-radius: 9999px !important;
+    pointer-events: none !important;
+    transition: width 0.1s linear !important;
+}
+
+
+/* ==========================================================================
+   5. AÇÕES À DIREITA (Comprar, Playlist Toggle, Volume, Fechar)
+   ========================================================================== */
+
+.cm-player-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+}
+
+/* Botão Comprar / Adicionar ao Carrinho */
+.cm-player-buy {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    background: #00dfa0 !important;
+    color: #06130f !important;
+    font-weight: 800 !important;
+    font-size: 0.85rem !important;
+    height: 38px !important;
+    padding: 0 16px !important;
+    border-radius: 9999px !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    line-height: 1 !important;
+    border: none !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 4px 14px rgba(0, 223, 160, 0.35) !important;
+}
+
+.cm-player-buy i {
+    font-size: 1rem !important;
+    line-height: 1 !important;
+    display: inline-block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.cm-player-buy span {
+    line-height: 1 !important;
+    display: inline-block !important;
+}
+
+.cm-player-buy:hover {
+    background: #05f2ab !important;
+    transform: translateY(-1px) !important;
+    color: #06130f !important;
+    box-shadow: 0 6px 18px rgba(0, 223, 160, 0.5) !important;
+}
+
+/* Estado de produto já presente no carrinho */
+.cm-player-buy.in-cart-button {
+    background: #1e293b !important;
+    border: 1px solid rgba(0, 223, 160, 0.4) !important;
+    color: #00dfa0 !important;
+    box-shadow: none !important;
+}
+
+/* Botão Toggle da Gaveta de Playlist */
+.cm-btn-playlist-toggle {
+    position: relative !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    max-width: 38px !important;
+    max-height: 38px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 1.25rem !important;
+    color: #94a3b8 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+}
+
+.cm-btn-playlist-toggle i {
+    font-size: 1.25rem !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
+}
+
+.cm-btn-playlist-toggle:hover {
+    color: #00dfa0 !important;
+    background: rgba(0, 223, 160, 0.1) !important;
+    border-color: rgba(0, 223, 160, 0.3) !important;
+}
+
+/* Badge com quantidade de faixas na fila */
+.cm-playlist-badge {
+    position: absolute !important;
+    top: -3px !important;
+    right: -3px !important;
+    background: #00dfa0 !important;
+    color: #06130f !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    min-width: 16px !important;
+    height: 16px !important;
+    border-radius: 9999px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 4px !important;
+    line-height: 1 !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Slider de Volume */
+.cm-volume-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    color: #94a3b8 !important;
+}
+
+.cm-volume-wrapper i {
+    font-size: 1.2rem !important;
+}
+
+.cm-volume-slider {
+    width: 80px !important;
+    accent-color: #00dfa0 !important;
+    cursor: pointer !important;
+    height: 4px !important;
+    vertical-align: middle !important;
+}
+
+/* Botão Fechar Player */
+.cm-btn-icon {
+    background: transparent !important;
+    border: none !important;
+    color: #64748b !important;
+    font-size: 1.3rem !important;
+    cursor: pointer !important;
+    padding: 6px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+}
+
+.cm-btn-icon:hover {
+    color: #f87171 !important;
+    transform: scale(1.1) !important;
+}
+
+/* Utilitário de acessibilidade para leitores de tela */
+.cm-visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    border: 0 !important;
+}
+
+
+/* ==========================================================================
+   6. GAVETA RETRÁTIL DE PLAYLIST (Slide-up Drawer)
+   ========================================================================== */
+
+/**
+ * Painel suspenso que se abre acima da barra do player exibindo a fila
+ */
+.cm-playlist-drawer {
+    display: none !important;
+    position: absolute !important;
+    bottom: 100% !important;
+    right: 20px !important;
+    width: 380px !important;
+    max-height: 480px !important;
+    background: rgba(14, 21, 33, 0.98) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-bottom: none !important;
+    border-radius: 20px 20px 0 0 !important;
+    box-shadow: 0 -15px 40px rgba(0, 0, 0, 0.6) !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    z-index: 9998 !important;
+}
+
+.cm-playlist-drawer.is-open {
+    display: flex !important;
+    animation: cmSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes cmSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cm-playlist-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 16px 20px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+}
+
+.cm-playlist-title-wrap {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    color: #00dfa0 !important;
+}
+
+.cm-playlist-title-wrap h4 {
+    margin: 0 !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: #f1f5f9 !important;
+}
+
+.cm-playlist-items {
+    overflow-y: auto !important;
+    padding: 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    max-height: 400px !important;
+}
+
+.cm-playlist-items::-webkit-scrollbar {
+    width: 6px;
+}
+.cm-playlist-items::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 9999px;
+}
+
+/* Cada faixa individual dentro da gaveta */
+.cm-playlist-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 10px 14px !important;
+    border-radius: 12px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    background: transparent !important;
+}
+
+.cm-playlist-item:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.cm-playlist-item.active {
+    background: rgba(0, 223, 160, 0.12) !important;
+    border: 1px solid rgba(0, 223, 160, 0.3) !important;
+}
+
+.cm-playlist-item-idx {
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    width: 20px !important;
+    text-align: center !important;
+}
+
+.cm-playlist-item.active .cm-playlist-item-idx {
+    color: #00dfa0 !important;
+}
+
+.cm-playlist-item-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+.cm-playlist-item-title {
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    color: #f1f5f9 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.cm-playlist-item.active .cm-playlist-item-title {
+    color: #00dfa0 !important;
+    font-weight: 700 !important;
+}
+
+.cm-playlist-item-artist {
+    font-size: 0.74rem !important;
+    color: #94a3b8 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.cm-playlist-item-icon {
+    font-size: 1.1rem !important;
+    color: #00dfa0 !important;
+    opacity: 0;
+    transition: opacity 0.2s ease !important;
+}
+
+.cm-playlist-item.active .cm-playlist-item-icon {
+    opacity: 1 !important;
+}
+
+
+/* ==========================================================================
+   7. AJUSTES GLOBAIS DE PÁGINA (WhatsApp Float & Back-to-Top Clearance)
+   ========================================================================== */
+
+/**
+ * Garante que botões flutuantes globais (como WhatsApp e Voltar ao Topo)
+ * não sejam cobertos pelo player fixo quando este estiver visível.
+ */
+body.cm-player-active .cmidi-whatsapp-float
+,
+body:has(#cm-global-player:not(.hidden)) .cmidi-whatsapp-float
+{
+    bottom: 96px !important;
+}
+body.cm-player-active #top-link.back-to-top
+,
+body:has(#cm-global-player:not(.hidden)) #top-link.back-to-top
+{
+    bottom: 165px !important;
+}
+
+
+/* ==========================================================================
+   8. RESPONSIVIDADE MOBILE & TABLET
+   ========================================================================== */
+
+/* Tablet & Mobile (<= 960px): Barra flutuante tipo pill compacta */
+@media (max-width: 960px) {
+    .cm-player-bar {
+        left: 10px !important;
+        right: 10px !important;
+        bottom: 12px !important;
+        border-radius: 16px !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        background: rgba(13, 20, 32, 0.96) !important;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65), 0 0 20px rgba(0, 223, 160, 0.15) !important;
+        padding: 8px 12px !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+    }
+
+    .cm-player-inner {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        padding: 0 !important;
+        position: relative !important;
+    }
+
+    /* Informações da Faixa */
+    .cm-player-track-info {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        gap: 10px !important;
+    }
+
+    .cm-player-cover {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        border-radius: 10px !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    .cm-player-details {
+        min-width: 0 !important;
+        flex: 1 1 auto !important;
+    }
+
+    .cm-player-title {
+        font-size: 0.86rem !important;
+        font-weight: 700 !important;
+        color: #f8fafc !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        margin: 0 !important;
+        line-height: 1.25 !important;
+    }
+
+    .cm-player-artist {
+        font-size: 0.74rem !important;
+        color: #00dfa0 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        margin-top: 2px !important;
+        font-weight: 600 !important;
+    }
+
+    /* Controles Centrais no Mobile: Botão Play/Pause compacto */
+    .cm-player-controls-center {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        gap: 0 !important;
+    }
+
+    .cm-player-buttons {
+        gap: 4px !important;
+    }
+
+    /* Oculta botões secundários no mobile para limpeza visual */
+    #cm-btn-stop,
+    #cm-btn-prev,
+    #cm-btn-next {
+        display: none !important;
+    }
+
+    /* Botão Play/Pause em destaque circular */
+    .cm-btn-play-pause {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        max-width: 44px !important;
+        max-height: 44px !important;
+        aspect-ratio: 1 / 1 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 1.35rem !important;
+        background: #00dfa0 !important;
+        color: #04120c !important;
+        box-shadow: 0 0 16px rgba(0, 223, 160, 0.5) !important;
+        flex-shrink: 0 !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Linha de progresso no Mobile: barra fina na base inferior da pílula */
+    .cm-player-timeline {
+        position: absolute !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: -8px !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        height: 3px !important;
+        gap: 0 !important;
+    }
+
+    .cm-player-timeline .cm-time {
+        display: none !important;
+    }
+
+    .cm-progress-container {
+        height: 3px !important;
+        border-radius: 0 0 16px 16px !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .cm-progress-fill {
+        border-radius: 0 0 16px 16px !important;
+    }
+
+    /* Ações à Direita: Comprar, Playlist e Fechar */
+    .cm-player-actions {
+        flex: 0 0 auto !important;
+        gap: 6px !important;
+    }
+
+    .cm-volume-wrapper {
+        display: none !important;
+    }
+
+    .cm-player-buy {
+        padding: 7px 12px !important;
+        font-size: 0.78rem !important;
+        border-radius: 10px !important;
+        font-weight: 800 !important;
+    }
+
+    .cm-player-buy i {
+        font-size: 0.95rem !important;
+    }
+
+    .cm-btn-playlist-toggle {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        max-width: 38px !important;
+        max-height: 38px !important;
+        aspect-ratio: 1 / 1 !important;
+        font-size: 1.25rem !important;
+        color: #94a3b8 !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    #cm-btn-close-player {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        min-height: 34px !important;
+        max-width: 34px !important;
+        max-height: 34px !important;
+        aspect-ratio: 1 / 1 !important;
+        font-size: 1.2rem !important;
+        color: #64748b !important;
+        border-radius: 50% !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Gaveta de Playlist no Mobile: largura adaptada */
+    .cm-playlist-drawer {
+        width: calc(100% - 20px) !important;
+        right: 10px !important;
+        left: 10px !important;
+        bottom: 74px !important;
+        border-radius: 18px !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8) !important;
+        max-height: 60vh !important;
+    }
+
+    /* Clearance do WhatsApp no Mobile */
+    body.cm-player-active .cmidi-whatsapp-float
+,
+    body:has(#cm-global-player:not(.hidden)) .cmidi-whatsapp-float
+{
+        bottom: 84px !important;
+    }
+    body.cm-player-active #top-link.back-to-top
+,
+    body:has(#cm-global-player:not(.hidden)) #top-link.back-to-top
+{
+        bottom: 148px !important;
+    }
+}
+
+/* Smartphone intermediário (<= 480px) */
+@media (max-width: 480px) {
+    .cm-player-bar {
+        left: 8px !important;
+        right: 8px !important;
+        bottom: 8px !important;
+        padding: 7px 10px !important;
+    }
+
+    .cm-player-cover {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+    }
+
+    .cm-player-title {
+        font-size: 0.82rem !important;
+    }
+
+    .cm-player-artist {
+        font-size: 0.7rem !important;
+    }
+
+    .cm-player-buy {
+        height: 34px !important;
+        padding: 0 10px !important;
+        font-size: 0.72rem !important;
+        gap: 5px !important;
+        border-radius: 9999px !important;
+    }
+
+    .cm-player-buy span {
+        display: inline !important;
+    }
+
+    .cm-btn-play-pause {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        max-width: 40px !important;
+        max-height: 40px !important;
+        aspect-ratio: 1 / 1 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 1.25rem !important;
+    }
+}
+
+/* Smartphone ultra compacto (<= 360px) */
+@media (max-width: 360px) {
+    .cm-player-buy span {
+        display: none !important;
+    }
+
+    .cm-player-buy {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        min-height: 36px !important;
+        max-width: 36px !important;
+        max-height: 36px !important;
+        aspect-ratio: 1 / 1 !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+        justify-content: center !important;
+    }
+
+    .cm-player-buy i {
+        margin: 0 !important;
+        font-size: 1.05rem !important;
+    }
+}

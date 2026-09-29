@@ -4,22 +4,29 @@ Thumbs.db
 .idea/
 .vscode/
 *.log
+*.tmp
+*.bak
 
 # Node
 node_modules/
 npm-debug.log
 
-# WordPress uploads, cache, languages and third-party plugins
-wp-content/uploads/*
-!wp-content/uploads/.gitkeep
-wp-content/upgrade/*
-wp-content/cache/*
-wp-content/languages/*
-wp-content/plugins/akismet/
-wp-content/plugins/woocommerce/
-wp-content/plugins/woocommerce-paypal-payments/
-wp-content/themes/twenty*
+# Espelho de produção (WP core + demos 71GB + creds docker): ignora tudo, exceto
+# o plugin e o tema, que sao a FONTE UNICA rastreada neste repo.
+atual/*
+!atual/wp-content/
+atual/wp-content/*
+!atual/wp-content/plugins/
+!atual/wp-content/themes/
+atual/wp-content/plugins/*
+!atual/wp-content/plugins/centralmidi/
+atual/wp-content/themes/*
+!atual/wp-content/themes/flatsome-child/
 
-# Temporary files
-*.tmp
-*.bak
+# Backup, medições e relatórios locais (não versionar)
+backup/
+baseline/
+relatorios/
+
+# SQL dumps
+*.sql

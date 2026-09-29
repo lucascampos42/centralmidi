@@ -279,9 +279,9 @@ O ambiente deste projeto **não** é o do `new_centralmidi/`.
 | MariaDB | `local_db` | `3306` (interno) |
 | phpMyAdmin | `local_pma` | `http://127.0.0.1:8091` |
 
-Banco: `local_midi`, prefixo `wp_`, root em `local_root_pass` (ver
-`docker-compose.yml`). A home redireciona `127.0.0.1` → `localhost`, então
-use `http://localhost:8090`.
+Banco local: `local_midi`, prefixo `wp_` (credenciais no `docker-compose.yml`
+de `atual/`, fora do repo). A home redireciona `127.0.0.1` → `localhost`,
+então use `http://localhost:8090`.
 
 `wp-cli` não faz parte da imagem oficial do WordPress e some ao recriar o
 container — prefira SQL direto (`docker exec local_db mysql …`).

@@ -1,0 +1,5320 @@
+/*
+Theme Name: Central Midi Child
+Description: Child theme for Central Midi
+Author: Central Midi
+Template: flatsome
+Version: 1.0.1
+*/
+
+
+/*************** ADD CUSTOM CSS HERE.   ***************/
+
+/* ==========================================================================
+   SISTEMA GLOBAL DE DESIGN TOKENS (LIGHT & DARK THEME)
+   Central MIDI - Variáveis CSS para suporte nativo a temas
+   ========================================================================== */
+:root,
+[data-theme="dark"] {
+    /* Superfícies & Fundos */
+    --cm-bg-body: #080c13;
+    --cm-bg-surface: #0b1120;
+    --cm-bg-card: #111827;
+    --cm-bg-card-hover: #1e293b;
+    --cm-bg-card-alt: #141923;
+    --cm-bg-subtle: rgba(255, 255, 255, 0.04);
+    --cm-bg-input: #111827;
+    --cm-bg-modal: #0b1120;
+
+    /* Bordas & Divisórias */
+    --cm-border-color: #1f2937;
+    --cm-border-subtle: rgba(255, 255, 255, 0.08);
+    --cm-border-focus: #00d284;
+
+    /* Tipografia & Textos */
+    --cm-text-primary: #ffffff;
+    --cm-text-secondary: #f3f4f6;
+    --cm-text-muted: #94a3b8;
+    --cm-text-faint: #64748b;
+    --cm-text-inverse: #0b1120;
+
+    /* Cores de Marca & Acentos */
+    --cm-accent-primary: #00d284;
+    --cm-accent-primary-hover: #00ea93;
+    --cm-accent-primary-subtle: rgba(0, 210, 132, 0.12);
+    --cm-accent-secondary: #38bdf8;
+    --cm-accent-secondary-subtle: rgba(56, 189, 248, 0.12);
+    --cm-accent-warning: #f59e0b;
+    --cm-accent-danger: #f87171;
+
+    /* Sombras & Brilhos (Glow) */
+    --cm-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.35);
+    --cm-shadow-hover: 0 10px 24px rgba(0, 0, 0, 0.45);
+    --cm-glow-primary: 0 0 15px rgba(0, 210, 132, 0.2);
+    --cm-glow-text: 0 0 10px rgba(0, 210, 132, 0.25);
+}
+
+/* Tema Claro (Ativado via classe .theme-light ou atributo [data-theme="light"]) */
+[data-theme="light"],
+body.theme-light {
+    /* Superfícies & Fundos */
+    --cm-bg-body: #f8fafc;
+    --cm-bg-surface: #ffffff;
+    --cm-bg-card: #ffffff;
+    --cm-bg-card-hover: #f1f5f9;
+    --cm-bg-card-alt: #f1f5f9;
+    --cm-bg-subtle: rgba(0, 0, 0, 0.04);
+    --cm-bg-input: #ffffff;
+    --cm-bg-modal: #ffffff;
+
+    /* Bordas & Divisórias */
+    --cm-border-color: #e2e8f0;
+    --cm-border-subtle: rgba(0, 0, 0, 0.08);
+    --cm-border-focus: #00b36f;
+
+    /* Tipografia & Textos */
+    --cm-text-primary: #0f172a;
+    --cm-text-secondary: #1e293b;
+    --cm-text-muted: #64748b;
+    --cm-text-faint: #94a3b8;
+    --cm-text-inverse: #ffffff;
+
+    /* Cores de Marca & Acentos */
+    --cm-accent-primary: #00b36f;
+    --cm-accent-primary-hover: #00995f;
+    --cm-accent-primary-subtle: rgba(0, 179, 111, 0.12);
+    --cm-accent-secondary: #0284c7;
+    --cm-accent-secondary-subtle: rgba(2, 132, 199, 0.12);
+    --cm-accent-warning: #d97706;
+    --cm-accent-danger: #dc2626;
+
+    /* Sombras & Brilhos */
+    --cm-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.07);
+    --cm-shadow-hover: 0 10px 24px rgba(0, 0, 0, 0.12);
+    --cm-glow-primary: 0 0 15px rgba(0, 179, 111, 0.15);
+    --cm-glow-text: none;
+}
+
+/* Preço do Card na Busca - Destaque em Verde Neon e Branco */
+.cm-price,
+.cm-price .amount,
+.cm-price .woocommerce-Price-amount,
+.cm-price-val,
+.cm-card-footer .price,
+.cm-card-footer .price .amount,
+.cm-card-footer .price .woocommerce-Price-amount {
+    color: var(--cm-accent-primary) !important;
+    font-size: 1.25rem !important;
+    font-weight: 800 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    text-shadow: var(--cm-glow-text) !important;
+}
+
+/* Badge de Classificação com Palavras por Extenso */
+.cm-card-cover .cm-badge-classificacao,
+.cm-track-card .cm-badge-classificacao { /* Encaixe perfeito no canto arredondado da capa */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+
+/* Breadcrumb Moderno da Busca */
+.cm-search-breadcrumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--cm-text-muted);
+    background: var(--cm-bg-subtle);
+    border: 1px solid var(--cm-border-subtle);
+    padding: 6px 16px;
+    border-radius: 9999px;
+    margin-bottom: 20px;
+}
+
+.cm-search-breadcrumb a {
+    color: var(--cm-text-muted) !important;
+    text-decoration: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s ease;
+}
+
+.cm-search-breadcrumb a:hover {
+    color: var(--cm-accent-primary) !important;
+}
+
+.cm-breadcrumb-sep {
+    color: var(--cm-text-faint);
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+}
+
+.cm-breadcrumb-current {
+    color: var(--cm-text-primary);
+    font-weight: 600;
+}
+
+/* Toolbar da Busca */
+.cm-search-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: var(--cm-bg-card-alt);
+    border: 1px solid var(--cm-border-subtle);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.cm-toolbar-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--cm-text-muted);
+    font-size: 0.9rem;
+}
+
+.cm-toolbar-info i {
+    color: var(--cm-accent-primary);
+    font-size: 1.1rem;
+}
+
+.cm-toolbar-info strong {
+    color: var(--cm-text-primary);
+}
+
+.cm-btn-catalog-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--cm-accent-secondary) !important;
+    background: var(--cm-accent-secondary-subtle);
+    border: 1px solid var(--cm-accent-secondary-subtle);
+    padding: 6px 14px;
+    border-radius: 8px;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+}
+
+.cm-btn-catalog-link:hover {
+    background: var(--cm-accent-secondary);
+    color: var(--cm-text-inverse) !important;
+}
+
+/* ==========================================================================
+   BARRA DE NAVEGAÇÃO PRINCIPAL MODERNA (#masthead) & TOPO AMPLO
+   ========================================================================== */
+
+/* Expansão de largura do cabeçalho (aproveitamento total da tela como a home) */
+#top-bar .container,
+#masthead .header-inner.container,
+.header-bottom .container {
+    max-width: 1720px !important;
+    width: 100% !important;
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+    margin: 0 auto !important;
+}
+
+#masthead.header-main {
+    background: rgba(20, 25, 35, 0.95) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4) !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Logo */
+#masthead #logo img {
+    max-height: 48px !important;
+    width: auto !important;
+    transition: transform 0.2s ease !important;
+}
+
+#masthead #logo img:hover {
+    transform: scale(1.03) !important;
+}
+
+/* Links do Menu Principal */
+#masthead .header-nav-main > li > a.nav-top-link {
+    color: #94a3b8 !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    letter-spacing: 0.02em !important;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+#masthead .header-nav-main > li > a.nav-top-link:hover,
+#masthead .header-nav-main > li.active > a.nav-top-link,
+#masthead .header-nav-main > li.current-menu-item > a.nav-top-link {
+    color: #00d284 !important;
+    background: rgba(0, 210, 132, 0.08) !important;
+}
+
+/* Ícone de seta no menu dropdown */
+#masthead .header-nav-main > li.has-dropdown > a i {
+    font-size: 0.8rem !important;
+    margin-left: 5px !important;
+    transition: transform 0.2s ease !important;
+}
+
+#masthead .header-nav-main > li.has-dropdown:hover > a i {
+    transform: rotate(180deg) !important;
+}
+
+/* Dropdown Sub-menu */
+#masthead .nav-dropdown {
+    background: rgba(20, 25, 35, 0.98) !important;
+    backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+    padding: 8px !important;
+}
+
+#masthead .nav-dropdown li a {
+    color: #94a3b8 !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    padding: 10px 16px !important;
+    border-radius: 8px !important;
+    text-transform: none !important;
+    transition: all 0.15s ease !important;
+}
+
+#masthead .nav-dropdown li a:hover {
+    color: #00d284 !important;
+    background: rgba(0, 210, 132, 0.1) !important;
+    padding-left: 20px !important;
+}
+
+/* Botão de Busca (Ícone Lupa) */
+#masthead .header-search-lightbox a {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+    transition: all 0.2s ease !important;
+}
+
+#masthead .header-search-lightbox a:hover {
+    background: #00d284 !important;
+    color: #0c0f17 !important;
+    border-color: #00d284 !important;
+    transform: scale(1.08) !important;
+}
+
+/* Carrinho e Minha Conta no Cabeçalho */
+#masthead .header-nav-main .account-item a.nav-top-link {
+    color: #94a3b8 !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+}
+
+#masthead .header-nav-main .account-item a.nav-top-link:hover {
+    color: #38bdf8 !important;
+}
+
+#masthead .header-cart-link {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    padding: 6px 14px 6px 12px !important;
+    border-radius: 9999px !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    text-decoration: none !important;
+}
+
+#masthead .header-cart-link:hover {
+    background: rgba(0, 210, 132, 0.15) !important;
+    border-color: #00d284 !important;
+    box-shadow: 0 0 16px rgba(0, 210, 132, 0.3) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Valor em dinheiro do carrinho no cabeçalho */
+#masthead .header-cart-link .header-cart-title {
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+#masthead .header-cart-link .cart-price,
+#masthead .header-cart-link .amount {
+    color: #e2e8f0 !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    letter-spacing: -0.02em !important;
+    transition: color 0.2s ease !important;
+}
+
+#masthead .header-cart-link:hover .cart-price,
+#masthead .header-cart-link:hover .amount {
+    color: #00d284 !important;
+}
+
+/* Ícone de carrinho moderno (substitui o cesto antigo que parecia um cadeado) */
+#masthead .cart-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    margin-left: 2px !important;
+}
+
+#masthead .cart-icon::before {
+    content: "\f116"; /* Remixicon ri-shopping-cart-2-line */
+    font-family: 'remixicon' !important;
+    font-size: 1.15rem !important;
+    font-weight: normal !important;
+    color: #94a3b8 !important;
+    line-height: 1 !important;
+    transition: color 0.2s ease, transform 0.2s ease !important;
+}
+
+#masthead .header-cart-link:hover .cart-icon::before {
+    color: #00d284 !important;
+    transform: scale(1.08) !important;
+}
+
+/* Badge de contagem / quantidade de itens no carrinho */
+#masthead .cart-icon strong {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 19px !important;
+    height: 19px !important;
+    padding: 0 5px !important;
+    background: #00d284 !important;
+    color: #090d16 !important;
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    border-radius: 9999px !important;
+    border: none !important;
+    line-height: 1 !important;
+    box-shadow: 0 2px 6px rgba(0, 210, 132, 0.4) !important;
+    transition: transform 0.2s ease, background 0.2s ease !important;
+}
+
+/* Remove a alça do cesto antigo do Flatsome que parecia um arco de cadeado */
+#masthead .cart-icon strong:after {
+    display: none !important;
+    content: none !important;
+}
+
+#masthead .header-cart-link:hover .cart-icon strong {
+    transform: scale(1.1) !important;
+    background: #05f299 !important;
+}
+
+/* ==========================================================================
+   Botão Alternador de Tema (Dark / Light) no Topo
+   ========================================================================== */
+.header-theme-toggle-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    margin-left: 8px !important;
+}
+
+.cm-theme-toggle-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    border-radius: 50% !important;
+    background: var(--cm-bg-subtle, rgba(255, 255, 255, 0.05)) !important;
+    border: 1px solid var(--cm-border-subtle, rgba(255, 255, 255, 0.12)) !important;
+    color: var(--cm-text-secondary, #f3f4f6) !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    transition: all 0.25s ease !important;
+    box-shadow: none !important;
+}
+
+.cm-theme-toggle-btn:hover {
+    background: var(--cm-accent-primary-subtle, rgba(0, 210, 132, 0.15)) !important;
+    border-color: var(--cm-accent-primary, #00d284) !important;
+    color: var(--cm-accent-primary, #00d284) !important;
+    transform: scale(1.08) !important;
+    box-shadow: var(--cm-glow-primary) !important;
+}
+
+/* Estado de Exibição dos Ícones conforme o Tema Ativo */
+/* No modo escuro padrão: mostra Sol para convidar a mudar para claro */
+.cm-theme-icon-light {
+    display: block !important;
+}
+.cm-theme-icon-dark {
+    display: none !important;
+}
+
+/* No modo claro: mostra Lua para convidar a voltar para escuro */
+[data-theme="light"] .cm-theme-icon-light,
+body.theme-light .cm-theme-icon-light {
+    display: none !important;
+}
+[data-theme="light"] .cm-theme-icon-dark,
+body.theme-light .cm-theme-icon-dark {
+    display: block !important;
+    color: #f59e0b !important;
+}
+
+/* ==========================================================================
+   Botão Flutuante do WhatsApp (Canto inferior direito)
+   ========================================================================== */
+.cmidi-whatsapp-float {
+    position: fixed;
+    right: 22px;
+    bottom: 24px;
+    z-index: 9998;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+    color: #ffffff !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none !important;
+    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.45);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cmidi-whatsapp-float i {
+    font-size: 32px;
+    line-height: 1;
+    color: #ffffff;
+    transition: transform 0.3s ease;
+}
+
+.cmidi-whatsapp-float:hover {
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 8px 25px rgba(37, 211, 102, 0.6);
+}
+
+.cmidi-whatsapp-float:hover i {
+    transform: scale(1.1);
+}
+
+/* Efeito de onda / pulso contínuo e discreto */
+.cmidi-whatsapp-float::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 50%;
+    border: 2px solid #25d366;
+    animation: cmidi-wa-pulse 2.2s infinite;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+@keyframes cmidi-wa-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    70% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
+}
+
+/* Tooltip lateral ao passar o mouse */
+.cmidi-whatsapp-float .whatsapp-tooltip {
+    position: absolute;
+    right: calc(100% + 12px);
+    background: #0f172a;
+    color: #f8fafc;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(10px);
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+}
+
+.cmidi-whatsapp-float:hover .whatsapp-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+/* ==========================================================================
+   Posicionamento dos botões flutuantes (WhatsApp e Voltar ao Topo)
+   Evita qualquer sobreposição entre eles
+   ========================================================================== */
+#top-link.back-to-top {
+    right: 25px !important;
+    bottom: 90px !important; /* Fica logo acima do WhatsApp (que fica em 24px) */
+    z-index: 9997 !important;
+    transition: all 0.3s ease !important;
+    background: #141923 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #cbd5e1 !important;
+}
+
+  #top-link.back-to-top:hover {
+      background: #00d284 !important;
+      color: #0c0f17 !important;
+      border-color: #00d284 !important;
+      transform: translateY(-3px) !important;
+  }
+  
+  /* O ícone passou a ser Remix Icon (`ri-arrow-up-line`) quando o footer.php
+     próprio foi criado: a classe antiga `icon-angle-up` vinha da fonte
+     `fl-icons`, definida no CSS do Flatsome. A 18px a seta ocupa ~13x12 de
+     tinta — mesma largura do caret antigo (13x8 a 22px) — e mantém o botão
+     em 39x39. */
+  #top-link.back-to-top > i[class^="ri-"],
+  #top-link.back-to-top > i[class*=" ri-"] {
+      font-size: 18px !important;
+      line-height: 1 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+  }
+  
+  
+/* Quando o player de áudio sticky estiver ativo no rodapé */
+
+/* ==========================================================================
+   Home Lançamentos Modernos (Baseado na proposta New Central MIDI)
+   ========================================================================== */
+.cm-home-releases-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    margin: 0;
+}
+
+.cm-month-section {
+    background: transparent;
+    padding-bottom: 12px;
+}
+
+.cm-month-section--bordered {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 40px;
+}
+
+.cm-section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 26px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.cm-section-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cm-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #00d284;
+    background: rgba(0, 210, 132, 0.12);
+    border: 1px solid rgba(0, 210, 132, 0.3);
+    padding: 4px 12px;
+    border-radius: 9999px;
+    width: fit-content;
+}
+
+.cm-section-title {
+    font-size: clamp(1.4rem, 2.2vw, 1.85rem) !important;
+    font-weight: 800 !important;
+    color: var(--cm-text-primary) !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.02em !important;
+}
+
+.cm-section-subtitle {
+    font-size: 0.95rem;
+    color: var(--cm-text-muted) !important;
+    margin: 0 !important;
+    font-weight: 500;
+}
+
+/* Botão "Ver todos de [Mês]" */
+.cm-btn-view-all {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    font-size: 0.86rem !important;
+    font-weight: 700 !important;
+    padding: 9px 18px !important;
+    border-radius: 9999px !important;
+    border: 1px solid rgba(0, 210, 132, 0.4) !important;
+    color: #00d284 !important;
+    background: rgba(0, 210, 132, 0.08) !important;
+    text-decoration: none !important;
+    transition: all 0.25s ease !important;
+}
+
+.cm-btn-view-all:hover {
+    background: #00d284 !important;
+    border-color: #00d284 !important;
+    color: #090d16 !important;
+    box-shadow: 0 0 16px rgba(0, 210, 132, 0.4) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* ==========================================================================
+   GRID RESPONSIVO (4 COLUNAS EM FULL HD / 3 EM HD)
+   ========================================================================== */
+
+/* Telas Full HD e Ultrawide (>= 1600px): 4 colunas */
+.cm-tracks-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 20px !important;
+    width: 100% !important;
+}
+
+@media (min-width: 1600px) {
+    .cm-track-card {
+        grid-template-columns: 95px minmax(0, 1fr) !important;
+        padding: 4px 6px !important;
+        row-gap: 3px !important;
+        column-gap: 6px !important;
+        min-height: auto !important;
+        border-radius: 12px !important;
+    }
+    .cm-track-card .cm-card-cover {
+        width: 95px !important;
+        height: 95px !important;
+        min-width: 95px !important;
+        min-height: 95px !important;
+        border-radius: 12px !important;
+    }
+    .cm-track-card .cm-card-cover img {
+        border-radius: 12px !important;
+    }
+    .cm-track-card .cm-card-content {
+        padding-top: 0 !important;
+        justify-content: center !important;
+        align-self: center !important;
+    }
+    .cm-track-card .cm-artist-tag {
+        margin-bottom: 4px !important;
+        font-size: 12px !important;
+    }
+    .cm-track-card .cm-track-title {
+        font-size: 17px !important;
+    }
+    .cm-track-card .cm-meta-badges {
+        margin-top: 2px !important;
+        padding-top: 2px !important;
+        gap: 4px !important;
+    }
+    .cm-track-card .cm-tag {
+        padding: 3px 6px !important;
+        font-size: 10.5px !important;
+    }
+    .cm-track-card .cm-cover-play-btn {
+        width: 30px !important;
+        height: 30px !important;
+        left: 6px !important;
+        bottom: 6px !important;
+        font-size: 14px !important;
+    }
+    .cm-track-card .cm-cover-play-btn i {
+        font-size: 14px !important;
+    }
+    .cm-track-card .cm-badge-classificacao {
+        padding: 2px 6px !important;
+        font-size: 10px !important;
+    }
+    .cm-track-card .cm-card-footer {
+        padding-top: 1px !important;
+        margin-top: 0 !important;
+    }
+    .cm-track-card .cm-price,
+    .cm-track-card .woocommerce-Price-amount {
+        font-size: 20px !important;
+    }
+    .cm-btn {
+        height: 36px !important;
+        padding: 0 12px !important;
+        font-size: 11.5px !important;
+    }
+}
+
+/* Telas HD e Notebooks (1200px a 1599px): 3 colunas */
+@media (max-width: 1599px) {
+    .cm-tracks-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 20px !important;
+    }
+    .cm-track-card {
+        grid-template-columns: 104px minmax(0, 1fr) !important;
+        padding: 6px 8px !important;
+        row-gap: 3px !important;
+        column-gap: 8px !important;
+        min-height: auto !important;
+        border-radius: 12px !important;
+    }
+    .cm-track-card .cm-card-cover {
+        width: 104px !important;
+        height: 104px !important;
+        min-width: 104px !important;
+        min-height: 104px !important;
+        border-radius: 12px !important;
+    }
+    .cm-track-card .cm-card-cover img {
+        border-radius: 12px !important;
+    }
+    .cm-track-card .cm-card-content {
+        padding-top: 0 !important;
+        justify-content: center !important;
+        align-self: center !important;
+    }
+    .cm-track-card .cm-artist-tag {
+        margin-bottom: 4px !important;
+    }
+    .cm-track-card .cm-track-title {
+        font-size: 18px !important;
+    }
+    .cm-track-card .cm-meta-badges {
+        margin-top: 2px !important;
+        padding-top: 2px !important;
+    }
+    .cm-track-card .cm-cover-play-btn {
+        width: 34px !important;
+        height: 34px !important;
+        left: 6px !important;
+        bottom: 6px !important;
+        font-size: 15px !important;
+    }
+    .cm-track-card .cm-cover-play-btn i {
+        font-size: 15px !important;
+    }
+    .cm-track-card .cm-badge-classificacao {
+        padding: 2px 6px !important;
+        font-size: 10px !important;
+    }
+    .cm-track-card .cm-card-footer {
+        padding-top: 1px !important;
+        margin-top: 0 !important;
+    }
+    .cm-track-card .cm-price,
+    .cm-track-card .woocommerce-Price-amount {
+        font-size: 22px !important;
+    }
+    .cm-btn {
+        height: 38px !important;
+        padding: 0 14px !important;
+        font-size: 12px !important;
+    }
+}
+
+/* Telas Médias / Tablets Paisagem (850px a 1199px): 2 colunas */
+@media (max-width: 1199px) {
+    .cm-tracks-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px !important;
+    }
+}
+
+/* Telas Mobile e Tablets Retrato (< 850px): 1 coluna */
+@media (max-width: 849px) {
+    .cm-tracks-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+}
+
+/* Fundo escuro para páginas de lançamentos, categorias, páginas de catálogo e busca */
+body.tax-mes_de_lancamento,
+body.tax-genero_musical,
+body.tax-product_cat,
+body.page-id-150911,
+body.page-id-119341,
+body.search,
+body.tax-mes_de_lancamento #wrapper,
+body.tax-genero_musical #wrapper,
+body.tax-product_cat #wrapper,
+body.page-id-150911 #wrapper,
+body.page-id-119341 #wrapper,
+body.search #wrapper,
+body.tax-mes_de_lancamento #main,
+body.tax-genero_musical #main,
+body.tax-product_cat #main,
+body.page-id-150911 #main,
+body.page-id-119341 #main,
+body.search #main,
+.cm-archive-page,
+.search-results-page {
+    background-color: var(--cm-bg-body) !important;
+    color: var(--cm-text-secondary) !important;
+}
+
+/* Ocultar o header padrão antigo do tema Flatsome nessas páginas (usamos o cm-archive-hero moderno) */
+body.tax-mes_de_lancamento .shop-page-title,
+body.tax-genero_musical .shop-page-title,
+body.tax-product_cat .shop-page-title,
+body.search .shop-page-title {
+    display: none !important;
+}
+
+/* Seção de Lançamentos e Arquivos: Largura ampla para aproveitar a tela */
+.section:has(.cm-home-releases-wrapper),
+.cm-archive-page,
+.search-results-page {
+    width: 100% !important;
+}
+
+.section:has(.cm-home-releases-wrapper) {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+}
+
+.section:has(.cm-home-releases-wrapper) .section-content,
+.cm-archive-page .shop-container,
+.search-results-page .shop-container {
+    max-width: 1840px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    box-sizing: border-box !important;
+}
+
+.section:has(.cm-home-releases-wrapper) .row {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.section:has(.cm-home-releases-wrapper) .col {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Hero das Páginas de Busca e Arquivos/Lançamentos (Compensa a barra de navegação transparente do Flatsome) */
+.cm-search-hero,
+.cm-archive-hero {
+    background: linear-gradient(180deg, var(--cm-bg-surface) 0%, var(--cm-bg-body) 100%) !important;
+    border-bottom: 1px solid var(--cm-border-subtle) !important;
+    text-align: center !important;
+    padding-top: 155px !important;
+    padding-bottom: 35px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    margin-bottom: 30px !important;
+    border-radius: 0 0 24px 24px !important;
+}
+
+@media (max-width: 959px) {
+    .cm-search-hero,
+    .cm-archive-hero {
+        padding-top: 125px !important;
+        padding-bottom: 28px !important;
+    }
+}
+
+@media (max-width: 549px) {
+    .cm-search-hero,
+    .cm-archive-hero {
+        padding-top: 105px !important;
+        padding-bottom: 24px !important;
+    }
+}
+
+/* Área de Conteúdo da Página de Arquivo/Busca */
+.cm-archive-page,
+.search-results-page {
+    padding-bottom: 60px !important;
+}
+
+/* Foto/Avatar do Artista no Hero da Categoria */
+.cm-artist-hero-thumb {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(0, 223, 160, 0.45);
+    box-shadow: 0 0 25px rgba(0, 223, 160, 0.25), 0 8px 20px rgba(0, 0, 0, 0.6);
+    background: #060b12;
+}
+
+.cm-artist-hero-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Loader do Scroll Infinito */
+.cm-infinite-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 30px 0;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.cm-loader-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(0, 223, 160, 0.15);
+    border-top-color: #00dfa0;
+    border-radius: 50%;
+    animation: cm-spin 0.8s linear infinite;
+}
+
+@keyframes cm-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Esconde paginação tradicional quando o scroll infinito estiver operacional */
+.cm-infinite-active .cm-pagination-fallback {
+    display: none !important;
+}
+
+/* ==========================================================================
+   NOVO CARD DE PRODUTO/MIDI (Inspirado no protótipo music-card)
+   ========================================================================== */
+.cm-track-card {
+    position: relative !important;
+    min-height: auto !important;
+    display: grid !important;
+    grid-template-columns: 104px minmax(0, 1fr) !important;
+    padding: 6px 8px !important;
+    row-gap: 3px !important;
+    column-gap: 8px !important;
+    background: var(--cm-bg-card) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    box-shadow: var(--cm-shadow-card) !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.cm-track-card:hover {
+    transform: translateY(-4px) !important;
+    border-color: var(--cm-accent-primary) !important;
+    background: var(--cm-bg-card-hover) !important;
+    box-shadow: var(--cm-shadow-hover), var(--cm-glow-primary) !important;
+}
+
+/* Faixa colorida esquerda removida */
+.cm-track-card::before {
+    display: none !important;
+}
+
+.cm-track-card.playing {
+    border-color: #00dfa0 !important;
+    box-shadow: 0 16px 38px -4px rgba(0, 0, 0, 0.85), 0 0 30px rgba(0, 223, 160, 0.3), inset 0 1px 0 rgba(0, 223, 160, 0.45) !important;
+}
+
+/* Badge de Classificação posicionado na borda superior direita da FOTO/CAPA */
+
+.cm-card-cover .cm-badge-classificacao,
+.cm-track-card .cm-badge-classificacao {
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    left: auto !important;
+    z-index: 10 !important;
+    padding: 3px 7px !important;
+    border-radius: 0 12px 0 7px !important; /* Encaixe perfeito no canto arredondado da capa */
+    background: #059669 !important;
+    color: #ffffff !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    font-family: inherit !important;
+    letter-spacing: 0.2px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    text-transform: none !important;
+    backdrop-filter: blur(4px) !important;
+}
+
+.cm-track-card .cm-badge-classificacao.empty {
+    background: rgba(30, 41, 59, 0.9) !important;
+    color: #cbd5e1 !important;
+    box-shadow: none !important;
+}
+
+.cm-track-card .cm-badge-classificacao.cm-badge-m {
+    background: rgba(37, 99, 235, 0.95) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+.cm-track-card .cm-badge-classificacao.cm-badge-l {
+    background: rgba(217, 119, 6, 0.95) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+.cm-track-card .cm-badge-classificacao.cm-badge-rlm {
+    background: rgba(5, 150, 105, 0.95) !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Capa da Música */
+.cm-track-card .cm-card-cover {
+    position: relative !important;
+    width: 104px !important;
+    height: 104px !important;
+    min-width: 104px !important;
+    min-height: 104px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    background: #05090f !important;
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+.cm-track-card .cm-card-cover img {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    object-fit: cover !important;
+    border-radius: 15px !important;
+}
+
+/* Botão Play Flutuante na Capa */
+.cm-cover-play-btn {
+    left: 14px !important;
+    bottom: 14px !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    padding: 0 !important;
+}
+
+.cm-cover-play-btn i {
+    font-size: 22px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+}
+
+.cm-cover-play-btn .ri-play-fill {
+    margin-left: 2px !important;
+}
+
+.cm-play-trigger .cm-icon-pause {
+    display: none !important;
+}
+
+.cm-play-trigger .cm-icon-play {
+    display: inline-block !important;
+}
+
+.cm-track-card.playing .cm-play-trigger .cm-icon-play {
+    display: none !important;
+}
+
+.cm-track-card.playing .cm-play-trigger .cm-icon-pause {
+    display: inline-block !important;
+}
+
+.cm-cover-play-btn:hover {
+    color: #06130f !important;
+    border-color: #00dfa0 !important;
+    box-shadow: 0 0 20px rgba(0, 223, 160, 0.5) !important;
+}
+
+.cm-track-card.playing .cm-cover-play-btn {
+    border-color: #00dfa0 !important;
+}
+
+/* Conteúdo da Música */
+.cm-card-content {
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-self: center !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    flex: 1 !important;
+}
+
+.cm-card-content .cm-artist-tag {
+    padding-right: 0 !important;
+    color: #00cfff !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 4px !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word !important;
+    line-height: 1.4 !important;
+}
+
+.cm-card-content .cm-artist-tag a {
+    color: #00cfff !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    display: inline !important;
+}
+
+.cm-card-content .cm-artist-tag a:hover {
+    color: #ffffff !important;
+    text-decoration: underline !important;
+    text-shadow: 0 0 10px rgba(0, 207, 255, 0.6) !important;
+}
+
+.cm-card-content .cm-artist-tag .cm-artist-sep {
+    color: #64748b !important;
+    font-weight: 600 !important;
+    margin: 0 3px !important;
+}
+
+.cm-card-content .cm-track-title {
+    margin: 0 !important;
+    max-width: 100% !important;
+    font-size: 20px !important;
+    line-height: 1.3 !important;
+    font-weight: 700 !important;
+    color: var(--cm-text-primary) !important;
+    display: block !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+.cm-card-content .cm-track-title a {
+    color: var(--cm-text-primary) !important;
+    text-decoration: none !important;
+    transition: color 0.2s ease !important;
+}
+
+.cm-card-content .cm-track-title a:hover {
+    color: var(--cm-accent-primary) !important;
+}
+
+/* Metadata (Gênero e Mês) - Linha completa de ponta a ponta do card */
+.cm-track-card .cm-meta-badges {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin-top: 2px !important;
+    padding-top: 2px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-sizing: border-box !important;
+}
+
+.cm-track-card .cm-tag {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    background: rgba(23, 33, 49, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: #94a3b8 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    font-family: inherit !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+}
+
+.cm-track-card .cm-tag i {
+    font-size: 12px !important;
+    color: #00dfa0 !important;
+}
+
+/* Waveform removida */
+.cm-waveform {
+    display: none !important;
+}
+
+/* Rodapé do Card (Estende-se por toda a linha inferior abaixo da foto e do conteúdo) */
+.cm-track-card .cm-card-footer {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    margin-top: 0 !important;
+    padding-top: 2px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.cm-track-card .cm-price,
+.cm-track-card .woocommerce-Price-amount {
+    color: var(--cm-accent-primary) !important;
+    font-size: 26px !important;
+    line-height: 1 !important;
+    font-weight: 900 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    white-space: nowrap !important;
+    text-shadow: var(--cm-glow-text) !important;
+}
+
+.cm-card-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+/* Botões do Card */
+.cm-btn {
+    height: 44px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 0 18px !important;
+    border-radius: 25px !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+    transition: 0.2s ease !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+}
+
+.cm-btn-demo {
+    color: #00dfa0 !important;
+    background: transparent !important;
+    border: 1px solid rgba(0, 223, 160, 0.55) !important;
+    text-decoration: none !important;
+}
+
+.cm-btn-demo:hover {
+    background: rgba(0, 223, 160, 0.08) !important;
+    border-color: #00dfa0 !important;
+    box-shadow: 0 0 14px rgba(0, 223, 160, 0.25) !important;
+}
+
+.cm-track-card.playing .cm-btn-demo {
+    background: #00dfa0 !important;
+    color: #03120d !important;
+    border-color: #00dfa0 !important;
+    box-shadow: 0 0 18px rgba(0, 223, 160, 0.4) !important;
+}
+
+.cm-btn-buy {
+    text-decoration: none !important;
+    box-shadow: 0 7px 25px rgba(0, 223, 160, 0.14) !important;
+}
+
+/* Tema claro: o card fica branco (var(--cm-bg-card)) e o botao "Comprar"
+   herdava texto/borda claros de custom-style.css -> ficava invisivel. */
+[data-theme="light"] .cm-track-card .cm-btn-buy,
+body.theme-light .cm-track-card .cm-btn-buy {
+    color: var(--cm-text-secondary) !important;
+    border-color: var(--cm-border-color) !important;
+}
+
+.cm-btn-buy:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 10px 30px rgba(0, 223, 160, 0.3) !important;
+}
+
+/* Quando o produto já estiver no carrinho: Botão Azul */
+.cm-btn-buy.in-cart-button {
+    background: #1e293b !important;
+    color: #38bdf8 !important;
+    border: 1px solid #38bdf8 !important;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.25) !important;
+}
+
+.cm-btn-buy.in-cart-button:hover {
+    background: #38bdf8 !important;
+    color: #090d16 !important;
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.5) !important;
+}
+
+/* Oculta o título duplicado em fundo claro nativo do Flatsome logo acima dos lançamentos */
+.section:has(.cm-home-releases-wrapper) > .section-content > .section-title-container,
+.section-title-container:has(+ .row #col-127226516),
+.section-title-container:has(+ .row .cm-home-releases-wrapper) {
+    display: none !important;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE DO CARD
+   ========================================================================== */
+@media (max-width: 849px) {
+}
+
+@media only screen and (max-width: 48em) {
+    .cmidi-whatsapp-float {
+        right: 16px;
+        bottom: 18px;
+        width: 50px;
+        height: 50px;
+    }
+    
+    .cmidi-whatsapp-float i {
+        font-size: 28px;
+    }
+
+    .section:has(.cm-home-releases-wrapper) {
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+        padding-top: 30px !important;
+        padding-bottom: 40px !important;
+    }
+
+    .cm-section-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 14px !important;
+        /* No mobile o "Ver todos" vira barra de largura total (abaixo), e com
+           20px ela encostava no grid e lia como mais um card. 32px separa. */
+        margin-bottom: 32px !important;
+    }
+
+    .cm-section-actions {
+        width: 100% !important;
+    }
+
+    .cm-btn-view-all {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+@media (max-width: 650px) {
+    .cm-track-card {
+        grid-template-columns: 117px minmax(0, 1fr) !important;
+        min-height: auto !important;
+    }
+
+    .cm-track-card .cm-card-cover {
+        width: 117px !important;
+        height: 117px !important;
+        min-width: 117px !important;
+        min-height: 117px !important;
+        border-radius: 12px !important;
+        position: relative !important;
+    }
+
+    /* Badge de Classificação RLM sobre a foto no canto superior direito */
+    .cm-track-card .cm-badge-classificacao {
+        top: 0 !important;
+        right: 0 !important;
+        padding: 3px 6px !important;
+        font-size: 10px !important;
+        font-weight: 800 !important;
+        border-radius: 0 12px 0 6px !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .cm-card-content {
+        padding-top: 0 !important;
+        justify-content: center !important;
+        align-self: center !important;
+    }
+
+    .cm-card-content .cm-artist-tag {
+        padding-right: 0 !important;
+        font-size: 11px !important;
+        margin-bottom: 6px !important;
+        line-height: 1.3 !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+
+    .cm-card-content .cm-track-title {
+        font-size: 16px !important;
+        line-height: 1.3 !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+
+    .cm-card-content .cm-meta-badges {
+        margin-top: 8px !important;
+        gap: 6px !important;
+    }
+
+    .cm-card-content .cm-tag {
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+    }
+
+    .cm-track-card .cm-card-footer {
+        align-items: stretch !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        padding-top: 4px !important;
+        margin-top: 0 !important;
+    }
+
+    .cm-track-card .cm-price,
+    .cm-track-card .woocommerce-Price-amount {
+        font-size: 22px !important;
+        text-align: left !important;
+    }
+
+    .cm-card-actions {
+        width: 100% !important;
+        display: flex !important;
+        gap: 8px !important;
+    }
+
+    .cm-btn {
+        flex: 1 !important;
+        height: 40px !important;
+        padding: 0 10px !important;
+        font-size: 12px !important;
+    }
+
+    /* No mobile o botão "Ouvir Demo" exibe apenas "Ouvir" */
+    .cm-play-text .cm-play-text-extra {
+        display: none !important;
+    }
+
+    .cm-waveform {
+        display: none !important;
+    }
+}
+
+@media (max-width: 420px) {
+    .cm-track-card {
+        grid-template-columns: 95px minmax(0, 1fr) !important;
+    }
+
+    .cm-track-card .cm-card-cover {
+        width: 95px !important;
+        height: 95px !important;
+        min-width: 95px !important;
+        min-height: 95px !important;
+    }
+
+    .cm-card-content .cm-track-title {
+        font-size: 14px !important;
+    }
+
+    .cm-btn {
+        font-size: 11px !important;
+        padding: 0 6px !important;
+    }
+}
+
+/* ==========================================================================
+   MODAL DE BUSCA MODERNA CENTRAL MIDI (#cm-search-overlay)
+   ========================================================================== */
+.cm-search-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999999 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cm-search-overlay.is-active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cm-search-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 7, 13, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.cm-search-modal-container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 860px;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.cm-search-modal {
+    position: relative;
+    background: var(--cm-bg-card, #141c29);
+    border: 1px solid var(--cm-border-color, rgba(255, 255, 255, 0.12));
+    border-radius: 28px;
+    padding: 44px 44px 34px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 50px rgba(0, 210, 132, 0.1);
+    transform: scale(0.96) translateY(12px);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.cm-search-overlay.is-active .cm-search-modal {
+    transform: scale(1) translateY(0);
+}
+
+/* Botão Fechar */
+.cm-search-close-btn {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    font-size: 24px;
+    line-height: 1 !important;
+    transition: all 0.2s ease;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.cm-search-close-btn i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1 !important;
+    font-size: 24px !important;
+    width: 24px;
+    height: 24px;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.cm-search-close-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #f87171;
+    transform: rotate(90deg);
+}
+
+/* Cabeçalho do Modal */
+.cm-search-header {
+    text-align: left;
+    margin-bottom: 28px;
+    padding-right: 50px;
+}
+
+.cm-search-header .cm-search-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 9999px;
+    background: rgba(0, 223, 160, 0.12);
+    border: 1px solid rgba(0, 223, 160, 0.3);
+    color: #00dfa0;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+.cm-search-header .cm-search-title {
+    margin: 0 0 8px 0 !important;
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    color: #f4f7fb !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.02em !important;
+}
+
+.cm-search-header .cm-search-desc {
+    margin: 0 !important;
+    color: #94a3b8 !important;
+    font-size: 15px !important;
+}
+
+/* Formulário de Busca */
+.cm-search-form {
+    margin: 0 0 26px 0 !important;
+    padding: 0 !important;
+}
+
+.cm-search-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #090e17;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 8px 10px 8px 22px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cm-search-input-wrap:focus-within {
+    border-color: #00dfa0;
+    box-shadow: 0 0 30px rgba(0, 223, 160, 0.28);
+}
+
+.cm-search-input-wrap .cm-search-icon {
+    font-size: 26px;
+    color: #64748b;
+    margin-right: 14px;
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.cm-search-input-wrap:focus-within .cm-search-icon {
+    color: #00dfa0;
+}
+
+.cm-search-input-wrap .cm-search-field {
+    flex: 1;
+    background: transparent !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 14px 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+}
+
+.cm-search-input-wrap .cm-search-field::placeholder {
+    color: #475569 !important;
+    font-weight: 500 !important;
+}
+
+.cm-search-submit-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #00dfa0 !important;
+    border: none !important;
+    color: #06130f !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    padding: 14px 28px !important;
+    border-radius: 15px !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 18px rgba(0, 223, 160, 0.35);
+    margin: 0 !important;
+    flex-shrink: 0;
+    line-height: 1 !important;
+}
+
+.cm-search-submit-btn:hover {
+    background: #05f2ab !important;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(0, 223, 160, 0.5);
+}
+
+.cm-search-clear-btn {
+    background: transparent !important;
+    border: none !important;
+    color: #64748b !important;
+    font-size: 20px !important;
+    cursor: pointer !important;
+    padding: 0 10px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
+    line-height: 1 !important;
+    transition: color 0.2s ease, transform 0.2s ease !important;
+    flex-shrink: 0;
+}
+
+.cm-search-clear-btn i {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    font-size: 20px !important;
+    margin: 0 !important;
+}
+
+.cm-search-clear-btn:hover {
+    color: #f87171 !important;
+    transform: scale(1.1);
+}
+
+/* ==========================================================================
+   SUGESTÕES EM TEMPO REAL (LIVE SEARCH SUGGESTIONS)
+   ========================================================================== */
+.cm-live-suggestions {
+    margin-bottom: 22px;
+    max-height: 380px;
+    overflow-y: auto;
+    border-radius: 16px;
+    background: rgba(11, 16, 25, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    -webkit-overflow-scrolling: touch;
+}
+
+[data-theme="light"] .cm-live-suggestions,
+body.theme-light .cm-live-suggestions {
+    background: var(--cm-bg-card) !important;
+    border-color: var(--cm-border-color) !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+.cm-suggestions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--cm-accent-primary, #00dfa0);
+}
+
+[data-theme="light"] .cm-suggestions-header,
+body.theme-light .cm-suggestions-header {
+    border-bottom-color: var(--cm-border-subtle) !important;
+}
+
+.cm-suggestions-list {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 6px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cm-suggestion-item {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.cm-suggestion-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.cm-suggestion-link:hover,
+.cm-suggestion-link:focus,
+.cm-suggestion-item.is-selected .cm-suggestion-link {
+    background: var(--cm-bg-subtle, rgba(255, 255, 255, 0.06)) !important;
+    border-color: var(--cm-border-color, rgba(255, 255, 255, 0.12));
+    transform: translateX(4px);
+}
+
+.cm-sugg-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(0, 210, 132, 0.15);
+    color: var(--cm-accent-primary, #00d284);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.cm-sugg-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.cm-sugg-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+[data-theme="light"] .cm-sugg-title,
+body.theme-light .cm-sugg-title {
+    color: var(--cm-text-primary) !important;
+}
+
+.cm-sugg-title mark {
+    background: transparent;
+    color: var(--cm-accent-primary, #00d284);
+    font-weight: 800;
+}
+
+.cm-sugg-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+[data-theme="light"] .cm-sugg-meta,
+body.theme-light .cm-sugg-meta {
+    color: var(--cm-text-muted) !important;
+}
+
+.cm-sugg-artist {
+    font-weight: 600;
+}
+
+.cm-sugg-genre {
+    display: inline-flex;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 10.5px;
+}
+
+.cm-sugg-price {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--cm-accent-primary, #00d284);
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.cm-sugg-view-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--cm-accent-primary, #00d284) !important;
+    text-decoration: none !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background 0.2s ease;
+}
+
+.cm-sugg-view-all:hover {
+    background: rgba(0, 210, 132, 0.1);
+}
+
+.cm-sugg-empty,
+.cm-sugg-loading {
+    padding: 24px 18px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Tags de Busca Rápida */
+.cm-search-quick-tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+    padding-top: 4px;
+}
+
+.cm-quick-tags-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-right: 4px;
+}
+
+.cm-quick-tags-label i {
+    color: #f59e0b;
+}
+
+.cm-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.cm-quick-tag {
+    display: inline-block;
+    padding: 7px 15px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8 !important;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+}
+
+.cm-quick-tag:hover {
+    background: rgba(0, 223, 160, 0.12);
+    border-color: rgba(0, 223, 160, 0.35);
+    color: #00dfa0 !important;
+    transform: translateY(-1px);
+}
+
+/* Dica de Teclado */
+.cm-search-tip {
+    font-size: 13px;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    padding-top: 18px;
+}
+
+.cm-search-tip kbd {
+    background: #172131;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 5px;
+    padding: 3px 7px;
+    font-size: 11px;
+    color: #94a3b8;
+    font-family: inherit;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE MOBILE DA MODAL DE BUSCA
+   ========================================================================== */
+@media (max-width: 680px) {
+    .cm-search-overlay {
+        padding: 12px;
+        align-items: flex-start;
+        padding-top: 30px;
+        overflow-y: auto;
+    }
+
+    .cm-search-modal-container {
+        padding: 0;
+        max-width: 100%;
+    }
+
+    .cm-search-modal {
+        padding: 26px 20px 22px;
+        border-radius: 20px;
+    }
+
+    .cm-search-close-btn {
+        top: 16px;
+        right: 16px;
+        width: 36px;
+        height: 36px;
+        font-size: 20px;
+    }
+
+    .cm-search-header {
+        margin-bottom: 20px;
+        padding-right: 40px;
+    }
+
+    .cm-search-header .cm-search-title {
+        font-size: 22px !important;
+    }
+
+    .cm-search-header .cm-search-desc {
+        font-size: 13px !important;
+    }
+
+    .cm-search-input-wrap {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 14px 14px 12px;
+        gap: 12px;
+        border-radius: 16px;
+    }
+
+    .cm-search-input-wrap .cm-search-icon {
+        display: none;
+    }
+
+    .cm-search-input-wrap .cm-search-field {
+        font-size: 16px !important;
+        padding: 4px 0 !important;
+        width: 100% !important;
+    }
+
+    .cm-search-submit-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 13px !important;
+        font-size: 14px !important;
+    }
+
+    .cm-search-quick-tags {
+        margin-bottom: 16px;
+    }
+
+    .cm-quick-tags-label {
+        width: 100%;
+        margin-bottom: 4px;
+    }
+
+    .cm-search-tip {
+        display: none !important;
+    }
+}
+
+/* Suporte a tema claro no Modal de Busca */
+[data-theme="light"] .cm-search-backdrop,
+body.theme-light .cm-search-backdrop {
+    background: rgba(15, 23, 42, 0.65) !important;
+}
+
+[data-theme="light"] .cm-search-modal,
+body.theme-light .cm-search-modal {
+    background: var(--cm-bg-card) !important;
+    border-color: var(--cm-border-color) !important;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25), 0 0 50px rgba(0, 210, 132, 0.15) !important;
+}
+
+[data-theme="light"] .cm-search-header .cm-search-title,
+body.theme-light .cm-search-header .cm-search-title {
+    color: var(--cm-text-primary) !important;
+}
+
+[data-theme="light"] .cm-search-header .cm-search-desc,
+body.theme-light .cm-search-header .cm-search-desc {
+    color: var(--cm-text-muted) !important;
+}
+
+[data-theme="light"] .cm-search-input-wrap,
+body.theme-light .cm-search-input-wrap {
+    background: var(--cm-bg-input) !important;
+    border-color: var(--cm-border-color) !important;
+}
+
+[data-theme="light"] .cm-search-input-wrap .cm-search-field,
+body.theme-light .cm-search-input-wrap .cm-search-field {
+    color: var(--cm-text-primary) !important;
+}
+
+[data-theme="light"] .cm-search-close-btn,
+body.theme-light .cm-search-close-btn {
+    background: var(--cm-bg-subtle) !important;
+    border-color: var(--cm-border-subtle) !important;
+    color: var(--cm-text-muted) !important;
+}
+
+[data-theme="light"] .cm-quick-tag,
+body.theme-light .cm-quick-tag {
+    background: var(--cm-bg-subtle) !important;
+    border-color: var(--cm-border-subtle) !important;
+    color: var(--cm-text-secondary) !important;
+}
+
+/* Desativa o popup antigo MagnificPopup do Flatsome para a busca */
+.mfp-wrap:has(#search-lightbox),
+.mfp-bg:has(+ .mfp-wrap #search-lightbox) {
+    display: none !important;
+}
+
+/* ==========================================================================
+   MODERN STICKY AUDIO PLAYER & PLAYLIST DRAWER
+   --------------------------------------------------------------------------
+   Os estilos do player de áudio fixo e playlist drawer foram isolados e
+   migrados para o arquivo dedicado: assets/css/player.css
+   (Enfileirado dinamicamente via functions.php com handle 'centralmidi-player-style')
+   ========================================================================== */
+
+/* ==========================================================================
+   REVEAL DAS SEÇÕES NA ROLAGEM (HOME)
+   --------------------------------------------------------------------------
+   Entrada suave das seções de conteúdo conforme entram na viewport.
+   Sem JavaScript: usa a timeline nativa de scroll do CSS (animation-timeline).
+
+   Escopo: apenas <section class="section"> dentro de body.home. O hero
+   ([ux_slider]) fica de fora de propósito, e os elementos position:fixed
+   (.back-to-top, .page-loader) ficam fora dos <section> — por isso o transform
+   não os desloca.
+
+   Três camadas de proteção, nesta ordem:
+   1. @supports  -> sem suporte a animation-timeline, o conteúdo aparece normal.
+   2. prefers-reduced-motion: no-preference -> quem pede menos movimento não vê nada.
+   3. animation-range em 'entry' -> a animação TERMINA enquanto a seção entra,
+      então nunca fica presa invisível numa seção que não role até o fim.
+   ========================================================================== */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    body.home section.section {
+      animation: cm-section-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
+
+@keyframes cm-section-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Impressão: sem timeline de scroll, o estado "from" (opacity 0) poderia sair
+   em branco no papel. Força o estado final. */
+@media print {
+  body.home section.section {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   PÁGINA UNIFICADA DE ARTISTAS (CATÁLOGO A-Z) - ESTILOS DEFINITIVOS DARK
+   ========================================================================== */
+.cmidi-artistas-page-wrapper {
+    background-color: var(--cm-bg-surface) !important;
+    min-height: 80vh !important;
+    padding-top: 155px !important;
+    padding-bottom: 60px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    color: var(--cm-text-secondary) !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 959px) {
+    .cmidi-artistas-page-wrapper {
+        padding-top: 125px !important;
+    }
+}
+
+@media (max-width: 549px) {
+    .cmidi-artistas-page-wrapper {
+        padding-top: 105px !important;
+    }
+}
+
+.cmidi-artistas-container {
+    max-width: 1720px !important;
+    margin: 0 auto !important;
+}
+
+.cmidi-artistas-cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 15px !important;
+}
+
+/* Garante fundo 100% escuro e texto visível nos cards de artistas */
+.cmidi-artista-card {
+    background: var(--cm-bg-card) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+    box-shadow: var(--cm-shadow-card) !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.cmidi-artista-card:hover {
+    border-color: var(--cm-accent-primary) !important;
+    transform: translateY(-4px) !important;
+    box-shadow: var(--cm-shadow-hover), var(--cm-glow-primary) !important;
+}
+
+/* Foto quadrada de ponta a ponta na parte superior do card */
+.cmidi-artista-avatar {
+    position: relative !important;
+    width: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    background: var(--cm-bg-card-hover) !important;
+    border-radius: 14px 14px 0 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.cmidi-artista-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+    object-fit: cover !important;
+    border: none !important;
+    box-shadow: none !important;
+    display: block !important;
+}
+
+.cmidi-artista-details {
+    background: var(--cm-bg-card) !important;
+    color: var(--cm-text-secondary) !important;
+    border-top: 1px solid var(--cm-border-subtle) !important;
+}
+
+.cmidi-artista-name {
+    color: var(--cm-text-primary) !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+}
+
+.cmidi-artista-action {
+    color: var(--cm-accent-primary) !important;
+}
+
+.cmidi-alphabet-buttons {
+    display: grid !important;
+    grid-template-columns: repeat(27, 1fr) !important;
+    gap: 6px !important;
+    width: 100% !important;
+}
+
+.cmidi-letter-btn {
+    min-width: 0 !important;
+    width: 100% !important;
+    height: 34px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: var(--cm-bg-card) !important;
+    color: var(--cm-text-secondary) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 8px !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    line-height: 1 !important;
+    cursor: pointer !important;
+    text-transform: uppercase !important;
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE DO GRID DE ARTISTAS E ALFABETO
+   ========================================================================== */
+@media (max-width: 1500px) {
+    .cmidi-artistas-cards-grid {
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 14px !important;
+    }
+}
+
+@media (max-width: 1200px) {
+    .cmidi-artistas-cards-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 12px !important;
+    }
+
+    .cmidi-alphabet-buttons {
+        grid-template-columns: repeat(14, 1fr) !important;
+        gap: 5px !important;
+    }
+
+    .cmidi-letter-btn {
+        height: 38px !important;
+        font-size: 13.5px !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .cmidi-artistas-cards-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 12px !important;
+    }
+
+    .cmidi-alphabet-buttons {
+        grid-template-columns: repeat(9, 1fr) !important;
+        gap: 5px !important;
+    }
+}
+
+/* Telas Mobile e Celulares: Estritamente 2 colunas por linha */
+@media (max-width: 768px) {
+    .cmidi-artistas-page-wrapper {
+        padding-top: 115px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        padding-bottom: 40px !important;
+    }
+
+    .cmidi-alphabet-buttons {
+        grid-template-columns: repeat(7, 1fr) !important;
+        gap: 4px !important;
+    }
+
+    .cmidi-letter-btn {
+        min-width: 0 !important;
+        width: 100% !important;
+        height: 36px !important;
+        font-size: 12.5px !important;
+        border-radius: 6px !important;
+    }
+
+    .cmidi-artistas-cards-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+    }
+
+    .cmidi-artista-card {
+        border-radius: 10px !important;
+    }
+
+    .cmidi-artista-avatar {
+        border-radius: 10px 10px 0 0 !important;
+    }
+
+    .cmidi-artista-details {
+        padding: 8px 8px 10px 8px !important;
+    }
+
+    .cmidi-artista-name {
+        font-size: 12.5px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .cmidi-artista-badge {
+        font-size: 9.5px !important;
+        padding: 2px 6px !important;
+        bottom: 5px !important;
+        right: 5px !important;
+    }
+
+    .cmidi-artista-action {
+        font-size: 11px !important;
+    }
+}
+
+/* ==========================================================================
+   ALINHAMENTO DO CAMPO DE BUSCA DE ARTISTAS (ESTRUTURA FLEX)
+   ========================================================================== */
+.cmidi-artistas-search-box {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    background: var(--cm-bg-input) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 9999px !important;
+    padding: 0 14px !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    transition: all 0.25s ease !important;
+    box-sizing: border-box !important;
+}
+
+.cmidi-artistas-search-box:focus-within {
+    border-color: var(--cm-accent-primary) !important;
+    box-shadow: 0 0 0 3px var(--cm-accent-primary-subtle), inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.cmidi-artistas-search-box .cmidi-search-icon {
+    position: static !important;
+    transform: none !important;
+    color: var(--cm-text-faint) !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    margin-right: 10px !important;
+    flex-shrink: 0 !important;
+    pointer-events: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+
+.cmidi-artistas-search-box:focus-within .cmidi-search-icon {
+    color: var(--cm-accent-primary) !important;
+}
+
+.cmidi-artistas-search-box input,
+.cmidi-artistas-search-box input[type="text"] {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    color: var(--cm-text-primary) !important;
+    font-size: 14px !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.cmidi-artistas-search-box input::placeholder {
+    color: var(--cm-text-faint) !important;
+}
+
+.cmidi-clear-btn {
+    position: static !important;
+    transform: none !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: var(--cm-text-muted) !important;
+    cursor: pointer !important;
+    font-size: 18px !important;
+    padding: 0 !important;
+    margin: 0 0 0 8px !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    height: 24px !important;
+    width: 24px !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+}
+
+.cmidi-clear-btn i {
+    font-size: 18px !important;
+    line-height: 1 !important;
+    display: block !important;
+}
+
+.cmidi-clear-btn:hover {
+    color: #f87171 !important;
+}
+
+
+
+
+
+/* ==========================================================================
+   HOME - SECOES PROPIAS (migradas do UX Builder)
+   Bem-vindos / Sobre os servicos / Nossa equipe / Leis de Copyright
+   CSS do child; sem dependencia de classes do Flatsome.
+   Cores via tokens semanticos --cm-home-* para fluir do sistema de tema
+   (dark padrao / [data-theme=light]). Decisao de design 2026-09-28:
+   as lajes (#333b40), o card de contato (#e3e3e3) e o "Sobre" (overlay
+   branco + texto escuro) sao elementos de contraste FIXOS - valores
+   identicos nos dois temas. Para ajustar o tema claro mais tarde, basta
+   editar o bloco [data-theme="light"] abaixo.
+   Obs.: o fundo do corpo e travado em #080c13 em custom-style.css:11
+   (html,body background !important), entao hoje o light nao muda o
+   contexto das secoes transparentes - por isso os tokens de "equipe"
+   tambem ficam claros nos dois temas.
+   ========================================================================== */
+
+/* Tokens - Tema Escuro (padrao) */
+:root,
+[data-theme="dark"] {
+    --cm-home-slab-bg: #0b1120;
+    --cm-home-slab-title: #ffffff;
+    --cm-home-slab-list: #cbd5e1;
+    --cm-home-slab-ck: #00d284;
+    --cm-home-legal-text: #94a3b8;
+    --cm-home-ck-underline: rgba(0, 210, 132, 0.35);
+    --cm-home-qr-bg: #ffffff;
+
+    --cm-home-card-bg: #111827;
+    --cm-home-card-text: #f3f4f6;
+    --cm-home-wa-highlight: #ffc107;
+    --cm-home-card-input-bg: #0b1120;
+    --cm-home-card-input-border: #1f2937;
+    --cm-home-card-input-color: #ffffff;
+    --cm-home-card-input-ph: #64748b;
+
+    --cm-home-services-bg: #0b1120;
+    --cm-home-services-title: #ffffff;
+    --cm-home-services-desc: #94a3b8;
+    --cm-home-services-btn-bc: #00d284;
+    --cm-home-services-btn-color: #00d284;
+    --cm-home-services-btn-hover-bg: #00d284;
+    --cm-home-services-btn-hover-color: #0b1120;
+
+    --cm-home-team-title: #ffffff;
+    --cm-home-team-list: #cbd5e1;
+    --cm-home-team-link: #00d284;
+    --cm-home-divider: rgba(255, 255, 255, 0.1);
+    --cm-home-pix-label: #94a3b8;
+    --cm-home-pix-emails: #e5e9ef;
+}
+
+/* Tokens - Tema Claro (Ativado quando no tema claro) */
+[data-theme="light"],
+body.theme-light {
+    --cm-home-slab-bg: #ffffff;
+    --cm-home-slab-title: #0f172a;
+    --cm-home-slab-list: #334155;
+    --cm-home-slab-ck: #00b36f;
+    --cm-home-legal-text: #64748b;
+    --cm-home-ck-underline: rgba(0, 179, 111, 0.35);
+    --cm-home-qr-bg: #f8fafc;
+
+    --cm-home-card-bg: #f1f5f9;
+    --cm-home-card-text: #0f172a;
+    --cm-home-wa-highlight: #d97706;
+    --cm-home-card-input-bg: #ffffff;
+    --cm-home-card-input-border: #cbd5e1;
+    --cm-home-card-input-color: #0f172a;
+    --cm-home-card-input-ph: #94a3b8;
+
+    --cm-home-services-bg: #f8fafc;
+    --cm-home-services-title: #0f172a;
+    --cm-home-services-desc: #475569;
+    --cm-home-services-btn-bc: #00b36f;
+    --cm-home-services-btn-color: #00b36f;
+    --cm-home-services-btn-hover-bg: #00b36f;
+    --cm-home-services-btn-hover-color: #ffffff;
+
+    --cm-home-team-title: #0f172a;
+    --cm-home-team-list: #334155;
+    --cm-home-team-link: #00b36f;
+    --cm-home-divider: rgba(0, 0, 0, 0.08);
+    --cm-home-pix-label: #475569;
+    --cm-home-pix-emails: #0f172a;
+}
+
+/* Ancora de contato (usada pelo rodape: /#contato) */
+.cm-home-anchor {
+    display: block;
+    height: 0;
+    scroll-margin-top: 120px;
+}
+
+/* Casca centralizada das secoes migradas */
+.cm-home-about .cm-home-shell,
+.cm-home-services .cm-home-shell,
+.cm-home-team .cm-home-shell,
+.cm-home-legal .cm-home-shell {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 849px) {
+    .cm-home-about .cm-home-shell,
+    .cm-home-services .cm-home-shell,
+    .cm-home-team .cm-home-shell,
+    .cm-home-legal .cm-home-shell {
+        padding: 0 15px;
+    }
+}
+
+/* ---------- Secao: Bem-vindos a Central MIDI! ---------- */
+.cm-home-about {
+    background: var(--cm-home-slab-bg);
+    padding: 50px 0;
+}
+
+.cm-home-about-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 32px;
+    align-items: center;
+}
+
+@media (max-width: 849px) {
+    .cm-home-about-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+}
+
+.cm-home-title {
+    font-size: clamp(1.35rem, 2vw, 1.6rem);
+    font-weight: 800;
+    color: var(--cm-home-slab-title);
+    margin: 0 0 22px;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+}
+
+/* Lista com checkmark do child (substitui .bullet-checkmark do tema) */
+.cm-check-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+}
+
+.cm-check-list li {
+    position: relative;
+    padding-left: 28px;
+    color: var(--cm-home-slab-list);
+    font-size: 0.97rem;
+    line-height: 1.65;
+}
+
+.cm-check-list li::before {
+    content: "\2714";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--cm-home-slab-ck);
+    font-weight: 800;
+    font-size: 1.05rem;
+}
+
+.cm-check-list a {
+    color: var(--cm-home-slab-ck);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* Card de contato (fundo claro, fixo nos dois temas) */
+.cm-home-about-card {
+    background: var(--cm-home-card-bg);
+    border-radius: 5px;
+    padding: 20px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    color: var(--cm-home-card-text);
+}
+
+.cm-home-card-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--cm-home-card-text);
+    margin: 0 0 4px;
+    text-align: center;
+    letter-spacing: -0.01em;
+}
+
+.cm-home-card-subtitle {
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: var(--cm-home-card-text);
+    margin: 0 0 12px;
+    text-align: center;
+}
+
+.cm-home-wa {
+    text-align: center;
+    margin: 0 0 16px;
+}
+
+.cm-home-wa-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.cm-home-wa-link img {
+    width: 27px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.cm-home-wa-text {
+    font-size: 150%;
+    color: var(--cm-home-wa-highlight);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Formulario nativo dentro do card claro (fixo nos dois temas) */
+.cm-home-about-card .cm-contact-form input[type="text"],
+.cm-home-about-card .cm-contact-form input[type="email"],
+.cm-home-about-card .cm-contact-form input[type="tel"],
+.cm-home-about-card .cm-contact-form textarea {
+    background: var(--cm-home-card-input-bg);
+    border-color: var(--cm-home-card-input-border);
+    color: var(--cm-home-card-input-color);
+}
+
+.cm-home-about-card .cm-contact-form input::placeholder,
+.cm-home-about-card .cm-contact-form textarea::placeholder {
+    color: var(--cm-home-card-input-ph);
+}
+
+/* ---------- Secao: Sobre os nossos servicos ---------- */
+.cm-home-services {
+    position: relative;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    padding: 30px 0;
+    background-color: var(--cm-home-services-bg);
+    background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)),
+        url("/wp-content/uploads/2020/05/e836e3cc-7189-4154-a52a-5a42b9998f29-1.jpg");
+    background-repeat: no-repeat, no-repeat;
+    background-size: cover, cover;
+    background-position: 46% 82%, 46% 82%;
+}
+
+.cm-home-services-inner {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    width: 100%;
+}
+
+.cm-home-services-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--cm-home-services-title);
+    margin: 0 0 6px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+
+.cm-home-services-desc {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--cm-home-services-desc);
+    margin: 0 0 20px;
+    line-height: 1.5;
+}
+
+.cm-home-services-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--cm-home-services-btn-bc);
+    color: var(--cm-home-services-btn-color);
+    background: transparent;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 10px 28px;
+    margin: 0;
+    border-radius: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    line-height: 1.2;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.cm-home-services-btn:hover {
+    background: var(--cm-home-services-btn-hover-bg);
+    border-color: var(--cm-home-services-btn-hover-bg);
+    color: var(--cm-home-services-btn-hover-color);
+}
+
+/* ---------- Secao: Nossa equipe ---------- */
+.cm-home-team {
+    padding: 40px 0;
+    min-height: 500px;
+}
+
+.cm-home-team-grid {
+    display: grid;
+    grid-template-columns: minmax(260px, 360px) 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+@media (max-width: 849px) {
+    .cm-home-team-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+}
+
+.cm-home-team-photo img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+}
+
+.cm-home-team-info .cm-home-title {
+    color: var(--cm-home-team-title);
+}
+
+.cm-home-team-info .cm-check-list li {
+    color: var(--cm-home-team-list);
+}
+
+.cm-home-team-info a {
+    color: var(--cm-home-team-link);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.cm-home-divider {
+    border: 0;
+    border-top: 1px solid var(--cm-home-divider);
+    margin: 26px 0;
+}
+
+.cm-home-pix-label {
+    margin: 0 0 8px;
+    color: var(--cm-home-pix-label);
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.cm-home-pix-emails {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--cm-home-pix-emails);
+}
+
+.cm-home-pix-email {
+    color: var(--cm-home-team-link);
+    font-weight: 700;
+    border-bottom: 2px solid var(--cm-home-ck-underline);
+    padding-bottom: 2px;
+}
+
+.cm-home-qr {
+    width: 29%;
+    height: auto;
+    display: block;
+    margin-top: 22px;
+    border-radius: 8px;
+    background: var(--cm-home-qr-bg);
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+/* ---------- Secao: Leis de Copyright ---------- */
+.cm-home-legal {
+    background: var(--cm-home-slab-bg);
+    padding: 30px 0;
+}
+
+.cm-home-legal-inner {
+    text-align: center;
+    max-width: 860px;
+}
+
+.cm-home-legal-inner > * {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cm-home-legal-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--cm-home-slab-title);
+    margin: 0 0 14px;
+    letter-spacing: 0.02em;
+}
+
+.cm-home-legal-text {
+    color: var(--cm-home-legal-text);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    text-align: center;
+}
+
+/* ==========================================================================
+   HUB DE TAXONOMIAS (MIDIS POR GÊNERO & MIDIS POR MÊS DE LANÇAMENTO)
+   ========================================================================== */
+body.page-id-150911 #content,
+body.page-id-119341 #content {
+    background-color: var(--cm-bg-body) !important;
+    padding-top: 140px !important;
+    padding-bottom: 70px !important;
+}
+
+@media (max-width: 768px) {
+    body.page-id-150911 #content,
+    body.page-id-119341 #content {
+        padding-top: 110px !important;
+    }
+}
+
+body.page-id-150911 .section-title-main,
+body.page-id-119341 .section-title-main {
+    color: var(--cm-text-primary) !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+}
+
+body.page-id-150911 .section-title b,
+body.page-id-119341 .section-title b {
+    border-top: 2px solid var(--cm-accent-primary-subtle) !important;
+}
+
+.cm-hub-tax-wrapper {
+    width: 100% !important;
+    max-width: 1600px !important;
+    margin: 25px auto 40px auto !important;
+    padding: 0 15px !important;
+    box-sizing: border-box !important;
+}
+
+.cm-hub-tax-grid {
+    display: grid !important;
+    gap: 14px !important;
+    width: 100% !important;
+}
+
+/* Gêneros: Grid adaptável moderno */
+.cm-hub-generos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+}
+
+/* Meses: Grid organizado em colunas elegantes */
+.cm-hub-meses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important;
+}
+
+/* Cards estilizados estilo Spotify / Dashboard Dark */
+.cm-hub-card {
+    display: flex !important;
+    align-items: center !important;
+    background: var(--cm-bg-card) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    text-decoration: none !important;
+    color: var(--cm-text-secondary) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow: var(--cm-shadow-card) !important;
+}
+
+.cm-hub-card:hover {
+    background: var(--cm-bg-card-hover) !important;
+    border-color: var(--cm-accent-primary) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: var(--cm-shadow-hover), var(--cm-glow-primary) !important;
+}
+
+.cm-hub-icon-box {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 10px !important;
+    background: var(--cm-accent-primary-subtle) !important;
+    color: var(--cm-accent-primary) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 22px !important;
+    margin-right: 14px !important;
+    flex-shrink: 0 !important;
+    transition: all 0.25s ease !important;
+}
+
+.cm-hub-card:hover .cm-hub-icon-box {
+    background: var(--cm-accent-primary) !important;
+    color: var(--cm-text-inverse) !important;
+    transform: scale(1.08) !important;
+}
+
+.cm-hub-card-info {
+    display: flex !important;
+    flex-direction: column !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+}
+
+.cm-hub-card-title {
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+    color: var(--cm-text-primary) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    line-height: 1.3 !important;
+}
+
+.cm-hub-card-sub {
+    font-size: 11.5px !important;
+    color: var(--cm-text-muted) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin-top: 2px !important;
+}
+
+.cm-hub-count-badge {
+    margin-left: auto !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: var(--cm-accent-secondary) !important;
+    background: var(--cm-accent-secondary-subtle) !important;
+    border: 1px solid var(--cm-accent-secondary-subtle) !important;
+    padding: 3px 10px !important;
+    border-radius: 9999px !important;
+    flex-shrink: 0 !important;
+}
+
+.cm-hub-card:hover .cm-hub-count-badge {
+    background: var(--cm-accent-primary) !important;
+    color: var(--cm-text-inverse) !important;
+    border-color: var(--cm-accent-primary) !important;
+}
+
+
+/* ==========================================================================
+   HEADER PERSONALIZADO & MENU MOBILE FULLSCREEN (DESACOPLADO DO TEMA)
+   Central MIDI - Design Moderno com Tokens Globais
+   ========================================================================== */
+
+/* 1. Header Wrapper & Reset */
+#header.header {
+    background: transparent !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    position: relative !important;
+    z-index: 100 !important;
+}
+
+.header-wrapper {
+    background: transparent !important;
+    position: relative;
+    box-shadow: none !important;
+    border-bottom: none !important;
+}
+
+/* 2. Top Bar Superior (Slim & Compacta) */
+.cm-top-bar {
+    background: var(--cm-bg-body) !important;
+    border-bottom: 1px solid var(--cm-border-subtle) !important;
+    font-size: 11px !important;
+    line-height: 1 !important;
+    color: var(--cm-text-muted) !important;
+    padding: 3px 0 !important;
+    min-height: 28px !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.cm-top-bar-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.cm-top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cm-top-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--cm-accent-primary-subtle);
+    color: var(--cm-accent-primary);
+    font-weight: 700;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+}
+
+.cm-top-tagline {
+    color: var(--cm-text-muted);
+    font-weight: 500;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.cm-top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cm-top-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 22px;
+    color: var(--cm-text-secondary);
+    text-decoration: none !important;
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.cm-top-whatsapp {
+    color: #25d366 !important;
+}
+
+.cm-top-whatsapp:hover {
+    color: #20ba5a !important;
+    text-decoration: none !important;
+}
+
+.cm-top-whatsapp i {
+    font-size: 13px;
+}
+
+.cm-top-socials {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cm-social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    background: var(--cm-bg-subtle);
+    color: var(--cm-text-muted) !important;
+    text-decoration: none !important;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    border: 1px solid var(--cm-border-subtle);
+    box-sizing: border-box;
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    vertical-align: middle;
+}
+
+.cm-social-icon:hover {
+    color: var(--cm-text-primary) !important;
+    border-color: var(--cm-accent-primary);
+    transform: translateY(-1px);
+}
+
+.cm-social-icon.cm-facebook:hover { background: #1877f2; color: #fff !important; border-color: #1877f2; }
+.cm-social-icon.cm-instagram:hover { background: #e1306c; color: #fff !important; border-color: #e1306c; }
+.cm-social-icon.cm-twitter:hover { background: #000000; color: #fff !important; border-color: #444; }
+
+.cm-top-newsletter-btn {
+    background: transparent !important;
+    border: 1px solid var(--cm-border-subtle) !important;
+    border-radius: 4px !important;
+    color: var(--cm-text-secondary) !important;
+    cursor: pointer !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    height: 22px !important;
+    box-sizing: border-box !important;
+    padding: 0 8px !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    vertical-align: middle !important;
+    outline: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.cm-top-newsletter-btn i {
+    font-size: 13px !important;
+    line-height: 1 !important;
+}
+
+.cm-top-newsletter-btn:hover {
+    background: var(--cm-accent-primary-subtle) !important;
+    border-color: var(--cm-accent-primary) !important;
+    color: var(--cm-accent-primary) !important;
+    transform: translateY(-1px);
+}
+
+/* 3. Header Principal (Masthead - Fixo no topo ao rolar a tela) */
+.cm-main-header-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.cm-main-header {
+    background: var(--cm-bg-surface) !important;
+    padding: 8px 0 !important;
+    position: relative;
+    width: 100%;
+    z-index: 99999 !important;
+    border-bottom: 1px solid var(--cm-border-color) !important;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Quando a tela rola além do topbar, fixa no topo */
+.cm-main-header.cm-is-fixed {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 99999 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35) !important;
+    animation: cmHeaderFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cmHeaderFadeIn {
+    from {
+        transform: translateY(-8px);
+        opacity: 0.9;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.cm-header-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.cm-header-logo {
+    flex-shrink: 0;
+}
+
+.cm-logo-img {
+    height: 48px;
+    width: auto;
+    max-height: 52px;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.cm-logo-img:hover {
+    transform: scale(1.02);
+}
+
+/* Navegação Desktop (Centralizada com destaque) */
+.cm-desktop-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 auto;
+    margin: 0 20px;
+}
+
+.cm-nav-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 8px;
+}
+
+.cm-nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.cm-nav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 38px;
+    padding: 0 16px !important;
+    border-radius: 8px;
+    color: var(--cm-text-secondary) !important;
+    text-decoration: none !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    letter-spacing: 0.02em;
+    line-height: 1 !important;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    box-sizing: border-box;
+}
+
+.cm-nav-item.active .cm-nav-link,
+.cm-nav-link:hover {
+    background: var(--cm-bg-subtle) !important;
+    color: var(--cm-accent-primary) !important;
+    border-color: var(--cm-border-subtle);
+}
+
+.cm-arrow-icon {
+    font-size: 16px;
+    transition: transform 0.2s ease;
+}
+
+.cm-nav-item:hover .cm-arrow-icon {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Sub-menu Moderno */
+.cm-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 290px;
+    background: var(--cm-bg-card) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45) !important;
+    padding: 8px !important;
+    list-style: none !important;
+    margin: 0 !important;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+}
+
+.cm-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 20px;
+    right: 0;
+    height: 8px;
+}
+
+.cm-nav-item.cm-has-dropdown:hover .cm-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.cm-dropdown-menu li {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.cm-dropdown-menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px !important;
+    border-radius: 8px;
+    text-decoration: none !important;
+    color: var(--cm-text-primary) !important;
+    transition: all 0.18s ease;
+}
+
+.cm-dropdown-menu a:hover {
+    background: var(--cm-bg-card-hover) !important;
+}
+
+.cm-menu-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.cm-menu-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.cm-menu-text strong {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--cm-text-primary);
+    line-height: 1.25;
+}
+
+.cm-menu-text span {
+    font-size: 11.5px;
+    color: var(--cm-text-muted);
+    margin-top: 2px;
+}
+
+/* 4. Ações do Header (Lado Direito) */
+.cm-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.cm-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 14px;
+    margin: 0 !important;
+    border-radius: 8px;
+    background: var(--cm-bg-subtle);
+    border: 1px solid var(--cm-border-subtle);
+    color: var(--cm-text-secondary) !important;
+    text-decoration: none !important;
+    font-weight: 700;
+    font-size: 13.5px;
+    line-height: 1 !important;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+/* Botão de Busca Retrátil (Lupa perfeitamente alinhada e quadrada) */
+.cm-search-trigger-btn {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 !important;
+    border-radius: 8px;
+}
+
+.cm-action-btn:hover {
+    background: var(--cm-bg-card-hover);
+    border-color: var(--cm-accent-primary);
+    color: var(--cm-accent-primary) !important;
+    transform: translateY(-1px);
+}
+
+.cm-action-btn i {
+    font-size: 18px;
+    line-height: 1 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cm-cart-icon-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cm-cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background: var(--cm-accent-primary);
+    color: var(--cm-text-inverse);
+    font-size: 10.5px;
+    font-weight: 800;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 9999px;
+    padding: 0 4px;
+}
+
+.cm-cart-amount {
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace, inherit;
+    color: #ffffff !important;
+    font-weight: 700;
+    margin-left: 2px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.cm-cart-amount *,
+.cm-cart-amount .amount,
+.cm-cart-amount .woocommerce-Price-amount,
+.cm-cart-amount .woocommerce-Price-currencySymbol {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+[data-theme="light"] .cm-cart-amount,
+[data-theme="light"] .cm-cart-amount *,
+[data-theme="light"] .cm-cart-amount .amount,
+body.theme-light .cm-cart-amount,
+body.theme-light .cm-cart-amount * {
+    color: var(--cm-text-primary) !important;
+}
+
+.cm-cart-btn:hover .cm-cart-amount,
+.cm-cart-btn:hover .cm-cart-amount * {
+    color: var(--cm-accent-primary) !important;
+}
+
+/* Botão Hambúrguer Mobile */
+.cm-hamburger-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    min-height: 38px;
+    background: var(--cm-bg-subtle);
+    border: 1px solid var(--cm-border-subtle);
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1 !important;
+    box-sizing: border-box !important;
+    transition: all 0.2s ease;
+}
+
+.cm-hamburger-line {
+    width: 18px;
+    height: 2px;
+    background: var(--cm-text-primary);
+    border-radius: 2px;
+    transition: all 0.25s ease;
+    display: block;
+    margin: 0 auto;
+}
+
+.cm-hamburger-btn:hover {
+    background: var(--cm-bg-card-hover);
+    border-color: var(--cm-accent-primary);
+}
+
+/* 5. Gaveta de Busca Rápida Desktop */
+.cm-quick-search-drawer {
+    display: none;
+    background: var(--cm-bg-surface);
+    border-top: 1px solid var(--cm-border-subtle);
+    border-bottom: 1px solid var(--cm-border-color);
+    padding: 12px 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 99998 !important;
+    animation: cmSlideDown 0.25s ease;
+}
+
+.cm-quick-search-drawer.cm-drawer-fixed {
+    position: fixed !important;
+    z-index: 99998 !important;
+}
+
+.cm-quick-search-drawer.is-open {
+    display: block;
+}
+
+@keyframes cmSlideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cm-search-drawer-inner {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.cm-search-input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+    background: var(--cm-bg-input);
+    border: 1px solid var(--cm-border-color);
+    border-radius: 10px;
+    padding: 4px 8px;
+    gap: 8px;
+}
+
+.cm-search-input-group:focus-within {
+    border-color: var(--cm-accent-primary);
+    box-shadow: 0 0 0 3px var(--cm-accent-primary-subtle);
+}
+
+.cm-search-icon-inside {
+    font-size: 18px;
+    color: var(--cm-text-muted);
+    margin-left: 8px;
+}
+
+.cm-search-input-field {
+    flex: 1;
+    background: transparent !important;
+    border: none !important;
+    color: var(--cm-text-primary) !important;
+    font-size: 14.5px !important;
+    padding: 8px !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.cm-search-submit-btn {
+    background: var(--cm-accent-primary) !important;
+    color: var(--cm-text-inverse) !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    font-weight: 700 !important;
+    font-size: 13px !important;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.cm-search-submit-btn:hover {
+    background: var(--cm-accent-primary-hover) !important;
+}
+
+.cm-search-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--cm-text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 6px;
+    transition: color 0.2s ease;
+}
+
+.cm-search-close-btn:hover {
+    color: var(--cm-text-primary);
+}
+
+/* =========================================================================
+   6. MENU MOBILE EM TELA CHEIA (FULLSCREEN OVERLAY)
+   Visual limpo, moderno, responsivo e 100% isolado do Flatsome
+   ========================================================================= */
+.cm-mobile-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    display: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cm-mobile-fullscreen.is-active {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cm-mobile-fullscreen-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(4, 7, 12, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.cm-mobile-fullscreen-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: var(--cm-bg-body);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cm-mobile-fullscreen.is-active .cm-mobile-fullscreen-container {
+    transform: translateY(0);
+}
+
+/* Topo do Menu Mobile */
+.cm-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--cm-border-color);
+    background: var(--cm-bg-surface);
+    flex-shrink: 0;
+    min-height: 52px;
+    box-sizing: border-box;
+}
+
+.cm-mobile-logo {
+    display: flex;
+    align-items: center;
+}
+
+.cm-mobile-logo-img {
+    height: 28px !important;
+    max-height: 28px !important;
+    width: auto !important;
+    max-width: 140px !important;
+    object-fit: contain;
+    display: block;
+}
+
+.cm-mobile-top-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cm-mobile-top-actions .cm-theme-toggle-btn {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    font-size: 16px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+button.cm-mobile-close-btn,
+.cm-mobile-close-btn {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    background: var(--cm-bg-subtle) !important;
+    border: 1px solid var(--cm-border-subtle) !important;
+    border-radius: 8px !important;
+    color: var(--cm-text-primary) !important;
+    font-size: 18px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    line-height: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    transition: all 0.2s ease !important;
+}
+
+button.cm-mobile-close-btn:hover,
+.cm-mobile-close-btn:hover {
+    background: var(--cm-accent-danger) !important;
+    color: #fff !important;
+    border-color: var(--cm-accent-danger) !important;
+    box-shadow: none !important;
+}
+
+.cm-mobile-close-btn i {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    font-size: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Busca Mobile - Moderna, Fluida e Perfeitamente Alinhada */
+.cm-mobile-search-wrap {
+    padding: 10px 16px 8px 16px;
+    background: var(--cm-bg-surface);
+    border-bottom: 1px solid var(--cm-border-subtle);
+    flex-shrink: 0;
+}
+
+.cm-mobile-search-form {
+    display: flex !important;
+    align-items: center !important;
+    background: var(--cm-bg-input);
+    border: 1px solid var(--cm-border-color);
+    border-radius: 10px;
+    padding: 0 5px 0 12px !important;
+    height: 42px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    gap: 8px;
+    position: relative;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cm-mobile-search-form:focus-within {
+    border-color: var(--cm-accent-primary);
+    box-shadow: 0 0 0 2px var(--cm-accent-primary-subtle);
+}
+
+.cm-mobile-search-icon {
+    font-size: 17px;
+    color: var(--cm-text-muted);
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    margin: 0;
+}
+
+.cm-mobile-search-input {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    color: var(--cm-text-primary) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    padding: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    line-height: 40px !important;
+    margin: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    vertical-align: middle !important;
+    display: block !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+.cm-mobile-search-input::placeholder {
+    color: var(--cm-text-muted) !important;
+    font-size: 13.5px !important;
+    line-height: normal !important;
+    vertical-align: middle !important;
+    opacity: 1 !important;
+}
+
+button.cm-mobile-search-submit,
+.cm-mobile-search-submit {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    min-height: 32px !important;
+    max-height: 32px !important;
+    border-radius: 8px !important;
+    background: var(--cm-accent-primary) !important;
+    color: var(--cm-text-inverse) !important;
+    border: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+    margin: 0 0 0 auto !important;
+    line-height: 1 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    box-shadow: none !important;
+    transition: background 0.2s ease, transform 0.15s ease !important;
+}
+
+button.cm-mobile-search-submit:hover,
+.cm-mobile-search-submit:hover {
+    background: var(--cm-accent-primary-hover) !important;
+    transform: scale(1.04) !important;
+    box-shadow: none !important;
+}
+
+.cm-mobile-search-submit i {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 16px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+}
+
+/* Área de Rolagem do Menu Mobile */
+.cm-mobile-nav-scroll {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 16px 24px 16px;
+}
+
+.cm-mobile-nav-list {
+    list-style: none !important;
+    margin: 0 0 16px 0 !important;
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cm-mobile-nav-item,
+.cm-mobile-nav-list > li,
+.cm-mobile-sub-list > li {
+    margin: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.cm-mobile-nav-item {
+    border-radius: 8px;
+    background: var(--cm-bg-card);
+    border: 1px solid var(--cm-border-subtle);
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.cm-mobile-nav-item:hover {
+    border-color: var(--cm-border-color);
+    background: var(--cm-bg-card-hover);
+}
+
+.cm-mobile-nav-link {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 9px 12px;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 13.5px;
+    font-weight: 700;
+    gap: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+[data-theme="light"] .cm-mobile-nav-link,
+body.theme-light .cm-mobile-nav-link {
+    color: var(--cm-text-primary) !important;
+}
+
+.cm-mobile-link-icon {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 6px;
+    background: var(--cm-bg-subtle);
+    color: var(--cm-accent-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.cm-mobile-link-text {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: inherit !important;
+}
+
+.cm-mobile-chevron {
+    font-size: 16px;
+    color: var(--cm-text-muted);
+    flex-shrink: 0;
+}
+
+.cm-mobile-plus-icon {
+    font-size: 18px;
+    color: var(--cm-text-muted);
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+
+.cm-mobile-accordion-toggle[aria-expanded="true"] .cm-mobile-plus-icon {
+    transform: rotate(45deg);
+    color: var(--cm-accent-primary);
+}
+
+.cm-mobile-cart-val {
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace, inherit;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    padding: 3px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.cm-mobile-cart-val *,
+.cm-mobile-cart-val .amount,
+.cm-mobile-cart-val .woocommerce-Price-amount,
+.cm-mobile-cart-val .woocommerce-Price-currencySymbol {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+[data-theme="light"] .cm-mobile-cart-val,
+body.theme-light .cm-mobile-cart-val {
+    color: var(--cm-text-primary) !important;
+    background: var(--cm-bg-subtle) !important;
+    border-color: var(--cm-border-color) !important;
+}
+
+[data-theme="light"] .cm-mobile-cart-val *,
+[data-theme="light"] .cm-mobile-cart-val .amount,
+[data-theme="light"] .cm-mobile-cart-val .woocommerce-Price-amount,
+body.theme-light .cm-mobile-cart-val * {
+    color: var(--cm-text-primary) !important;
+}
+
+.cm-mobile-nav-item:hover .cm-mobile-cart-val {
+    color: var(--cm-accent-primary) !important;
+    border-color: var(--cm-accent-primary) !important;
+    background: var(--cm-accent-primary-subtle) !important;
+}
+
+.cm-mobile-nav-item:hover .cm-mobile-cart-val *,
+.cm-mobile-nav-item:hover .cm-mobile-cart-val .amount,
+.cm-mobile-nav-item:hover .cm-mobile-cart-val .woocommerce-Price-currencySymbol {
+    color: var(--cm-accent-primary) !important;
+}
+
+/* Sub-lista Mobile */
+.cm-mobile-sub-list {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 12px 8px 12px !important;
+    display: none;
+    flex-direction: column;
+    gap: 3px;
+    border-top: 1px solid var(--cm-border-subtle);
+    background: var(--cm-bg-card-alt);
+}
+
+.cm-mobile-sub-list.is-open {
+    display: flex;
+}
+
+.cm-mobile-sub-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    color: var(--cm-text-secondary) !important;
+    text-decoration: none !important;
+    font-size: 12.5px;
+    font-weight: 600;
+    transition: background 0.15s ease;
+}
+
+.cm-mobile-sub-link:hover {
+    background: var(--cm-bg-subtle);
+    color: var(--cm-accent-primary) !important;
+}
+
+.cm-mobile-sub-link i {
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+/* Cartão WhatsApp no Mobile */
+.cm-mobile-quick-card {
+    background: linear-gradient(135deg, rgba(37, 211, 102, 0.08) 0%, rgba(18, 140, 126, 0.04) 100%);
+    border: 1px solid rgba(37, 211, 102, 0.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+}
+
+.cm-quick-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.cm-quick-card-header strong {
+    display: block;
+    color: var(--cm-text-primary);
+    font-size: 13px;
+    line-height: 1.25;
+}
+
+.cm-quick-card-header p {
+    font-size: 11.5px;
+    color: var(--cm-text-muted);
+    margin: 2px 0 0 0 !important;
+}
+
+.cm-mobile-wa-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #25d366;
+    color: #0b1120 !important;
+    padding: 8px 12px;
+    border-radius: 7px;
+    font-weight: 800;
+    font-size: 12.5px;
+    text-decoration: none !important;
+    transition: background 0.2s ease;
+}
+
+.cm-mobile-wa-btn:hover {
+    background: #20ba5a;
+    color: #0b1120 !important;
+}
+
+/* Redes Sociais no Mobile */
+.cm-mobile-footer-socials {
+    text-align: center;
+    padding-top: 6px;
+}
+
+.cm-mobile-socials-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--cm-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+}
+
+.cm-mobile-social-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.cm-m-social {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--cm-bg-card);
+    border: 1px solid var(--cm-border-subtle);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--cm-text-secondary) !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+}
+
+.cm-m-social:hover {
+    transform: translateY(-2px);
+    border-color: var(--cm-accent-primary);
+    color: var(--cm-accent-primary) !important;
+}
+
+/* 7. Lightbox Modal Newsletter */
+.cm-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.cm-modal-dialog {
+    position: relative;
+    max-width: 650px;
+    width: 100%;
+    background: var(--cm-bg-card);
+    border: 1px solid var(--cm-border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    animation: cmModalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cmModalPop {
+    from { opacity: 0; transform: scale(0.92) translateY(15px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.cm-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.cm-modal-close:hover {
+    background: var(--cm-accent-danger);
+    border-color: var(--cm-accent-danger);
+    transform: rotate(90deg);
+}
+
+.cm-modal-banner {
+    position: relative;
+    padding: 35px 25px;
+    overflow: hidden;
+}
+
+.cm-modal-banner-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.35);
+    z-index: 1;
+}
+
+.cm-modal-banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg, rgba(11, 17, 32, 0.85) 0%, rgba(11, 17, 32, 0.96) 100%);
+    z-index: 2;
+}
+
+.cm-modal-banner-content {
+    position: relative;
+    z-index: 3;
+}
+
+.cm-banner-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--cm-accent-primary-subtle);
+    color: var(--cm-accent-primary);
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+}
+
+.cm-banner-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 6px 0 !important;
+}
+
+.cm-banner-subtitle {
+    font-size: 14px;
+    color: var(--cm-text-muted);
+    margin: 0 0 20px 0 !important;
+    line-height: 1.45;
+}
+
+/* 8. Responsividade do Header */
+@media (max-width: 980px) {
+    .cm-desktop-nav {
+        display: none !important;
+    }
+    
+    .cm-hamburger-btn {
+        display: flex !important;
+    }
+
+    .cm-search-trigger-btn {
+        display: none !important;
+    }
+
+    .cm-account-btn {
+        display: none !important;
+    }
+
+    .cm-top-tagline {
+        display: none !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .cm-top-bar {
+        padding: 2px 0 !important;
+        min-height: 24px !important;
+    }
+
+    .cm-hide-on-mobile {
+        display: none !important;
+    }
+
+    .cm-header-container {
+        padding: 0 12px;
+        gap: 10px;
+    }
+
+    .cm-logo-img {
+        height: 29px !important;
+        max-height: 29px !important;
+    }
+
+    .cm-header-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .cm-action-btn {
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
+        padding: 0 10px !important;
+        margin: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        vertical-align: middle !important;
+    }
+
+    .cm-account-btn {
+        display: none !important;
+    }
+
+    .cm-cart-btn {
+        padding: 0 10px !important;
+    }
+
+    .cm-search-trigger-btn,
+    .cm-theme-toggle-btn {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        vertical-align: middle !important;
+    }
+
+    button.cm-hamburger-btn,
+    .cm-hamburger-btn {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: inline-flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        box-sizing: border-box !important;
+        vertical-align: middle !important;
+    }
+}
+
+
+/* ==========================================================================
+   HOMEPAGE THEME TOGGLING (DARK & LIGHT)
+   Garante que o fundo da home e todas as suas seções respeitem os temas
+   ========================================================================== */
+body.home,
+body.home #wrapper,
+body.home #main,
+body.home #content {
+    background-color: var(--cm-bg-body) !important;
+    transition: background-color 0.3s ease !important;
+}
+
+/* Seção de lançamentos / featured na Home */
+body.home .section:has(.cm-home-releases-wrapper),
+body.home .cm-home-releases-wrapper,
+body.home .cm-month-section {
+    background-color: var(--cm-bg-body) !important;
+    transition: background-color 0.3s ease !important;
+}
+
+/* Flatsome section container background override na Home */
+body.home .section:has(.cm-home-releases-wrapper) .section-bg {
+    background-color: var(--cm-bg-body) !important;
+}
+
+/* Títulos e textos de lançamentos — redundante mas mantido como fallback extra de especificidade */
+[data-theme="light"] body.home .cm-section-title,
+body.theme-light.home .cm-section-title {
+    color: var(--cm-text-primary) !important;
+}
+
+[data-theme="light"] body.home .cm-section-subtitle,
+body.theme-light.home .cm-section-subtitle {
+    color: var(--cm-text-muted) !important;
+}
+
+/* Transições suaves nas seções da home */
+.cm-home-about,
+.cm-home-team,
+.cm-home-legal,
+.cm-home-services,
+.cm-home-about-card {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* ==========================================================================
+   MELHORIAS VISUAIS — REVISÃO 2026-09-29
+   ========================================================================== */
+
+/* 1. Top Bar — ocultar completamente em mobile muito pequeno (< 480px) */
+@media (max-width: 480px) {
+    .cm-top-bar {
+        display: none !important;
+    }
+}
+
+/* 2. Focus-visible acessível em todos os botões interativos do header e menu mobile */
+.cm-theme-toggle-btn:focus-visible,
+.cm-action-btn:focus-visible,
+.cm-hamburger-btn:focus-visible,
+.cm-mobile-close-btn:focus-visible,
+.cm-mobile-accordion-toggle:focus-visible,
+.cm-mobile-nav-link:focus-visible,
+.cm-mobile-sub-link:focus-visible,
+.cm-search-trigger-btn:focus-visible,
+.cm-search-close-btn:focus-visible,
+.cm-search-submit-btn:focus-visible,
+.cm-mobile-search-submit:focus-visible {
+    outline: 2px solid var(--cm-accent-primary) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 4px var(--cm-accent-primary-subtle) !important;
+}
+
+/* 3. Hambúrguer — linhas sem margin residual do Flatsome */
+.cm-hamburger-line {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 4. Hambúrguer — usa nossa própria visibilidade, sem depender de .show-for-medium do Flatsome */
+/* .cm-hamburger-btn já tem display:none por padrão e display:flex no @media (max-width:980px) */
+/* Garantindo que .show-for-medium do Flatsome não interfira */
+@media (min-width: 981px) {
+    .cm-hamburger-btn.show-for-medium {
+        display: none !important;
+    }
+}
+@media (max-width: 980px) {
+    .cm-hamburger-btn.show-for-medium {
+        display: flex !important;
+    }
+}
+
+/* 5. Dropdown desktop — suporte a aria-expanded (também abre via :hover existente) */
+.cm-has-dropdown .cm-dropdown-toggle[aria-expanded="true"] ~ .cm-dropdown-menu,
+.cm-has-dropdown:focus-within .cm-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.cm-has-dropdown .cm-dropdown-toggle[aria-expanded="true"] .cm-arrow-icon {
+    transform: rotate(180deg);
+}
+
+/* 6. Tema claro — overrides restantes no modal de busca */
+[data-theme="light"] .cm-search-tip,
+body.theme-light .cm-search-tip {
+    color: var(--cm-text-muted) !important;
+    border-top-color: var(--cm-border-subtle) !important;
+}
+
+[data-theme="light"] .cm-search-tip kbd,
+body.theme-light .cm-search-tip kbd {
+    background: var(--cm-bg-card) !important;
+    border-color: var(--cm-border-color) !important;
+    color: var(--cm-text-secondary) !important;
+}
+
+[data-theme="light"] .cm-quick-tags-label,
+body.theme-light .cm-quick-tags-label {
+    color: var(--cm-text-muted) !important;
+}
+
+[data-theme="light"] .cm-sugg-genre,
+body.theme-light .cm-sugg-genre {
+    background: var(--cm-bg-subtle) !important;
+    color: var(--cm-text-secondary) !important;
+}
+
+[data-theme="light"] .cm-sugg-view-all,
+body.theme-light .cm-sugg-view-all {
+    border-top-color: var(--cm-border-subtle) !important;
+}
+
+[data-theme="light"] .cm-search-input-wrap .cm-search-field::placeholder,
+body.theme-light .cm-search-input-wrap .cm-search-field::placeholder {
+    color: var(--cm-text-faint) !important;
+}
+
+[data-theme="light"] .cm-sugg-loading,
+body.theme-light .cm-sugg-loading {
+    color: var(--cm-text-muted) !important;
+}
+
+/* 7. Skeleton loader para live search */
+.cm-sugg-skeleton {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cm-skeleton-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.cm-skeleton-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--cm-bg-card-hover);
+    flex-shrink: 0;
+    animation: cmSkeletonPulse 1.4s ease-in-out infinite;
+}
+
+.cm-skeleton-lines {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cm-skeleton-line {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--cm-bg-card-hover);
+    animation: cmSkeletonPulse 1.4s ease-in-out infinite;
+}
+
+.cm-skeleton-line:nth-child(1) { width: 70%; animation-delay: 0s; }
+.cm-skeleton-line:nth-child(2) { width: 45%; animation-delay: 0.15s; }
+
+@keyframes cmSkeletonPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* 8. Estado vazio / "nenhum resultado" — container mais rico */
+.cm-sugg-empty {
+    padding: 28px 18px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.cm-sugg-empty-icon {
+    font-size: 36px;
+    color: var(--cm-accent-warning);
+    line-height: 1;
+}
+
+.cm-sugg-empty-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cm-text-primary);
+    margin: 0;
+}
+
+.cm-sugg-empty-hint {
+    font-size: 12.5px;
+    color: var(--cm-text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.cm-sugg-empty-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--cm-accent-primary) !important;
+    text-decoration: none !important;
+    margin-top: 4px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    background: var(--cm-accent-primary-subtle);
+    transition: background 0.2s ease;
+}
+
+.cm-sugg-empty-link:hover {
+    background: var(--cm-accent-primary) !important;
+    color: var(--cm-text-inverse) !important;
+}
+
+/* 10. Animação slide-down ao abrir menu mobile (melhoria: container já tem translateY, mas adicionamos uma transição mais fluida) */
+.cm-mobile-fullscreen-container {
+    transform: translateY(24px);
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cm-mobile-fullscreen.is-active .cm-mobile-fullscreen-container {
+    transform: translateY(0);
+}
+
+/* ==========================================================================
+   CARRINHO WOOCOMMERCE — DESIGN MODERNO CENTRAL MIDI
+   Cobre: página vazia, tabela de itens, totais, cupom, botão checkout
+   ========================================================================== */
+
+/* Fundo e container da página focused-checkout */
+body.woocommerce-cart .custom-focused-checkout-main,
+body.woocommerce-cart #main {
+    background: var(--cm-bg-body) !important;
+    transition: background 0.3s ease !important;
+}
+
+/* Logo do topo do checkout — adapta ao tema */
+body.woocommerce-cart .focused-checkout-logo {
+    padding: 16px 20px 0;
+}
+
+body.woocommerce-cart .focused-checkout-logo img {
+    max-height: 36px;
+    width: auto;
+}
+
+/* Breadcrumb de steps — deixa visual moderno com tokens */
+body.woocommerce-cart .checkout-breadcrumbs a {
+    color: var(--cm-text-muted) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    padding: 6px 10px !important;
+    border-radius: 8px !important;
+    transition: color 0.2s ease !important;
+    text-decoration: none !important;
+}
+
+body.woocommerce-cart .checkout-breadcrumbs a.current,
+body.woocommerce-cart .checkout-breadcrumbs a:hover {
+    color: var(--cm-accent-primary) !important;
+    background: var(--cm-accent-primary-subtle) !important;
+}
+
+body.woocommerce-cart .checkout-breadcrumbs .breadcrumb-step {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 50% !important;
+    background: var(--cm-bg-subtle) !important;
+    color: var(--cm-text-muted) !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    margin-right: 6px !important;
+    line-height: 1 !important;
+}
+
+body.woocommerce-cart .checkout-breadcrumbs a.current .breadcrumb-step {
+    background: var(--cm-accent-primary) !important;
+    color: var(--cm-text-inverse) !important;
+}
+
+/* ---- Estado: Carrinho Vazio ---- */
+body.woocommerce-cart .wc-empty-cart-message {
+    max-width: 480px;
+    margin: 60px auto;
+    text-align: center;
+}
+
+body.woocommerce-cart .woocommerce-info.message-wrapper {
+    background: var(--cm-bg-card) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--cm-shadow-card) !important;
+    padding: 40px 32px !important;
+    margin-bottom: 24px !important;
+    color: var(--cm-text-muted) !important;
+    font-size: 15px !important;
+    position: relative;
+    overflow: hidden;
+}
+
+body.woocommerce-cart .woocommerce-info.message-wrapper::before {
+    content: '\eebe'; /* ri-shopping-cart-line */
+    font-family: 'remixicon' !important;
+    font-size: 52px;
+    color: var(--cm-text-faint);
+    display: block;
+    margin-bottom: 14px;
+    line-height: 1;
+}
+
+body.woocommerce-cart .woocommerce-info.message-wrapper .message-container {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: var(--cm-text-secondary) !important;
+}
+
+body.woocommerce-cart .return-to-shop {
+    text-align: center;
+    margin: 0 !important;
+}
+
+body.woocommerce-cart .return-to-shop .button {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: var(--cm-accent-primary) !important;
+    color: var(--cm-text-inverse) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 12px 28px !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 14px rgba(0, 210, 132, 0.35) !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+}
+
+body.woocommerce-cart .return-to-shop .button:hover {
+    background: var(--cm-accent-primary-hover) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(0, 210, 132, 0.45) !important;
+}
+
+/* ---- Tabela de Itens do Carrinho ---- */
+body.woocommerce-cart .woocommerce-cart-form {
+    max-width: 900px;
+    margin: 0 auto 32px;
+}
+
+body.woocommerce-cart table.shop_table.cart {
+    background: var(--cm-bg-card) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 16px !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    overflow: hidden !important;
+    box-shadow: var(--cm-shadow-card) !important;
+    width: 100% !important;
+}
+
+body.woocommerce-cart table.shop_table thead th {
+    background: var(--cm-bg-card-alt) !important;
+    color: var(--cm-text-muted) !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid var(--cm-border-color) !important;
+    border-top: none !important;
+}
+
+body.woocommerce-cart table.shop_table tbody tr td {
+    padding: 16px !important;
+    border-top: 1px solid var(--cm-border-subtle) !important;
+    vertical-align: middle !important;
+    background: transparent !important;
+    color: var(--cm-text-primary) !important;
+}
+
+body.woocommerce-cart table.shop_table tbody tr:first-child td {
+    border-top: none !important;
+}
+
+/* Imagem do produto */
+body.woocommerce-cart table.shop_table .product-thumbnail img {
+    width: 64px !important;
+    height: 64px !important;
+    object-fit: cover !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--cm-border-subtle) !important;
+    display: block !important;
+}
+
+/* Nome do produto */
+body.woocommerce-cart table.shop_table .product-name a {
+    color: var(--cm-text-primary) !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    text-decoration: none !important;
+    transition: color 0.2s ease;
+}
+
+body.woocommerce-cart table.shop_table .product-name a:hover {
+    color: var(--cm-accent-primary) !important;
+}
+
+/* Preço unitário */
+body.woocommerce-cart table.shop_table .product-price .amount {
+    color: var(--cm-text-muted) !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+/* Subtotal */
+body.woocommerce-cart table.shop_table .product-subtotal .amount {
+    color: var(--cm-accent-primary) !important;
+    font-weight: 800 !important;
+    font-size: 15px !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Botão de remover item */
+body.woocommerce-cart table.shop_table .product-remove a.remove {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 50% !important;
+    background: var(--cm-bg-subtle) !important;
+    color: var(--cm-text-muted) !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid var(--cm-border-subtle) !important;
+    line-height: 1 !important;
+}
+
+body.woocommerce-cart table.shop_table .product-remove a.remove:hover {
+    background: rgba(239, 68, 68, 0.12) !important;
+    color: var(--cm-accent-danger) !important;
+    border-color: var(--cm-accent-danger) !important;
+    transform: scale(1.1) !important;
+}
+
+/* Quantidade */
+body.woocommerce-cart table.shop_table .product-quantity .qty {
+    width: 64px !important;
+    text-align: center !important;
+    background: var(--cm-bg-input) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 8px !important;
+    color: var(--cm-text-primary) !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    padding: 6px 8px !important;
+    height: auto !important;
+    min-height: auto !important;
+    line-height: 1.4 !important;
+    transition: border-color 0.2s ease !important;
+}
+
+body.woocommerce-cart table.shop_table .product-quantity .qty:focus {
+    border-color: var(--cm-accent-primary) !important;
+    box-shadow: 0 0 0 3px var(--cm-accent-primary-subtle) !important;
+    outline: none !important;
+}
+
+/* Linha de ações (cupom + atualizar carrinho) */
+body.woocommerce-cart table.shop_table .actions td {
+    padding: 14px 16px !important;
+    background: var(--cm-bg-card-alt) !important;
+    border-top: 1px solid var(--cm-border-color) !important;
+}
+
+body.woocommerce-cart .coupon {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+}
+
+body.woocommerce-cart .coupon input#coupon_code {
+    background: var(--cm-bg-input) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 8px !important;
+    color: var(--cm-text-primary) !important;
+    font-size: 13px !important;
+    padding: 8px 14px !important;
+    height: auto !important;
+    min-height: auto !important;
+    width: 180px !important;
+    transition: border-color 0.2s ease !important;
+    margin: 0 !important;
+}
+
+body.woocommerce-cart .coupon input#coupon_code:focus {
+    border-color: var(--cm-accent-primary) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px var(--cm-accent-primary-subtle) !important;
+}
+
+body.woocommerce-cart .coupon input#coupon_code::placeholder {
+    color: var(--cm-text-faint) !important;
+}
+
+body.woocommerce-cart .coupon button[name="apply_coupon"],
+body.woocommerce-cart button[name="update_cart"] {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: var(--cm-bg-subtle) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 8px !important;
+    color: var(--cm-text-secondary) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    padding: 8px 16px !important;
+    height: auto !important;
+    min-height: auto !important;
+    line-height: 1.4 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    margin: 0 !important;
+}
+
+body.woocommerce-cart .coupon button[name="apply_coupon"]:hover,
+body.woocommerce-cart button[name="update_cart"]:hover {
+    background: var(--cm-accent-primary-subtle) !important;
+    border-color: var(--cm-accent-primary) !important;
+    color: var(--cm-accent-primary) !important;
+}
+
+body.woocommerce-cart button[name="update_cart"] {
+    float: right !important;
+}
+
+/* ---- Totais do Carrinho ---- */
+body.woocommerce-cart .cart-collaterals {
+    max-width: 480px;
+    margin: 0 auto 48px;
+}
+
+body.woocommerce-cart .cart_totals {
+    background: var(--cm-bg-card) !important;
+    border: 1px solid var(--cm-border-color) !important;
+    border-radius: 16px !important;
+    box-shadow: var(--cm-shadow-card) !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+
+body.woocommerce-cart .cart_totals h2 {
+    padding: 16px 20px !important;
+    margin: 0 !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: var(--cm-text-primary) !important;
+    background: var(--cm-bg-card-alt) !important;
+    border-bottom: 1px solid var(--cm-border-color) !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+}
+
+body.woocommerce-cart .cart_totals table {
+    border: none !important;
+    width: 100% !important;
+    background: transparent !important;
+    margin: 0 !important;
+    border-collapse: collapse !important;
+}
+
+body.woocommerce-cart .cart_totals table th,
+body.woocommerce-cart .cart_totals table td {
+    padding: 12px 20px !important;
+    border-top: 1px solid var(--cm-border-subtle) !important;
+    background: transparent !important;
+    vertical-align: middle !important;
+}
+
+body.woocommerce-cart .cart_totals table th {
+    color: var(--cm-text-muted) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    width: 40% !important;
+}
+
+body.woocommerce-cart .cart_totals table td {
+    color: var(--cm-text-primary) !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    text-align: right !important;
+}
+
+/* Linha do Total final em destaque */
+body.woocommerce-cart .cart_totals table .order-total th {
+    color: var(--cm-text-primary) !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+}
+
+body.woocommerce-cart .cart_totals table .order-total td .amount {
+    color: var(--cm-accent-primary) !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Shipping */
+body.woocommerce-cart .cart_totals .shipping ul,
+body.woocommerce-cart .cart_totals .shipping p {
+    color: var(--cm-text-muted) !important;
+    font-size: 12.5px !important;
+    margin: 0 !important;
+}
+
+/* Botão Finalizar Compra */
+body.woocommerce-cart .wc-proceed-to-checkout {
+    padding: 16px 20px !important;
+    background: var(--cm-bg-card-alt) !important;
+    border-top: 1px solid var(--cm-border-color) !important;
+}
+
+body.woocommerce-cart .wc-proceed-to-checkout .checkout-button,
+body.woocommerce-cart .wc-proceed-to-checkout a.checkout-button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    width: 100% !important;
+    background: var(--cm-accent-primary) !important;
+    color: var(--cm-text-inverse) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    padding: 16px 28px !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    text-decoration: none !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+    box-shadow: 0 6px 20px rgba(0, 210, 132, 0.4) !important;
+    min-height: auto !important;
+    height: auto !important;
+    line-height: 1.3 !important;
+}
+
+body.woocommerce-cart .wc-proceed-to-checkout .checkout-button:hover {
+    background: var(--cm-accent-primary-hover) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 28px rgba(0, 210, 132, 0.55) !important;
+}
+
+/* Badges de segurança abaixo do botão */
+body.woocommerce-cart .wc-proceed-to-checkout::after {
+    content: '🔒 Pagamento 100% Seguro — PIX, Cartão e Mercado Pago';
+    display: block;
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--cm-text-muted);
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+/* Mensagens de info/erro do WooCommerce na página do carrinho */
+body.woocommerce-cart .woocommerce-notices-wrapper .woocommerce-message,
+body.woocommerce-cart .woocommerce-notices-wrapper .woocommerce-error,
+body.woocommerce-cart .woocommerce-notices-wrapper .woocommerce-info {
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    margin-bottom: 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+}
+
+/* ---- Responsividade Mobile do Carrinho ---- */
+@media (max-width: 680px) {
+    body.woocommerce-cart table.shop_table thead th.product-thumbnail,
+    body.woocommerce-cart table.shop_table thead th.product-price {
+        display: none !important;
+    }
+
+    body.woocommerce-cart table.shop_table tbody .product-thumbnail,
+    body.woocommerce-cart table.shop_table tbody .product-price {
+        display: none !important;
+    }
+
+    body.woocommerce-cart table.shop_table .product-name {
+        padding-left: 12px !important;
+    }
+
+    body.woocommerce-cart .coupon {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    body.woocommerce-cart .coupon input#coupon_code {
+        width: 100% !important;
+    }
+
+    body.woocommerce-cart button[name="update_cart"] {
+        float: none !important;
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    body.woocommerce-cart .cart-collaterals {
+        max-width: 100% !important;
+    }
+
+    body.woocommerce-cart .woocommerce-cart-form {
+        max-width: 100% !important;
+    }
+}
+
+/* ==========================================================================
+   FIX: Espaçamento harmônico acima do conteúdo nas páginas internas
+   Afeta: /midis/, /artistas/, /midis-por-genero/ e páginas de catálogo
+   Elimina o gap excessivo de 120px do Flatsome e aplica espaçamento elegante (28px desktop / 18px mobile)
+   ========================================================================== */
+
+/* 1. Neutraliza o padding-top excessivo do Flatsome (120px) em páginas transparent */
+.has-transparent + #main > .page-title,
+.has-transparent + #main > div > .page-title,
+.has-transparent + #main .page-header-wrapper:first-of-type .page-title {
+    padding-top: 0 !important;
+}
+
+body:not(.woocommerce-cart):not(.woocommerce-checkout) #wrapper {
+    padding-top: 0 !important;
+}
+
+/* 2. Aplica espaçamento mínimo elegante abaixo do header fixo/superior para não grudar */
+body:not(.home):not(.woocommerce-cart):not(.woocommerce-checkout) #main {
+    padding-top: 28px !important;
+}
+
+body:not(.home) #main > .cmidi-artistas-page-wrapper,
+body:not(.home) #main > #content,
+body.post-type-archive-product #main > div:first-child,
+body.woocommerce-shop #main > div:first-child,
+body.blog #main > div:first-child,
+body.page #main > div:first-child {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* Reduz sutilmente em telas mobile */
+@media (max-width: 600px) {
+    body:not(.home):not(.woocommerce-cart):not(.woocommerce-checkout) #main {
+        padding-top: 18px !important;
+    }
+}
